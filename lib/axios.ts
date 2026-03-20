@@ -38,11 +38,7 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL}/api/auth/refresh`,
-          {},
-          { withCredentials: true }
-        );
+        await api.post("/api/auth/refresh", {}, { withCredentials: true });
         processQueue(null);
         return api(originalRequest);
       } catch (err) {

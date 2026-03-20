@@ -1,17 +1,12 @@
 'use client';
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import api from "@/lib/axios";
 import Loading from "@/app/loading";
 import { useRouter } from "next/navigation";
 import {
-  XCircleIcon,
-  EyeIcon,
-  MagnifyingGlassIcon,
-  FunnelIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  BuildingOfficeIcon,
-  XMarkIcon,
+  XCircleIcon, EyeIcon, MagnifyingGlassIcon,
+  FunnelIcon, ChevronLeftIcon, ChevronRightIcon,
+  BuildingOfficeIcon, XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { CheckCircleIcon as CheckCircleSolid } from "@heroicons/react/24/solid";
 
@@ -23,102 +18,108 @@ interface Charity {
   city: string;
   category: string;
   isVerified: boolean;
-  user: {
-    id: number;
-    email: string;
-    isActive: boolean;
-  };
+  user: { id: number; email: string; isActive: boolean };
 }
 
 const ITEMS_PER_PAGE = 8;
+const DEBOUNCE_MS = 1000;
 
 export default function NGOs() {
   const [charities, setCharities] = useState<Charity[]>([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "verified" | "unverified">("all");
-  const [categoryFilter, setCategoryFilter] = useState<string>("all");
-  const [cityFilter, setCityFilter] = useState<string>("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [cityFilter, setCityFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
+
+  const [allCategories, setAllCategories] = useState<string[]>([]);
+  const [allCities, setAllCities] = useState<string[]>([]);
+
   const router = useRouter();
 
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
+
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+    
+    debounceRef.current = setTimeout(() => {
+      setDebouncedSearch(value);
+      setCurrentPage(1);
+    }, DEBOUNCE_MS);
+  };
+
+  // Populate dropdown options once on mount (unfiltered)
   useEffect(() => {
-    const fetchCharities = async () => {
-      try {
-        const res = await api.get("/api/charities");
-        setCharities(res.data.data);
-      } catch (err) {
-        console.error("Fetching charities failed", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchCharities();
+    api.get("/api/charities").then((res) => {
+      const all: Charity[] = res.data.data?.items ?? [];
+      setAllCategories([...new Set(all.map((c) => c.category))].sort());
+      setAllCities([...new Set(all.map((c) => c.city))].sort());
+    });
   }, []);
 
-  // Derive unique categories and cities for filter dropdowns
-  const categories = useMemo(
-    () => [...new Set(charities.map((c) => c.category))].sort(),
-    [charities]
-  );
-  const cities = useMemo(
-    () => [...new Set(charities.map((c) => c.city))].sort(),
-    [charities]
-  );
+  const fetchCharities = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (debouncedSearch) params.set("search", debouncedSearch);
+      if (statusFilter !== "all") params.set("status", statusFilter);
+      if (categoryFilter !== "all") params.set("category", categoryFilter);
+      if (cityFilter !== "all") params.set("city", cityFilter);
+      params.set("page", String(currentPage));
+      params.set("limit", String(ITEMS_PER_PAGE));
 
-  // Filtered + searched data
-  const filtered = useMemo(() => {
-    return charities.filter((c) => {
-      const matchesSearch =
-        search === "" ||
-        c.name.toLowerCase().includes(search.toLowerCase()) ||
-        c.user.email.toLowerCase().includes(search.toLowerCase()) ||
-        c.city.toLowerCase().includes(search.toLowerCase());
+      const res = await api.get(`/api/charities?${params.toString()}`);
+      setCharities(res.data.data?.items ?? []);
+      setTotal(res.data.data?.total ?? 0);
+    } catch (err) {
+      console.error("Fetching charities failed", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [debouncedSearch, statusFilter, categoryFilter, cityFilter, currentPage]);
 
-      const matchesStatus =
-        statusFilter === "all" ||
-        (statusFilter === "verified" && c.isVerified) ||
-        (statusFilter === "unverified" && !c.isVerified);
+  useEffect(() => {
+    fetchCharities();
+  }, [fetchCharities]);
 
-      const matchesCategory = categoryFilter === "all" || c.category === categoryFilter;
-      const matchesCity = cityFilter === "all" || c.city === cityFilter;
-
-      return matchesSearch && matchesStatus && matchesCategory && matchesCity;
-    });
-  }, [charities, search, statusFilter, categoryFilter, cityFilter]);
-
-  // Pagination
-  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
-  const paginated = filtered.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
-
-  // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [search, statusFilter, categoryFilter, cityFilter]);
+  }, [debouncedSearch, statusFilter, categoryFilter, cityFilter]);
 
-  const activeFilterCount = [statusFilter !== "all", categoryFilter !== "all", cityFilter !== "all"].filter(Boolean).length;
+  const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
+  const activeFilterCount = [
+    statusFilter !== "all",
+    categoryFilter !== "all",
+    cityFilter !== "all",
+  ].filter(Boolean).length;
 
   const clearFilters = () => {
     setStatusFilter("all");
     setCategoryFilter("all");
     setCityFilter("all");
     setSearch("");
+    setDebouncedSearch("");
   };
 
   if (loading) return <Loading />;
 
   return (
     <div className="max-w-7xl mx-auto space-y-4">
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold text-gray-900">NGOs</h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            {filtered.length} {filtered.length === 1 ? "organization" : "organizations"} found
+            {total} {total === 1 ? "organization" : "organizations"} found
           </p>
         </div>
       </div>
@@ -126,19 +127,18 @@ export default function NGOs() {
       {/* Search & Filter Bar */}
       <div className="bg-white rounded-xl border border-gray-200 p-4 space-y-3">
         <div className="flex items-center gap-3">
-          {/* Search */}
           <div className="relative flex-1">
             <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <input
               type="text"
               placeholder="Search by name, email, or city..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 text-sm rounded-lg border border-gray-200 bg-gray-50 focus:bg-white focus:border-blue-300 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
             />
             {search && (
               <button
-                onClick={() => setSearch("")}
+                onClick={() => { setSearch(""); setDebouncedSearch(""); }}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
               >
                 <XMarkIcon className="h-4 w-4" />
@@ -146,7 +146,6 @@ export default function NGOs() {
             )}
           </div>
 
-          {/* Filter Toggle */}
           <button
             onClick={() => setShowFilters(!showFilters)}
             className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg border transition-all cursor-pointer ${
@@ -165,13 +164,11 @@ export default function NGOs() {
           </button>
         </div>
 
-        {/* Filter Dropdowns */}
         {showFilters && (
           <div className="flex items-center gap-3 pt-2 border-t border-gray-100 flex-wrap">
-            {/* Status */}
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as "all" | "verified" | "unverified")}
+              onChange={(e) => { setStatusFilter(e.target.value as "all" | "verified" | "unverified"); setCurrentPage(1); }}
               className="px-3 py-2 text-sm rounded-lg border border-gray-200 bg-gray-50 focus:border-blue-300 focus:ring-2 focus:ring-blue-100 outline-none cursor-pointer"
             >
               <option value="all">All Statuses</option>
@@ -179,31 +176,25 @@ export default function NGOs() {
               <option value="unverified">Unverified</option>
             </select>
 
-            {/* Category */}
             <select
               value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
+              onChange={(e) => { setCategoryFilter(e.target.value); setCurrentPage(1); }}
               className="px-3 py-2 text-sm rounded-lg border border-gray-200 bg-gray-50 focus:border-blue-300 focus:ring-2 focus:ring-blue-100 outline-none cursor-pointer"
             >
               <option value="all">All Categories</option>
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
+              {allCategories.map((cat) => (
+                <option key={cat} value={cat}>{cat}</option>
               ))}
             </select>
 
-            {/* City */}
             <select
               value={cityFilter}
-              onChange={(e) => setCityFilter(e.target.value)}
+              onChange={(e) => { setCityFilter(e.target.value); setCurrentPage(1); }}
               className="px-3 py-2 text-sm rounded-lg border border-gray-200 bg-gray-50 focus:border-blue-300 focus:ring-2 focus:ring-blue-100 outline-none cursor-pointer"
             >
               <option value="all">All Cities</option>
-              {cities.map((city) => (
-                <option key={city} value={city}>
-                  {city}
-                </option>
+              {allCities.map((city) => (
+                <option key={city} value={city}>{city}</option>
               ))}
             </select>
 
@@ -221,7 +212,7 @@ export default function NGOs() {
 
       {/* Table */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        {filtered.length === 0 ? (
+        {charities.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-gray-400">
             <BuildingOfficeIcon className="h-12 w-12 mb-3 text-gray-300" />
             <p className="text-sm font-medium text-gray-500">No organizations match your filters</p>
@@ -259,20 +250,19 @@ export default function NGOs() {
                   </tr>
                 </thead>
                 <tbody>
-                  {paginated.map((charity, idx) => (
+                  {charities.map((charity, idx) => (
                     <tr
                       key={charity.id}
                       className={`group transition-colors hover:bg-gray-50/80 ${
-                        idx !== paginated.length - 1 ? "border-b border-gray-50" : ""
+                        idx !== charities.length - 1 ? "border-b border-gray-50" : ""
                       }`}
                     >
-                      {/* Organization — combined logo + name + email */}
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="h-10 w-10 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
                             {charity.logoUrl ? (
                               <img
-                                src="test1.jpg"
+                                src={charity.logoUrl}
                                 alt={charity.name}
                                 className="h-full w-full object-cover"
                               />
@@ -340,10 +330,10 @@ export default function NGOs() {
                   </span>
                   {" – "}
                   <span className="font-medium text-gray-700">
-                    {Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)}
+                    {Math.min(currentPage * ITEMS_PER_PAGE, total)}
                   </span>
                   {" of "}
-                  <span className="font-medium text-gray-700">{filtered.length}</span>
+                  <span className="font-medium text-gray-700">{total}</span>
                 </p>
                 <div className="flex items-center gap-1">
                   <button
@@ -381,6 +371,7 @@ export default function NGOs() {
           </>
         )}
       </div>
+
     </div>
   );
 }
