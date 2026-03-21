@@ -18,6 +18,7 @@ import {
   ChartBarIcon as ChartBarIconSolid,
   Cog6ToothIcon as Cog6ToothIconSolid,
 } from "@heroicons/react/24/solid";
+import api from "@/lib/axios";
 
 export default function Sidebar() {
   const pathname: string = usePathname();
@@ -39,10 +40,11 @@ export default function Sidebar() {
 
   const handleLogout = async () => {
     try {
-      // Call your logout endpoint if you have one
-      // await api.post("/api/auth/logout");
+      // calling the logout API endpoint to clear the session cookie
+      await api.post("/api/auth/logout");
       router.replace("/login");
-    } catch {
+    } catch (error) {
+      console.error("Error logging out:", error);
       router.replace("/login");
     }
   };

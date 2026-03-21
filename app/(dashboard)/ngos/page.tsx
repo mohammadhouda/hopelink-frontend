@@ -9,6 +9,7 @@ import {
   BuildingOfficeIcon, XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { CheckCircleIcon as CheckCircleSolid } from "@heroicons/react/24/solid";
+import CustomDropdown, { DropdownOption } from "@/components/CustomDropdown";
 
 interface Charity {
   id: number;
@@ -31,7 +32,7 @@ export default function NGOs() {
 
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | "verified" | "unverified">("all");
+  const [statusFilter, setStatusFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [cityFilter, setCityFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
@@ -45,18 +46,13 @@ export default function NGOs() {
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
   const handleSearchChange = (value: string) => {
     setSearch(value);
-
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-    }
-    
+    if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       setDebouncedSearch(value);
       setCurrentPage(1);
     }, DEBOUNCE_MS);
   };
 
-  // Populate dropdown options once on mount (unfiltered)
   useEffect(() => {
     api.get("/api/charities").then((res) => {
       const all: Charity[] = res.data.data?.items ?? [];
@@ -86,13 +82,8 @@ export default function NGOs() {
     }
   }, [debouncedSearch, statusFilter, categoryFilter, cityFilter, currentPage]);
 
-  useEffect(() => {
-    fetchCharities();
-  }, [fetchCharities]);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [debouncedSearch, statusFilter, categoryFilter, cityFilter]);
+  useEffect(() => { fetchCharities(); }, [fetchCharities]);
+  useEffect(() => { setCurrentPage(1); }, [debouncedSearch, statusFilter, categoryFilter, cityFilter]);
 
   const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
   const activeFilterCount = [
@@ -108,6 +99,20 @@ export default function NGOs() {
     setSearch("");
     setDebouncedSearch("");
   };
+
+  const statusOptions: DropdownOption[] = [
+    { label: "All Statuses", value: "all" },
+    { label: "Verified", value: "verified" },
+    { label: "Unverified", value: "unverified" },
+  ];
+  const categoryOptions: DropdownOption[] = [
+    { label: "All Categories", value: "all" },
+    ...allCategories.map((cat) => ({ label: cat, value: cat })),
+  ];
+  const cityOptions: DropdownOption[] = [
+    { label: "All Cities", value: "all" },
+    ...allCities.map((city) => ({ label: city, value: city })),
+  ];
 
   if (loading) return <Loading />;
 
@@ -166,38 +171,24 @@ export default function NGOs() {
 
         {showFilters && (
           <div className="flex items-center gap-3 pt-2 border-t border-gray-100 flex-wrap">
-            <select
+            <CustomDropdown
               value={statusFilter}
-              onChange={(e) => { setStatusFilter(e.target.value as "all" | "verified" | "unverified"); setCurrentPage(1); }}
-              className="px-3 py-2 text-sm rounded-lg border border-gray-200 bg-gray-50 focus:border-blue-300 focus:ring-2 focus:ring-blue-100 outline-none cursor-pointer"
-            >
-              <option value="all">All Statuses</option>
-              <option value="verified">Verified</option>
-              <option value="unverified">Unverified</option>
-            </select>
-
-            <select
+              onChange={(v) => { setStatusFilter(v); setCurrentPage(1); }}
+              options={statusOptions}
+              className="w-40"
+            />
+            <CustomDropdown
               value={categoryFilter}
-              onChange={(e) => { setCategoryFilter(e.target.value); setCurrentPage(1); }}
-              className="px-3 py-2 text-sm rounded-lg border border-gray-200 bg-gray-50 focus:border-blue-300 focus:ring-2 focus:ring-blue-100 outline-none cursor-pointer"
-            >
-              <option value="all">All Categories</option>
-              {allCategories.map((cat) => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
-
-            <select
+              onChange={(v) => { setCategoryFilter(v); setCurrentPage(1); }}
+              options={categoryOptions}
+              className="w-44"
+            />
+            <CustomDropdown
               value={cityFilter}
-              onChange={(e) => { setCityFilter(e.target.value); setCurrentPage(1); }}
-              className="px-3 py-2 text-sm rounded-lg border border-gray-200 bg-gray-50 focus:border-blue-300 focus:ring-2 focus:ring-blue-100 outline-none cursor-pointer"
-            >
-              <option value="all">All Cities</option>
-              {allCities.map((city) => (
-                <option key={city} value={city}>{city}</option>
-              ))}
-            </select>
-
+              onChange={(v) => { setCityFilter(v); setCurrentPage(1); }}
+              options={cityOptions}
+              className="w-40"
+            />
             {activeFilterCount > 0 && (
               <button
                 onClick={clearFilters}
@@ -232,65 +223,42 @@ export default function NGOs() {
               <table className="min-w-full">
                 <thead>
                   <tr className="border-b border-gray-100">
-                    <th className="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                      Organization
-                    </th>
-                    <th className="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                      City
-                    </th>
-                    <th className="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                      Category
-                    </th>
-                    <th className="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3.5 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
+                    <th className="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Organization</th>
+                    <th className="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">City</th>
+                    <th className="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Category</th>
+                    <th className="px-6 py-3.5 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-3.5 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {charities.map((charity, idx) => (
                     <tr
                       key={charity.id}
-                      className={`group transition-colors hover:bg-gray-50/80 ${
-                        idx !== charities.length - 1 ? "border-b border-gray-50" : ""
-                      }`}
+                      className={`group transition-colors hover:bg-gray-50/80 ${idx !== charities.length - 1 ? "border-b border-gray-50" : ""}`}
                     >
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="h-10 w-10 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0">
                             {charity.logoUrl ? (
-                              <img
-                                src={charity.logoUrl}
-                                alt={charity.name}
-                                className="h-full w-full object-cover"
-                              />
+                              <img src={charity.logoUrl} alt={charity.name} className="h-full w-full object-cover" />
                             ) : (
                               <BuildingOfficeIcon className="h-5 w-5 text-gray-400" />
                             )}
                           </div>
                           <div className="min-w-0">
-                            <p className="text-sm font-medium text-gray-900 truncate">
-                              {charity.name}
-                            </p>
-                            <p className="text-xs text-gray-500 truncate">
-                              {charity.user.email}
-                            </p>
+                            <p className="text-sm font-medium text-gray-900 truncate">{charity.name}</p>
+                            <p className="text-xs text-gray-500 truncate">{charity.user.email}</p>
                           </div>
                         </div>
                       </td>
-
                       <td className="px-6 py-4">
                         <span className="text-sm text-gray-600">{charity.city}</span>
                       </td>
-
                       <td className="px-6 py-4">
                         <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-700">
                           {charity.category}
                         </span>
                       </td>
-
                       <td className="px-6 py-4">
                         {charity.isVerified ? (
                           <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700">
@@ -304,7 +272,6 @@ export default function NGOs() {
                           </span>
                         )}
                       </td>
-
                       <td className="px-6 py-4 text-right">
                         <button
                           onClick={() => router.push(`/charities/${charity.id}`)}
@@ -325,13 +292,9 @@ export default function NGOs() {
               <div className="flex items-center justify-between px-6 py-3.5 border-t border-gray-100">
                 <p className="text-xs text-gray-500">
                   Showing{" "}
-                  <span className="font-medium text-gray-700">
-                    {(currentPage - 1) * ITEMS_PER_PAGE + 1}
-                  </span>
+                  <span className="font-medium text-gray-700">{(currentPage - 1) * ITEMS_PER_PAGE + 1}</span>
                   {" – "}
-                  <span className="font-medium text-gray-700">
-                    {Math.min(currentPage * ITEMS_PER_PAGE, total)}
-                  </span>
+                  <span className="font-medium text-gray-700">{Math.min(currentPage * ITEMS_PER_PAGE, total)}</span>
                   {" of "}
                   <span className="font-medium text-gray-700">{total}</span>
                 </p>
@@ -343,21 +306,17 @@ export default function NGOs() {
                   >
                     <ChevronLeftIcon className="h-4 w-4" />
                   </button>
-
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                     <button
                       key={page}
                       onClick={() => setCurrentPage(page)}
                       className={`h-8 w-8 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
-                        page === currentPage
-                          ? "bg-blue-600 text-white"
-                          : "text-gray-600 hover:bg-gray-100"
+                        page === currentPage ? "bg-blue-600 text-white" : "text-gray-600 hover:bg-gray-100"
                       }`}
                     >
                       {page}
                     </button>
                   ))}
-
                   <button
                     onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                     disabled={currentPage === totalPages}
@@ -371,7 +330,6 @@ export default function NGOs() {
           </>
         )}
       </div>
-
     </div>
   );
 }
