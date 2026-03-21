@@ -5,8 +5,13 @@ const api = axios.create({
   withCredentials: true,
 });
 
+const authApi = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  withCredentials: true,
+});
+
 interface FailedRequest {
-  resolve: () => void;
+  resolve: (value?: unknown) => void;
   reject: (err: any) => void;
 }
 
@@ -26,7 +31,11 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Only attempt refresh once per request
+    // Skip retry for the refresh endpoint itself
+    if (originalRequest.url?.includes("/api/auth/refresh")) {
+      return Promise.reject(error);
+    }
+
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
@@ -38,7 +47,7 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        await api.post("/api/auth/refresh", {}, { withCredentials: true });
+        await authApi.post("/api/auth/refresh", {}, { withCredentials: true });
         processQueue(null);
         return api(originalRequest);
       } catch (err) {
@@ -50,7 +59,6 @@ api.interceptors.response.use(
       }
     }
 
-    // Any other error (or a 401 that already retried) — reject directly
     return Promise.reject(error);
   }
 );
