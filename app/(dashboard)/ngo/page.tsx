@@ -13,13 +13,13 @@ import CustomDropdown, { DropdownOption } from "@/components/CustomDropdown";
 
 interface Charity {
   id: number;
+  userId: number;
   name: string;
-  description: string;
   logoUrl: string;
   city: string;
   category: string;
   isVerified: boolean;
-  user: { id: number; email: string; isActive: boolean };
+  email: string;
 }
 
 const ITEMS_PER_PAGE = 8;
@@ -136,7 +136,7 @@ export default function NGOs() {
             <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Search by name, email, or city..."
+              placeholder="Search by name, or city"
               value={search}
               onChange={(e) => handleSearchChange(e.target.value)}
               className="w-full pl-10 pr-4 py-2.5 text-sm rounded-lg border border-gray-200 bg-gray-50 focus:bg-white focus:border-blue-300 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
@@ -247,7 +247,7 @@ export default function NGOs() {
                           </div>
                           <div className="min-w-0">
                             <p className="text-sm font-medium text-gray-900 truncate">{charity.name}</p>
-                            <p className="text-xs text-gray-500 truncate">{charity.user.email}</p>
+                            <p className="text-xs text-gray-500 truncate">{charity.email}</p>
                           </div>
                         </div>
                       </td>
@@ -274,7 +274,7 @@ export default function NGOs() {
                       </td>
                       <td className="px-6 py-4 text-right">
                         <button
-                          onClick={() => router.push(`/charities/${charity.id}`)}
+                          onClick={() => router.push(`/ngo/${charity.userId}`)}
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-all cursor-pointer opacity-0 group-hover:opacity-100"
                         >
                           <EyeIcon className="h-3.5 w-3.5" />

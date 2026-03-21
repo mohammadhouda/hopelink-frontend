@@ -31,7 +31,7 @@ export default function Sidebar() {
     activeIcon: React.ElementType;
   }[] = [
     { label: "Home", href: "/dashboard", icon: HomeIcon, activeIcon: HomeIconSolid },
-    { label: "NGOs", href: "/ngos", icon: BuildingOfficeIcon, activeIcon: BuildingOfficeIconSolid },
+    { label: "NGOs", href: "/ngo", icon: BuildingOfficeIcon, activeIcon: BuildingOfficeIconSolid },
     { label: "Users", href: "/users", icon: UsersIcon, activeIcon: UsersIconSolid },
     { label: "Requests", href: "/requests", icon: InboxStackIcon, activeIcon: InboxStackIconSolid },
     { label: "Reports", href: "/reports", icon: ChartBarIcon, activeIcon: ChartBarIconSolid },
