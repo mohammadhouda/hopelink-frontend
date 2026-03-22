@@ -338,14 +338,6 @@ export default function CharityDetail() {
                   ? <><PauseCircleIcon className="h-4 w-4" /> Suspend</>
                   : <><PlayCircleIcon className="h-4 w-4" /> Reactivate</>}
               </button>
-              <button
-                onClick={() => setModal("delete")}
-                disabled={!!actionLoading}
-                className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
-              >
-                <TrashIcon className="h-4 w-4" />
-                Delete
-              </button>
             </div>
           </div>
         </div>
@@ -500,20 +492,7 @@ export default function CharityDetail() {
             </div>
 
             <div className="pt-2 border-t border-gray-100">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Danger Zone</p>
               <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => setModal("suspend")}
-                  className={`flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg border transition-colors cursor-pointer ${
-                    charity.user.isActive
-                      ? "text-amber-700 bg-amber-50 border-amber-200 hover:bg-amber-100"
-                      : "text-blue-700 bg-blue-50 border-blue-200 hover:bg-blue-100"
-                  }`}
-                >
-                  {charity.user.isActive
-                    ? <><PauseCircleIcon className="h-4 w-4" /> Suspend Account</>
-                    : <><PlayCircleIcon className="h-4 w-4" /> Reactivate Account</>}
-                </button>
                 <button
                   onClick={() => setModal("delete")}
                   className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 rounded-lg transition-colors cursor-pointer"
