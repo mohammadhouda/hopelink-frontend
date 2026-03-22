@@ -120,7 +120,7 @@ function AddCharityModal({ onClose, onSuccess }: { onClose: () => void; onSucces
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
+    <div className="fixed inset-0 z-50 m-0 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
       <div className="bg-white rounded-2xl shadow-xl border border-gray-200 w-full max-w-md">
 
         {/* Header */}
