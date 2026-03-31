@@ -12,6 +12,7 @@ import {
   ChevronRightIcon,
 } from "@heroicons/react/24/outline";
 import api from "@/lib/axios";
+import CustomDropdown from "@/components/CustomDropdown";
 
 interface AuditEntry {
   id: number;
@@ -100,15 +101,17 @@ export default function AuditLog() {
           <FunnelIcon className="h-3.5 w-3.5" />
           Filter:
         </div>
-        <select value={filterAction} onChange={(e) => { setFilterAction(e.target.value); setPage(1); }}
-          className="px-2.5 py-1.5 text-xs border border-gray-200 rounded-lg bg-gray-50 focus:bg-white focus:border-blue-300 outline-none">
-          <option value="all">All actions</option>
-          <option value="created">Created</option>
-          <option value="updated">Updated</option>
-          <option value="deleted">Deleted</option>
-          <option value="approved">Approved</option>
-          <option value="declined">Declined</option>
-        </select>
+        
+        <CustomDropdown
+          options={[
+            { label: "All Actions", value: "all" },
+            ...uniqueActions.map((action) => ({ label: action.charAt(0).toUpperCase() + action.slice(1), value: action })),
+          ]}
+          value={filterAction}
+          onChange={(val) => { setFilterAction(val); setPage(1); }}
+        />
+
+
         {filterAction !== "all" && (
           <button onClick={resetFilters} className="text-[11px] text-blue-600 hover:text-blue-700 font-medium cursor-pointer flex items-center gap-1">
             <ArrowPathIcon className="h-3 w-3" /> Reset

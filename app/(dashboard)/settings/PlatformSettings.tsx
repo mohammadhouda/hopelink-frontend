@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { PhotoIcon } from "@heroicons/react/24/outline";
 import api from "@/lib/axios";
+import CustomDropdown from "@/components/CustomDropdown";
 
 const LANGUAGES = [
   { label: "English", value: "en" },
@@ -138,10 +139,7 @@ export default function PlatformSettings() {
         <div className="flex-1 space-y-3 max-w-md">
           <div>
             <label className="text-[11px] font-medium text-gray-500 block mb-1">Default Language</label>
-            <select value={form.defaultLanguage} onChange={(e) => update("defaultLanguage", e.target.value)}
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-gray-50 focus:bg-white focus:border-blue-300 outline-none">
-              {LANGUAGES.map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}
-            </select>
+            <CustomDropdown options={LANGUAGES} value={form.defaultLanguage} onChange={(val) => update("defaultLanguage", val)} />
           </div>
           <div>
             <label className="text-[11px] font-medium text-gray-500 block mb-1">Support Email</label>

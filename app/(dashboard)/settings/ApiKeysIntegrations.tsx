@@ -37,7 +37,6 @@ export default function ApiKeysIntegrations() {
   const [integrations, setIntegrations] = useState<Integration[]>([]);
   const [loadingKeys, setLoadingKeys] = useState(true);
   const [loadingIntegrations, setLoadingIntegrations] = useState(true);
-  const [showKey, setShowKey] = useState<number | null>(null);
   const [newlyCreatedKey, setNewlyCreatedKey] = useState<string | null>(null);
   const [newlyCreatedId, setNewlyCreatedId] = useState<number | null>(null);
   const [copied, setCopied] = useState<number | null>(null);
