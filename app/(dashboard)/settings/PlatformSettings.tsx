@@ -6,8 +6,6 @@ import CustomDropdown from "@/components/CustomDropdown";
 
 const LANGUAGES = [
   { label: "English", value: "en" },
-  { label: "Arabic", value: "ar" },
-  { label: "French", value: "fr" },
 ];
 
 interface PlatformData {

@@ -210,7 +210,7 @@ export default function ApiKeysIntegrations() {
       </div>
 
       {/* ── Integrations ── */}
-      <div className="space-y-4">
+      {/* <div className="space-y-4">
         <div>
           <h2 className="text-lg font-bold text-gray-900">Integrations</h2>
           <p className="text-sm text-gray-500 mt-1">Connect third-party services to the platform.</p>
@@ -250,7 +250,7 @@ export default function ApiKeysIntegrations() {
             ))}
           </div>
         )}
-      </div>
+      </div> */}
 
       {/* New key modal */}
       {showNewModal && (
