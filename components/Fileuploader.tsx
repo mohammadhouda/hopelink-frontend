@@ -21,7 +21,6 @@ export default function FileUploader({
   files,
   onChange,
   bucket = "documents",
-  maxFiles = 10,
 }: FileUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -71,7 +70,6 @@ export default function FileUploader({
           };
         }
 
-        // Update state after each file completes so UI is live
         onChange([...result]);
       })
     );

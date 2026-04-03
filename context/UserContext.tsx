@@ -6,6 +6,7 @@ interface User {
   id: number;
   email: string;
   name: string;
+  avatarUrl?: string;
 }
 
 interface UserContextType {
@@ -25,7 +26,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     try {
         
       // API call with HttpOnly cookie automatically sent
-      const res = await api.get("/api/admin/me");
+      const res = await api.get("/api/admin/profile");
       setUser(res.data);
     } catch (err) {
       console.error("Failed to fetch user", err);
