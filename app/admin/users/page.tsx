@@ -472,7 +472,7 @@ export default function Users() {
                       <td className="px-6 py-4 text-right">
                         <button
                           type="button"
-                          onClick={() => router.push(`/users/${user.id}`)}
+                          onClick={() => router.push(`/admin/users/${user.id}`)}
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 hover:bg-blue-50 hover:text-blue-700 rounded-lg transition-all cursor-pointer opacity-0 group-hover:opacity-100"
                         >
                           <EyeIcon className="h-3.5 w-3.5" />

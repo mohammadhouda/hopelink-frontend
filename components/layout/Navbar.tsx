@@ -264,7 +264,7 @@ export default function Navbar() {
                   {notifications.length > 0 && (
                     <div className="px-4 py-2.5 border-t border-gray-100 text-center">
                       <button
-                        onClick={() => { setNotifOpen(false); router.push("/notifications"); }}
+                        onClick={() => { setNotifOpen(false); router.push("/admin/notifications"); }}
                         className="text-xs text-blue-600 hover:text-blue-700 font-medium cursor-pointer"
                       >
                         View all notifications
@@ -307,11 +307,11 @@ export default function Navbar() {
                     <p className="text-sm font-medium text-gray-900">{user?.name || "Admin"}</p>
                     <p className="text-xs text-gray-500 truncate">{user?.email}</p>
                   </div>
-                  <button onClick={() => { setDropdownOpen(false); router.push("/profile"); }}
+                  <button onClick={() => { setDropdownOpen(false); router.push("/admin/profile"); }}
                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer">
                     <UserCircleIcon className="h-4 w-4 text-gray-400" /> Profile
                   </button>
-                  <button onClick={() => { setDropdownOpen(false); router.push("/settings"); }}
+                  <button onClick={() => { setDropdownOpen(false); router.push("/admin/settings"); }}
                     className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer">
                     <Cog6ToothIcon className="h-4 w-4 text-gray-400" /> Settings
                   </button>

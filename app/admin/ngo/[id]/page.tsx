@@ -178,7 +178,7 @@ export default function CharityDetail() {
     try {
       await api.delete(`/api/charities/${charity.userId}`);
       showToast("Charity deleted");
-      setTimeout(() => router.push("/ngo"), 1000);
+      setTimeout(() => router.push("/admin/ngo"), 1000);
     } catch {
       showToast("Failed to delete charity", "error");
     } finally {

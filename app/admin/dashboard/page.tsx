@@ -158,7 +158,7 @@ export default function DashboardPage() {
 
   const handleReview = (row: PendingAction) => {
     const tab = row.type === "Registration" ? "registration" : "verification";
-    router.push(`/requests?tab=${tab}&open=${row.id}`);
+    router.push(`/admin/requests?tab=${tab}&open=${row.id}`);
   };
 
   if (error) {

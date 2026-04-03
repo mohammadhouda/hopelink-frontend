@@ -52,13 +52,15 @@ Hope Link Admin Dashboard is a Next.js App Router application that serves as the
 
 ## Project Structure
 
+The app hosts multiple portals under path prefixes in a single Next.js instance. When a production domain is available, a middleware layer will rewrite subdomains (`admin.hope.org` → `/admin/...`) transparently.
+
 ```
 admin-frontend/
 ├── app/                        # Next.js App Router
-│   ├── (auth)/                 # Public auth routes
-│   │   ├── login/              # Login page
+│   ├── (public)/               # No URL prefix — public/auth pages
+│   │   ├── login/              # Login page  →  /login
 │   │   └── layout.tsx
-│   ├── (dashboard)/            # Protected routes (require auth)
+│   ├── admin/                  # Admin portal  →  /admin/...
 │   │   ├── dashboard/          # Main dashboard & metrics
 │   │   ├── ngo/                # NGO list & detail pages
 │   │   │   └── [id]/
@@ -69,7 +71,11 @@ admin-frontend/
 │   │   ├── reports/            # Analytics & reporting
 │   │   ├── profile/            # Admin profile management
 │   │   ├── settings/           # Platform settings & sub-pages
-│   │   └── layout.tsx
+│   │   └── layout.tsx          # Protected layout (Sidebar + Navbar)
+│   ├── charity/                # Charity portal  →  /charity/... (skeleton)
+│   │   └── dashboard/
+│   ├── user/                   # User portal  →  /user/... (skeleton)
+│   │   └── dashboard/
 │   ├── globals.css
 │   └── layout.tsx
 │
@@ -91,7 +97,6 @@ admin-frontend/
 │   └── axios.ts                # Axios instance with auth interceptors
 │
 ├── public/                     # Static assets
-├── proxy.ts                    # Next.js middleware (auth redirect)
 ├── next.config.ts
 ├── tsconfig.json
 └── package.json
@@ -234,16 +239,18 @@ The settings panel is organized into six modules:
 | Route | Description |
 |---|---|
 | `/login` | Admin sign-in page |
-| `/dashboard` | Main metrics and overview |
-| `/ngo` | NGO/charity listing |
-| `/ngo/[id]` | Individual NGO detail |
-| `/users` | User listing and management |
-| `/users/[id]` | Individual user detail |
-| `/requests` | Registration & verification request review |
-| `/notifications` | Notification center |
-| `/reports` | Analytics and reporting |
-| `/profile` | Admin profile settings |
-| `/settings` | Platform configuration |
+| `/admin/dashboard` | Main metrics and overview |
+| `/admin/ngo` | NGO/charity listing |
+| `/admin/ngo/[id]` | Individual NGO detail |
+| `/admin/users` | User listing and management |
+| `/admin/users/[id]` | Individual user detail |
+| `/admin/requests` | Registration & verification request review |
+| `/admin/notifications` | Notification center |
+| `/admin/reports` | Analytics and reporting |
+| `/admin/profile` | Admin profile settings |
+| `/admin/settings` | Platform configuration |
+| `/charity/dashboard` | Charity portal (skeleton) |
+| `/user/dashboard` | User portal (skeleton) |
 
 ---
 
@@ -252,7 +259,7 @@ The settings panel is organized into six modules:
 Authentication is session-based using **HttpOnly cookies**:
 
 - Login submits credentials to `POST /api/auth/login` which sets an `access_token` cookie
-- The Next.js middleware (`proxy.ts`) intercepts all requests and redirects unauthenticated users to `/login`
+- The `ProtectedRoute` component and `UserContext` guard all `/admin/` pages client-side
 - The `ProtectedRoute` component wraps all dashboard layouts as a client-side guard
 - The Axios instance includes a **response interceptor** that:
   - Catches `401 Unauthorized` responses

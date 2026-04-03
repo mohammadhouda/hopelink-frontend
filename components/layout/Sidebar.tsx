@@ -30,12 +30,12 @@ export default function Sidebar() {
     icon: React.ElementType;
     activeIcon: React.ElementType;
   }[] = [
-    { label: "Home", href: "/dashboard", icon: HomeIcon, activeIcon: HomeIconSolid },
-    { label: "NGOs", href: "/ngo", icon: BuildingOfficeIcon, activeIcon: BuildingOfficeIconSolid },
-    { label: "Users", href: "/users", icon: UsersIcon, activeIcon: UsersIconSolid },
-    { label: "Requests", href: "/requests", icon: InboxStackIcon, activeIcon: InboxStackIconSolid },
-    { label: "Reports", href: "/reports", icon: ChartBarIcon, activeIcon: ChartBarIconSolid },
-    { label: "Settings", href: "/settings", icon: Cog6ToothIcon, activeIcon: Cog6ToothIconSolid },
+    { label: "Home", href: "/admin/dashboard", icon: HomeIcon, activeIcon: HomeIconSolid },
+    { label: "NGOs", href: "/admin/ngo", icon: BuildingOfficeIcon, activeIcon: BuildingOfficeIconSolid },
+    { label: "Users", href: "/admin/users", icon: UsersIcon, activeIcon: UsersIconSolid },
+    { label: "Requests", href: "/admin/requests", icon: InboxStackIcon, activeIcon: InboxStackIconSolid },
+    { label: "Reports", href: "/admin/reports", icon: ChartBarIcon, activeIcon: ChartBarIconSolid },
+    { label: "Settings", href: "/admin/settings", icon: Cog6ToothIcon, activeIcon: Cog6ToothIconSolid },
   ];
 
   const handleLogout = async () => {
