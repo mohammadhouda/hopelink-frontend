@@ -731,7 +731,7 @@ export default function Requests() {
               ? modal.tab === "registration"
                 ? "A charity account will be created and a temporary password generated."
                 : "The charity will be marked as verified."
-              : "The requester will not be notified automatically."
+              : "The requester will be notified automatically."
           }
           confirmLabel={modal.type === "approve" ? "Yes, approve" : "Decline"}
           confirmClass={
