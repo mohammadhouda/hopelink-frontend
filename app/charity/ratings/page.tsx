@@ -28,6 +28,7 @@ interface EndedOpportunity {
 
 interface ApprovedVolunteer {
   applicationId: number;
+  volunteerId: number;
   volunteerName: string;
   volunteerEmail: string;
 }
@@ -103,37 +104,40 @@ const fetchRatings = () => {
     setShowForm(true);
   };
 
-  const onOppChange = async (oppId: string) => {
-    setSelectedOpp(oppId);
-    setSelectedVol("");
-    if (!oppId) { setVolunteers([]); return; }
-    setLoadingVols(true);
-    const res = await charityApi.get(`/api/charity/applications?opportunityId=${oppId}&status=APPROVED`);
-    const apps = res.data?.data?.applications || [];
-    setVolunteers(apps.map((a: any) => ({
-      applicationId: a.id,
-      volunteerName: a.user.name,
-      volunteerEmail: a.user.email,
-    })));
-    setLoadingVols(false);
-  };
+const onOppChange = async (oppId: string) => {
+  setSelectedOpp(oppId);
+  setSelectedVol("");
+  if (!oppId) { setVolunteers([]); return; }
+  setLoadingVols(true);
+  const res = await charityApi.get(`/api/charity/applications?opportunityId=${oppId}&status=APPROVED`);
+  const apps = res.data?.data?.applications || [];
+  setVolunteers(apps.map((a: any) => ({
+    applicationId: a.id,
+    volunteerId: a.userId,
+    volunteerName: a.user.name,
+    volunteerEmail: a.user.email,
+  })));
+  setLoadingVols(false);
+};
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedVol || !selectedOpp) return;
-    setSubmitting(true);
-    try {
-      await charityApi.post("/api/charity/ratings", {
-        applicationId: parseInt(selectedVol),
-        score,
-        comment: comment || undefined,
-      });
-      setShowForm(false);
-      fetchRatings();
-    } finally {
-      setSubmitting(false);
-    }
-  };
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!selectedVol || !selectedOpp) return;
+  setSubmitting(true);
+  try {
+    const volunteer = volunteers.find((v) => String(v.applicationId) === selectedVol);
+    await charityApi.post("/api/charity/ratings", {
+      volunteerId: volunteer?.volunteerId,
+      opportunityId: parseInt(selectedOpp),
+      rating: score,
+      comment: comment || undefined,
+    });
+    setShowForm(false);
+    fetchRatings();
+  } finally {
+    setSubmitting(false);
+  }
+};
 
 const avg = ratings.length
   ? (ratings.reduce((s, r) => s + r.rating, 0) / ratings.length).toFixed(1)
