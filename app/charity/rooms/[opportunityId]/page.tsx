@@ -3,11 +3,11 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { io, Socket } from "socket.io-client";
 import {
-  ArrowLeftIcon, PaperAirplaneIcon, UsersIcon, LockClosedIcon,
-  XMarkIcon,
+  ArrowLeftIcon, PaperAirplaneIcon, UsersIcon, LockClosedIcon, XMarkIcon,
 } from "@heroicons/react/24/outline";
 import charityApi from "@/lib/charityAxios";
-import { useCharity } from "@/context/CharityContext";
+
+/* ── types ──────────────────────────────────────────────────────────── */
 
 interface Message {
   id: number;
@@ -18,42 +18,68 @@ interface Message {
   sender: {
     id: number;
     name: string;
-    baseProfile?: {
-      avatarUrl?: string;
-    };
+    baseProfile?: { avatarUrl?: string };
   };
 }
 
 interface RoomMember {
-  id: number;
-  name: string;
+  id: number;     // RoomMember row id
+  userId: number;
   role: "ADMIN" | "MEMBER";
+  joinedAt: string;
+  user: {
+    id: number;
+    name: string;
+    email: string;
+    baseProfile?: { avatarUrl?: string };
+  };
 }
 
 interface RoomInfo {
+  id: number;
   opportunityId: number;
-  opportunityTitle: string;
   status: "ACTIVE" | "CLOSED";
+  opportunity: { id: number; title: string; status: string; endDate: string };
   members: RoomMember[];
 }
 
-interface TypingUser {
-  userId: number;
-  name: string;
+interface TypingUser { userId: number; name: string }
+
+/* ── helpers ─────────────────────────────────────────────────────────── */
+
+// helper at the top of your component or in a utils file
+function dedupeMessages(msgs: Message[]): Message[] {
+  const seen = new Set<number>();
+  return msgs.filter((m) => {
+    if (seen.has(m.id)) return false;
+    seen.add(m.id);
+    return true;
+  });
 }
 
 function timeLabel(dateStr: string) {
   const d = new Date(dateStr);
-  const now = new Date();
-  const isToday = d.toDateString() === now.toDateString();
+  const isToday = d.toDateString() === new Date().toDateString();
   if (isToday) return d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" });
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
 }
 
+/** Decode a JWT payload without verifying the signature (client-side id extraction only). */
+function decodeJwtId(token: string): number | null {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return typeof payload.id === "number" ? payload.id : null;
+  } catch {
+    return null;
+  }
+}
+
+/* ── component ───────────────────────────────────────────────────────── */
+
 export default function ChatRoomPage() {
   const { opportunityId } = useParams<{ opportunityId: string }>();
   const router = useRouter();
-  const { charity } = useCharity();
+
   const [room, setRoom] = useState<RoomInfo | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,44 +87,53 @@ export default function ChatRoomPage() {
   const [showMembers, setShowMembers] = useState(false);
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
   const [closing, setClosing] = useState(false);
-  const socketRef = useRef<Socket | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-  const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+
+  const [myUserId, setMyUserId] = useState<number | null>(null);
+
+  const socketRef = useRef<Socket | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
-  // Fetch room info + initial messages
-    useEffect(() => {
-      Promise.all([
-        charityApi.get(`/api/charity/rooms/${opportunityId}`),
-        charityApi.get(`/api/charity/rooms/${opportunityId}/messages?page=1&limit=30`),
-      ]).then(([rRes, mRes]) => {
-        const roomData = rRes.data?.data || rRes.data;
-        setRoom(roomData);
-        const msgData = mRes.data?.data || mRes.data;
-        const msgs = msgData.messages || [];
-        setMessages(msgs.reverse());
-        const total = msgData.total || 0;
-        const currentPage = msgData.page || 1;
-        const limit = msgData.limit || 30;
-        setHasMore(currentPage * limit < total);
-      }).finally(() => setLoading(false));
-    }, [opportunityId]);
-  // Connect socket
-  useEffect(() => {
-    if (!charity) return;
+  /* ── REST: initial data ───────────────────────────────────────────── */
 
-    // Get token from cookie via API call
+  useEffect(() => {
+    Promise.all([
+      charityApi.get(`/api/charity/rooms/${opportunityId}`),
+      charityApi.get(`/api/charity/rooms/${opportunityId}/messages?page=1&limit=30`),
+    ]).then(([rRes, mRes]) => {
+      setRoom(rRes.data?.data || rRes.data);
+
+      const msgData = mRes.data?.data || mRes.data;
+      const msgs: Message[] = msgData.messages ?? [];
+
+      setMessages(dedupeMessages(msgs));
+
+      const total = msgData.total ?? 0;
+      const limit = msgData.limit ?? 30;
+      setHasMore(1 * limit < total);
+    }).finally(() => setLoading(false));
+  }, [opportunityId]);
+
+  /* ── Socket ───────────────────────────────────────────────────────── */
+
+  useEffect(() => {
     const connectSocket = async () => {
       try {
-        const tokenRes = await charityApi.get<{ token: string }>("/api/auth/socket-token");
+        const tokenRes = await charityApi.get("/api/auth/socket-token");
+        const token: string = tokenRes.data?.data?.token ?? tokenRes.data?.token ?? "";
+
+        const uid = decodeJwtId(token);
+        if (uid) setMyUserId(uid);
+
         const socket = io(process.env.NEXT_PUBLIC_API_URL ?? "", {
-          auth: { token: tokenRes.data.token },
+          auth: { token },
           transports: ["websocket"],
         });
         socketRef.current = socket;
@@ -108,84 +143,108 @@ export default function ChatRoomPage() {
         });
 
         socket.on("new_message", (msg: Message) => {
-          setMessages((prev) => [...prev, msg]);
+          setMessages((prev) => {
+            if (prev.some((m) => m.id === msg.id)) return prev; // already have it
+            return [...prev, msg];
+          });
           setTimeout(scrollToBottom, 50);
         });
 
-        socket.on("user_joined", (_data: { userId: number; name: string }) => {
-          // Optionally refresh members
-        });
-
-        socket.on("user_typing", (data: { userId: number; name: string }) => {
+        socket.on("user_typing", (data: { userId: number; name: string; isTyping: boolean }) => {
           setTypingUsers((prev) => {
-            if (prev.some((u) => u.userId === data.userId)) return prev;
-            return [...prev, { userId: data.userId, name: data.name }];
+            if (data.isTyping) {
+              return prev.some((u) => u.userId === data.userId)
+                ? prev
+                : [...prev, { userId: data.userId, name: data.name }];
+            }
+            return prev.filter((u) => u.userId !== data.userId);
           });
-          setTimeout(() => {
-            setTypingUsers((prev) => prev.filter((u) => u.userId !== data.userId));
-          }, 3000);
+
+          // Safety-net auto-clear in case isTyping:false is never received
+          if (data.isTyping) {
+            setTimeout(() => {
+              setTypingUsers((prev) => prev.filter((u) => u.userId !== data.userId));
+            }, 4000);
+          }
         });
 
         socket.on("error", (err: { message: string }) => {
           console.error("Socket error:", err.message);
         });
       } catch {
-        // Fallback: no socket token endpoint — skip real-time
+        // /api/auth/socket-token not yet created — real-time disabled gracefully
       }
     };
 
     connectSocket();
 
     return () => {
-      socketRef.current?.emit("leave_room", { opportunityId: parseInt(opportunityId) });
+      socketRef.current?.emit("leave_room");
       socketRef.current?.disconnect();
     };
-  }, [charity, opportunityId, scrollToBottom]);
+  }, [opportunityId, scrollToBottom]);
 
-  // Scroll on initial load
+  // Scroll to bottom after initial load
   useEffect(() => {
     if (!loading) setTimeout(scrollToBottom, 100);
   }, [loading, scrollToBottom]);
+
+  /* ── load older messages ─────────────────────────────────────────── */
 
   const loadMore = async () => {
     if (loadingMore || !hasMore) return;
     setLoadingMore(true);
     const nextPage = page + 1;
     const res = await charityApi.get(
-      `/api/charity/rooms/${opportunityId}/messages?page=${nextPage}&limit=30`
+      `/api/charity/rooms/${opportunityId}/messages?page=${nextPage}&limit=30`,
     );
     const msgData = res.data?.data || res.data;
-    const msgs = msgData.messages || [];
-    setMessages((prev) => [...msgs.reverse(), ...prev]);
-    const total = msgData.total || 0;
-    const limit = msgData.limit || 30;
+    const msgs: Message[] = msgData.messages ?? [];
+
+    setMessages((prev) => dedupeMessages([...msgs, ...prev]));
+
+    const total = msgData.total ?? 0;
+    const limit = msgData.limit ?? 30;
     setHasMore(nextPage * limit < total);
     setPage(nextPage);
     setLoadingMore(false);
   };
 
+  /* ── send message ────────────────────────────────────────────────── */
+
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
     if (!text.trim() || !socketRef.current) return;
-    socketRef.current.emit("send_message", {
-      opportunityId: parseInt(opportunityId),
-      content: text.trim(),
-    });
+
+    socketRef.current.emit("send_message", { content: text.trim() });
     setText("");
   };
 
+  /* ── typing indicator ────────────────────────────────────────────── */
+
   const handleTyping = () => {
-    socketRef.current?.emit("typing", { opportunityId: parseInt(opportunityId) });
+    
+    socketRef.current?.emit("typing", { isTyping: true });
     if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+    typingTimerRef.current = setTimeout(() => {
+      socketRef.current?.emit("typing", { isTyping: false });
+    }, 2000);
   };
+
+  /* ── close room ──────────────────────────────────────────────────── */
 
   const handleCloseRoom = async () => {
     if (!confirm("Close this chat room? Volunteers will no longer be able to send messages.")) return;
     setClosing(true);
-    await charityApi.patch(`/api/charity/rooms/${opportunityId}/close`);
-    setRoom((prev) => prev ? { ...prev, status: "CLOSED" } : prev);
-    setClosing(false);
+    try {
+      await charityApi.patch(`/api/charity/rooms/${opportunityId}/close`);
+      setRoom((prev) => prev ? { ...prev, status: "CLOSED" } : prev);
+    } finally {
+      setClosing(false);
+    }
   };
+
+  /* ── render ──────────────────────────────────────────────────────── */
 
   if (loading) {
     return (
@@ -214,8 +273,11 @@ export default function ChatRoomPage() {
             <ArrowLeftIcon className="h-4 w-4" />
           </button>
           <div>
-            <h1 className="text-sm font-bold text-gray-900">{room.opportunityTitle}</h1>
-            <p className="text-xs text-gray-400">{room.members.length} member{room.members.length !== 1 ? "s" : ""}</p>
+            
+            <h1 className="text-sm font-bold text-gray-900">{room.opportunity.title}</h1>
+            <p className="text-xs text-gray-400">
+              {room.members.length} member{room.members.length !== 1 ? "s" : ""}
+            </p>
           </div>
           {isClosed && (
             <span className="text-[10px] font-semibold text-gray-500 bg-gray-100 border border-gray-200 px-2 py-0.5 rounded-full flex items-center gap-1">
@@ -225,7 +287,7 @@ export default function ChatRoomPage() {
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setShowMembers(!showMembers)}
+            onClick={() => setShowMembers((v) => !v)}
             className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
           >
             <UsersIcon className="h-4 w-4" /> Members
@@ -245,7 +307,7 @@ export default function ChatRoomPage() {
       <div className="flex flex-1 overflow-hidden">
         {/* Messages area */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Load more */}
+          {/* Load older messages */}
           <div className="flex justify-center py-2 bg-gray-50 border-b border-gray-100">
             {hasMore ? (
               <button
@@ -272,10 +334,11 @@ export default function ChatRoomPage() {
               </div>
             )}
             {messages.map((msg) => {
-              const isMe = msg.senderId === (charity as { id?: number })?.id;
+              
+              const isMe = myUserId !== null && msg.senderId === myUserId;
               return (
                 <div key={msg.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
-                  <div className={`max-w-[70%] ${isMe ? "items-end" : "items-start"} flex flex-col gap-1`}>
+                  <div className={`max-w-[70%] flex flex-col gap-1 ${isMe ? "items-end" : "items-start"}`}>
                     {!isMe && (
                       <span className="text-[11px] font-semibold text-gray-500 px-1">
                         {msg.sender.name}
@@ -299,7 +362,8 @@ export default function ChatRoomPage() {
               <div className="flex justify-start">
                 <div className="bg-white border border-gray-200 rounded-2xl rounded-tl-sm px-4 py-2.5 flex items-center gap-1.5">
                   <span className="text-xs text-gray-500">
-                    {typingUsers.map((u) => u.name).join(", ")} {typingUsers.length === 1 ? "is" : "are"} typing
+                    {typingUsers.map((u) => u.name).join(", ")}{" "}
+                    {typingUsers.length === 1 ? "is" : "are"} typing
                   </span>
                   <span className="flex gap-0.5">
                     {[0, 1, 2].map((i) => (
@@ -347,7 +411,9 @@ export default function ChatRoomPage() {
         {showMembers && (
           <div className="w-64 bg-white border-l border-gray-200 flex flex-col">
             <div className="px-4 py-3.5 border-b border-gray-100 flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-gray-900">Members</h3>
+              <h3 className="text-sm font-semibold text-gray-900">
+                Members <span className="text-gray-400 font-normal">({room.members.length})</span>
+              </h3>
               <button
                 onClick={() => setShowMembers(false)}
                 className="p-1 rounded text-gray-400 hover:bg-gray-100 cursor-pointer"
@@ -358,13 +424,21 @@ export default function ChatRoomPage() {
             <div className="flex-1 overflow-y-auto p-3 space-y-1">
               {room.members.map((m) => (
                 <div key={m.id} className="flex items-center gap-2.5 px-2 py-2 rounded-lg hover:bg-gray-50">
-                  <div className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-semibold ${
+                  <div className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-semibold shrink-0 ${
                     m.role === "ADMIN" ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-600"
                   }`}>
-                    {m.id}
+                    {m.user.baseProfile?.avatarUrl ? (
+                      <img
+                        src={m.user.baseProfile.avatarUrl}
+                        alt={m.user.name}
+                        className="h-8 w-8 rounded-full object-cover"
+                      />
+                    ) : (
+                      m.user.name.charAt(0).toUpperCase()
+                    )}
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-900 leading-tight">{m.name}</p>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-gray-900 leading-tight truncate">{m.user.name}</p>
                     <p className={`text-[10px] font-medium ${m.role === "ADMIN" ? "text-emerald-600" : "text-gray-400"}`}>
                       {m.role}
                     </p>
