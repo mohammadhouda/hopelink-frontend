@@ -10,6 +10,7 @@ import {
   DocumentCheckIcon,
   ChatBubbleLeftRightIcon,
   UserCircleIcon,
+  BellIcon,
   ArrowRightStartOnRectangleIcon,
 } from "@heroicons/react/24/outline";
 import {
@@ -21,18 +22,20 @@ import {
   DocumentCheckIcon as DocumentCheckIconSolid,
   ChatBubbleLeftRightIcon as ChatIconSolid,
   UserCircleIcon as UserCircleIconSolid,
+  BellIcon as BellIconSolid,
 } from "@heroicons/react/24/solid";
 import charityApi from "@/lib/charityAxios";
 
 const menuItems = [
-  { label: "Dashboard", href: "/charity/dashboard", icon: HomeIcon, activeIcon: HomeIconSolid },
-  { label: "Projects", href: "/charity/projects", icon: FolderIcon, activeIcon: FolderIconSolid },
-  { label: "Opportunities", href: "/charity/opportunities", icon: CalendarIcon, activeIcon: CalendarIconSolid },
-  { label: "Applications", href: "/charity/applications", icon: ClipboardDocumentListIcon, activeIcon: ClipboardIconSolid },
-  { label: "Ratings", href: "/charity/ratings", icon: StarIcon, activeIcon: StarIconSolid },
-  { label: "Certificates", href: "/charity/certificates", icon: DocumentCheckIcon, activeIcon: DocumentCheckIconSolid },
-  { label: "Chat Rooms", href: "/charity/rooms", icon: ChatBubbleLeftRightIcon, activeIcon: ChatIconSolid },
-  { label: "Profile", href: "/charity/profile", icon: UserCircleIcon, activeIcon: UserCircleIconSolid },
+  { label: "Dashboard",     href: "/charity/dashboard",      icon: HomeIcon,                  activeIcon: HomeIconSolid },
+  { label: "Projects",      href: "/charity/projects",       icon: FolderIcon,                activeIcon: FolderIconSolid },
+  { label: "Opportunities", href: "/charity/opportunities",  icon: CalendarIcon,              activeIcon: CalendarIconSolid },
+  { label: "Applications",  href: "/charity/applications",   icon: ClipboardDocumentListIcon, activeIcon: ClipboardIconSolid },
+  { label: "Ratings",       href: "/charity/ratings",        icon: StarIcon,                  activeIcon: StarIconSolid },
+  { label: "Certificates",  href: "/charity/certificates",   icon: DocumentCheckIcon,         activeIcon: DocumentCheckIconSolid },
+  { label: "Chat Rooms",    href: "/charity/rooms",          icon: ChatBubbleLeftRightIcon,   activeIcon: ChatIconSolid },
+  { label: "Notifications", href: "/charity/notifications",  icon: BellIcon,                  activeIcon: BellIconSolid },
+  { label: "Profile",       href: "/charity/profile",        icon: UserCircleIcon,            activeIcon: UserCircleIconSolid },
 ];
 
 export default function CharitySidebar() {
@@ -66,7 +69,7 @@ export default function CharitySidebar() {
               }`}
             >
               <Icon
-                className={`h-5 w-5 flex-shrink-0 ${
+                className={`h-5 w-5 shrink-0 ${
                   isActive ? "text-emerald-700" : "text-gray-400"
                 }`}
               />
@@ -81,7 +84,7 @@ export default function CharitySidebar() {
           onClick={handleLogout}
           className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-all duration-150 ease-in-out cursor-pointer"
         >
-          <ArrowRightStartOnRectangleIcon className="h-5 w-5 flex-shrink-0" />
+          <ArrowRightStartOnRectangleIcon className="h-5 w-5 shrink-0" />
           Logout
         </button>
       </div>

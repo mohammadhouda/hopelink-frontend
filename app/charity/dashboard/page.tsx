@@ -12,6 +12,7 @@ import {
   StarIcon,
   DocumentCheckIcon,
   FolderIcon,
+  CheckCircleIcon,
 } from "@heroicons/react/24/outline";
 import charityApi from "@/lib/charityAxios";
 
@@ -142,50 +143,65 @@ export default function CharityDashboard() {
       </div>
 
       {/* Rating + projects summary */}
-      {!loading && data && (
-        <div className="bg-white rounded-xl border border-gray-200 p-5 flex flex-wrap items-center gap-6">
-          <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center">
-              <StarIcon className="h-6 w-6 text-amber-500" />
-            </div>
-            <div>
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Avg Rating</p>
-              <p className="text-2xl font-bold text-gray-900">
-                {data.volunteers.averageRating ? data.volunteers.averageRating.toFixed(1) : "—"}
-              </p>
-            </div>
-          </div>
-          <div className="h-10 w-px bg-gray-200" />
-          <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-xl bg-violet-50 border border-violet-200 flex items-center justify-center">
-              <FolderIcon className="h-6 w-6 text-violet-500" />
-            </div>
-            <div>
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Projects</p>
-              <p className="text-2xl font-bold text-gray-900">{data.projects.total}</p>
-            </div>
-          </div>
-          <div className="h-10 w-px bg-gray-200" />
-          <div className="flex gap-6">
-            <div>
-              <p className="text-xs text-gray-500">Total ratings</p>
-              <p className="text-lg font-semibold text-gray-900">{data.volunteers.totalRatings}</p>
-            </div>
-            <div>
-              <p className="text-xs text-gray-500">Approved</p>
-              <p className="text-lg font-semibold text-emerald-600">{data.applications.approved}</p>
-            </div>
-            <div>
-              <p className="text-xs text-gray-500">Declined</p>
-              <p className="text-lg font-semibold text-red-500">{data.applications.declined}</p>
-            </div>
-            <div>
-              <p className="text-xs text-gray-500">Last 30 days</p>
-              <p className="text-lg font-semibold text-gray-900">{data.applications.last30Days}</p>
-            </div>
-          </div>
+{!loading && data && (
+  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    {/* Avg Rating */}
+    <div className="group relative bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-md hover:border-gray-200 transition-all duration-200">
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">Avg Rating</span>
+        <div className="h-8 w-8 rounded-lg bg-amber-50 flex items-center justify-center">
+          <StarIcon className="h-4 w-4 text-amber-500" />
         </div>
-      )}
+      </div>
+      <p className="text-3xl font-semibold text-gray-900 tracking-tight">
+        {data.volunteers.averageRating ? data.volunteers.averageRating.toFixed(1) : "—"}
+      </p>
+      <p className="text-xs text-gray-400 mt-1">
+        from {data.volunteers.totalRatings} ratings
+      </p>
+    </div>
+
+    {/* Projects */}
+    <div className="group relative bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-md hover:border-gray-200 transition-all duration-200">
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">Projects</span>
+        <div className="h-8 w-8 rounded-lg bg-violet-50 flex items-center justify-center">
+          <FolderIcon className="h-4 w-4 text-violet-500" />
+        </div>
+      </div>
+      <p className="text-3xl font-semibold text-gray-900 tracking-tight">{data.projects.total}</p>
+      <p className="text-xs text-gray-400 mt-1">total projects</p>
+    </div>
+
+    {/* Approved */}
+    <div className="group relative bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-md hover:border-gray-200 transition-all duration-200">
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">Approved</span>
+        <div className="h-8 w-8 rounded-lg bg-emerald-50 flex items-center justify-center">
+          <CheckCircleIcon className="h-4 w-4 text-emerald-500" />
+        </div>
+      </div>
+      <p className="text-3xl font-semibold text-emerald-600 tracking-tight">{data.applications.approved}</p>
+      <div className="flex items-center gap-1.5 mt-1">
+        <span className="inline-flex items-center text-xs text-gray-400">
+          <span className="text-red-400 font-medium">{data.applications.declined}</span>&nbsp;declined
+        </span>
+      </div>
+    </div>
+
+    {/* Last 30 Days */}
+    <div className="group relative bg-white rounded-2xl border border-gray-100 p-5 hover:shadow-md hover:border-gray-200 transition-all duration-200">
+      <div className="flex items-center justify-between mb-3">
+        <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">Last 30 Days</span>
+        <div className="h-8 w-8 rounded-lg bg-blue-50 flex items-center justify-center">
+          <CalendarIcon className="h-4 w-4 text-blue-500" />
+        </div>
+      </div>
+      <p className="text-3xl font-semibold text-gray-900 tracking-tight">{data.applications.last30Days}</p>
+      <p className="text-xs text-gray-400 mt-1">applications</p>
+    </div>
+  </div>
+)}
 
       {/* Charts */}
       <div className="grid grid-cols-5 gap-4">
