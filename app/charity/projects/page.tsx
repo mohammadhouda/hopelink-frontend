@@ -225,7 +225,7 @@ const handleDelete = async () => {
                   options={[
                     { value: "ACTIVE", label: "Active" },
                     { value: "PAUSED", label: "Paused" },
-                    { value: "COMPLETED", label: "Completed" },
+                    { value: "CLOSED", label: "Closed" },
                   ]}
                 />
               </FormField>

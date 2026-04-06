@@ -34,6 +34,7 @@ interface EndedOpportunity {
 
 interface ApprovedVolunteer {
   applicationId: number;
+  volunteerId: number;
   volunteerName: string;
 }
 
@@ -82,34 +83,37 @@ export default function CertificatesPage() {
     setShowBulk(true);
   };
 
-  const onOppChange = async (oppId: string) => {
-    setSelectedOpp(oppId);
-    setSelectedVol("");
-    if (!oppId) { setVolunteers([]); return; }
-    setLoadingVols(true);
-    const res = await charityApi.get(`/api/charity/applications?opportunityId=${oppId}&status=APPROVED`);
-    const apps = res.data?.data?.applications || [];
-    setVolunteers(apps.map((a: { id: number; user: { name: string } }) => ({
-      applicationId: a.id,
-      volunteerName: a.user.name,
-    })));
-    setLoadingVols(false);
-  };
+const onOppChange = async (oppId: string) => {
+  setSelectedOpp(oppId);
+  setSelectedVol("");
+  if (!oppId) { setVolunteers([]); return; }
+  setLoadingVols(true);
+  const res = await charityApi.get(`/api/charity/applications?opportunityId=${oppId}&status=APPROVED`);
+  const apps = res.data?.data?.applications || [];
+  setVolunteers(apps.map((a: { id: number; userId: number; user: { name: string } }) => ({
+    applicationId: a.id,
+    volunteerId: a.userId,
+    volunteerName: a.user.name,
+  })));
+  setLoadingVols(false);
+};
 
-  const handleIndividual = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedOpp || !selectedVol) return;
-    setSubmitting(true);
-    try {
-      await charityApi.post("/api/charity/certificates", {
-        applicationId: parseInt(selectedVol),
-      });
-      setShowIndividual(false);
-      fetchCertificates();
-    } finally {
-      setSubmitting(false);
-    }
-  };
+const handleIndividual = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!selectedOpp || !selectedVol) return;
+  setSubmitting(true);
+  try {
+    const volunteer = volunteers.find((v) => String(v.applicationId) === selectedVol);
+    await charityApi.post("/api/charity/certificates", {
+      volunteerId: volunteer?.volunteerId,
+      opportunityId: parseInt(selectedOpp),
+    });
+    setShowIndividual(false);
+    fetchCertificates();
+  } finally {
+    setSubmitting(false);
+  }
+};
 
   const handleBulk = async (e: React.FormEvent) => {
     e.preventDefault();

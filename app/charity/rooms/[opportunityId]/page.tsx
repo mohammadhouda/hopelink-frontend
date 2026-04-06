@@ -361,7 +361,7 @@ export default function ChatRoomPage() {
                   <div className={`h-8 w-8 rounded-full flex items-center justify-center text-xs font-semibold ${
                     m.role === "ADMIN" ? "bg-emerald-100 text-emerald-700" : "bg-gray-100 text-gray-600"
                   }`}>
-                    {m.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
+                    {m.id}
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-900 leading-tight">{m.name}</p>
