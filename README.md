@@ -1,35 +1,22 @@
-# Hope Link — Admin Dashboard
+# Hope Link — Frontend
 
-A full-featured administrative frontend for the **Hope Link** NGO management platform. Built with Next.js and TypeScript, this dashboard gives platform administrators complete control over charities, users, requests, notifications, reports, and platform settings.
+A multi-portal Next.js application for the **Hope Link** NGO platform. Three portals — Admin, Charity, and User — run within a single Next.js instance under path prefixes. A middleware layer will transparently rewrite subdomains to these prefixes when a production domain is available.
 
 ---
 
 ## Table of Contents
 
-- [Overview](#overview)
 - [Tech Stack](#tech-stack)
+- [Portal Overview](#portal-overview)
 - [Project Structure](#project-structure)
 - [Getting Started](#getting-started)
 - [Environment Variables](#environment-variables)
 - [Available Scripts](#available-scripts)
-- [Features](#features)
-- [Pages & Routes](#pages--routes)
+- [Admin Portal](#admin-portal)
+- [Charity Portal](#charity-portal)
 - [Authentication & Security](#authentication--security)
-- [API Integration](#api-integration)
+- [Real-time Chat](#real-time-chat)
 - [Components](#components)
-
----
-
-## Overview
-
-Hope Link Admin Dashboard is a Next.js App Router application that serves as the administrative control panel for the Hope Link NGO platform. It provides:
-
-- A secure, role-based admin interface
-- Real-time metrics and analytics
-- NGO/charity registration & verification workflows
-- Full user lifecycle management
-- A rich notifications system
-- Granular platform configuration
 
 ---
 
@@ -42,47 +29,71 @@ Hope Link Admin Dashboard is a Next.js App Router application that serves as the
 | UI Library | React 19 |
 | Styling | Tailwind CSS v4 |
 | HTTP Client | Axios (with token-refresh interceptor) |
+| Real-time | Socket.io Client |
 | Charts | Recharts |
 | Icons | Heroicons v2 |
-| State Management | React Context API |
+| State | React Context API |
 | Font | Inter (@fontsource/inter) |
 | Linting | ESLint (eslint-config-next) |
 
 ---
 
-## Project Structure
+## Portal Overview
 
-The app hosts multiple portals under path prefixes in a single Next.js instance. When a production domain is available, a middleware layer will rewrite subdomains (`admin.hope.org` → `/admin/...`) transparently.
+| Portal | Path Prefix | Login Route | Status |
+|---|---|---|---|
+| Admin | `/admin/...` | `/login` | Complete |
+| Charity | `/charity/...` | `/charity/login` | Complete |
+| User | `/user/...` | — | Skeleton |
+
+Each portal has its own auth context, Axios instance, protected route guard, sidebar, and navbar. The login pages are intentionally isolated from their portal's layout so the auth guard never wraps them.
+
+---
+
+## Project Structure
 
 ```
 admin-frontend/
-├── app/                        # Next.js App Router
-│   ├── (public)/               # No URL prefix — public/auth pages
-│   │   ├── login/              # Login page  →  /login
-│   │   └── layout.tsx
-│   ├── admin/                  # Admin portal  →  /admin/...
-│   │   ├── dashboard/          # Main dashboard & metrics
-│   │   ├── ngo/                # NGO list & detail pages
-│   │   │   └── [id]/
-│   │   ├── users/              # User list & detail pages
-│   │   │   └── [id]/
-│   │   ├── requests/           # Registration & verification requests
-│   │   ├── notifications/      # Admin notification center
-│   │   ├── reports/            # Analytics & reporting
-│   │   ├── profile/            # Admin profile management
-│   │   ├── settings/           # Platform settings & sub-pages
-│   │   └── layout.tsx          # Protected layout (Sidebar + Navbar)
-│   ├── charity/                # Charity portal  →  /charity/... (skeleton)
-│   │   └── dashboard/
-│   ├── user/                   # User portal  →  /user/... (skeleton)
-│   │   └── dashboard/
+├── app/
+│   ├── (public)/                   # Admin login  →  /login
+│   │   └── login/page.tsx
+│   ├── (charity-public)/           # Charity login  →  /charity/login
+│   │   └── charity/login/page.tsx
+│   │
+│   ├── admin/                      # Admin portal  →  /admin/...
+│   │   ├── layout.tsx              # UserProvider + ProtectedRoute + Sidebar + Navbar
+│   │   ├── dashboard/
+│   │   ├── ngo/[id]/
+│   │   ├── users/[id]/
+│   │   ├── requests/
+│   │   ├── notifications/
+│   │   ├── reports/
+│   │   ├── profile/
+│   │   └── settings/               # page.tsx + 6 sub-component files
+│   │
+│   ├── charity/                    # Charity portal  →  /charity/...
+│   │   ├── layout.tsx              # CharityProvider + ProtectedCharityRoute + Sidebar + Navbar
+│   │   ├── dashboard/
+│   │   ├── profile/
+│   │   ├── projects/[id]/
+│   │   ├── opportunities/[id]/
+│   │   ├── applications/
+│   │   ├── ratings/
+│   │   ├── certificates/
+│   │   └── rooms/[opportunityId]/
+│   │
+│   ├── user/                       # User portal (skeleton)
 │   ├── globals.css
-│   └── layout.tsx
+│   └── layout.tsx                  # Root layout (Inter font, metadata)
 │
-├── components/                 # Reusable UI components
+├── components/
 │   ├── layout/
-│   │   ├── Navbar.tsx          # Top navigation bar
-│   │   └── Sidebar.tsx         # Side navigation menu
+│   │   ├── Navbar.tsx              # Admin top navbar
+│   │   └── Sidebar.tsx             # Admin sidebar
+│   ├── charity/
+│   │   ├── CharityNavbar.tsx       # Charity top navbar
+│   │   ├── CharitySidebar.tsx      # Charity sidebar
+│   │   └── ProtectedCharityRoute.tsx
 │   ├── ConfirmModal.tsx
 │   ├── CustomDatePicker.tsx
 │   ├── CustomDropdown.tsx
@@ -91,15 +102,14 @@ admin-frontend/
 │   └── logo.tsx
 │
 ├── context/
-│   └── UserContext.tsx         # Global authenticated user state
+│   ├── UserContext.tsx             # Admin auth state
+│   └── CharityContext.tsx          # Charity auth state
 │
 ├── lib/
-│   └── axios.ts                # Axios instance with auth interceptors
+│   ├── axios.ts                    # Admin Axios instance (redirects → /login)
+│   └── charityAxios.ts             # Charity Axios instance (redirects → /charity/login)
 │
-├── public/                     # Static assets
-├── next.config.ts
-├── tsconfig.json
-└── package.json
+└── public/
 ```
 
 ---
@@ -109,7 +119,6 @@ admin-frontend/
 ### Prerequisites
 
 - Node.js 18+
-- npm or yarn
 - A running instance of the Hope Link backend API
 
 ### Installation
@@ -124,26 +133,24 @@ npm install
 
 # 3. Configure environment variables
 cp .env.example .env
-# Edit .env with your values (see Environment Variables section)
+# Edit .env with your values
 
 # 4. Start the development server
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open [http://localhost:3000](http://localhost:3000) — redirects to `/admin/dashboard`.
 
 ---
 
 ## Environment Variables
 
-Create a `.env` file in the project root with the following variables:
-
 ```env
 # Backend API base URL
-NEXT_PUBLIC_API_URL="http://localhost:5000"
+NEXT_PUBLIC_API_URL=http://localhost:5000
 
-# Supabase storage base URL (used for image/file CDN)
-NEXT_PUBLIC_SUPABASE_URL="https://<your-project>.supabase.co"
+# Supabase project URL (used for avatar / logo CDN)
+NEXT_PUBLIC_SUPABASE_URL=https://<your-project>.supabase.co
 ```
 
 | Variable | Required | Description |
@@ -156,176 +163,213 @@ NEXT_PUBLIC_SUPABASE_URL="https://<your-project>.supabase.co"
 ## Available Scripts
 
 ```bash
-# Start development server with hot reload
-npm run dev
-
-# Build for production
-npm run build
-
-# Start production server (after build)
-npm start
-
-# Run ESLint
-npm run lint
+npm run dev      # Development server with hot reload  →  :3000
+npm run build    # Production build
+npm start        # Start production server (after build)
+npm run lint     # ESLint
 ```
 
 ---
 
-## Features
+## Admin Portal
 
-### Dashboard
-- Platform-wide KPI cards (pending requests, active users, active projects)
-- Registration trends chart (7-month line chart)
-- NGO distribution by city (bar chart)
-- Recent admin decisions table
-- Pending actions panel with quick-review shortcuts
+**Login:** `/login` — dark slate split-panel design
 
-### NGO / Charity Management
-- Paginated list with search, status filter, category filter, and city filter
-- Add new charity organization
-- Detailed charity profile page with project listings
-- Edit charity information
+### Features
+
+**Dashboard**
+- KPI cards: pending requests, active users, active projects
+- Registration trends line chart (7 months)
+- NGOs by city bar chart
+- Pending actions table with quick-review shortcuts
+- Recent decisions feed
+
+**NGO / Charity Management**
+- Paginated list with search, status, category, and city filters
+- Add / edit charity organizations
+- Individual charity profile with project listings
 - Status management (active / suspended / pending)
 
-### User Management
-- Full user list with search and multi-filter support
-- Add new user with role assignment
-- Individual user detail pages including activity history
-- Edit user info and manage account status
-- Delete user with confirmation
+**User Management**
+- Paginated user list with search and multi-filter
+- Add / edit users with role assignment
+- Individual user detail and activity history
+- Delete with confirmation
 
-### Request Management
-- Tabbed view for **Registration Requests** and **Verification Requests**
-- Review supporting documents inline
-- Approve or decline requests with reviewer notes
-- Filter by status (pending / approved / declined)
+**Request Management**
+- Tabbed view: Registration Requests / Verification Requests
+- Inline document review
+- Approve or decline with reviewer notes
 
-### Notifications
-- Centralized notification feed with type filters (info, success, warning, error)
-- Mark individual or all notifications as read
-- Delete notifications
-- Unread badge counter in the navbar
+**Notifications**
+- Full notification feed with type filters
+- Mark individual or all as read, delete
+- Unread badge counter in navbar (polled every 30s)
 
-### Reports & Analytics
-- Registration trends over time
-- NGO distribution statistics
-- User analytics breakdown
-- Project statistics
-- CSV export functionality
-- Multiple chart types (line, bar, pie via Recharts)
+**Reports & Analytics**
+- Registration trends, NGO distribution, user analytics, project stats
+- Multiple chart types via Recharts
+- CSV export
 
-### Profile Management
-- Edit personal information
-- Password change with strength indicator and validation
-- Avatar upload and removal
-- Account info and login history
+**Profile & Settings**
+- Edit personal info, change password, upload avatar
+- Settings modules: Platform, Roles & Permissions, Security, Email Templates, Audit Log, API & Integrations
 
-### Settings
-The settings panel is organized into six modules:
-
-| Module | Description |
-|---|---|
-| Platform Settings | General site configuration |
-| Roles & Permissions | Access control and role management |
-| Security Settings | Two-factor auth, session management |
-| Email Templates | Configure and preview email notifications |
-| Audit Log | Admin activity tracking and history |
-| API & Integrations | API key management and third-party integrations |
-
----
-
-## Pages & Routes
+### Admin Routes
 
 | Route | Description |
 |---|---|
-| `/login` | Admin sign-in page |
-| `/admin/dashboard` | Main metrics and overview |
-| `/admin/ngo` | NGO/charity listing |
-| `/admin/ngo/[id]` | Individual NGO detail |
-| `/admin/users` | User listing and management |
-| `/admin/users/[id]` | Individual user detail |
-| `/admin/requests` | Registration & verification request review |
+| `/login` | Admin sign-in |
+| `/admin/dashboard` | Metrics and overview |
+| `/admin/ngo` | NGO listing |
+| `/admin/ngo/[id]` | NGO detail |
+| `/admin/users` | User listing |
+| `/admin/users/[id]` | User detail |
+| `/admin/requests` | Request review |
 | `/admin/notifications` | Notification center |
-| `/admin/reports` | Analytics and reporting |
-| `/admin/profile` | Admin profile settings |
+| `/admin/reports` | Analytics |
+| `/admin/profile` | Profile settings |
 | `/admin/settings` | Platform configuration |
-| `/charity/dashboard` | Charity portal (skeleton) |
-| `/user/dashboard` | User portal (skeleton) |
+
+---
+
+## Charity Portal
+
+**Login:** `/charity/login` — dark emerald/teal gradient centered-card design (distinct from admin)
+
+### Features
+
+**Dashboard**
+- KPI cards: total volunteers, active opportunities, pending applications, certificates issued
+- Average rating summary
+- Applications trend line chart
+- Opportunities by status bar chart
+- Recent applications table
+
+**Projects** — `/charity/projects`, `/charity/projects/[id]`
+- Full CRUD with inline modal
+- Project detail page showing linked opportunities
+
+**Opportunities** — `/charity/opportunities`, `/charity/opportunities/[id]`
+- Create, edit, delete, and end opportunities
+- Per-opportunity application review (approve / decline with optional reason)
+- Auto-creates a volunteer chat room on first approval
+
+**Applications** — `/charity/applications`
+- Filterable by status (Pending / Approved / Declined) and opportunity
+- Bulk review from a single page
+
+**Ratings** — `/charity/ratings`
+- Rate volunteers (1–5 stars) after an opportunity has ended
+- Only available for approved volunteers of ended opportunities
+- Running average display
+
+**Certificates** — `/charity/certificates`
+- Issue certificates to individual volunteers
+- Bulk-issue to all approved volunteers for an ended opportunity
+
+**Chat Rooms** — `/charity/rooms`, `/charity/rooms/[opportunityId]`
+- Rooms auto-created on first application approval, auto-closed when opportunity ends
+- Active / closed room list with last-message preview
+- Real-time messaging (Socket.io), typing indicators, paginated message history
+- Collapsible members panel, manual close room action
+
+### Charity Routes
+
+| Route | Description |
+|---|---|
+| `/charity/login` | Charity sign-in |
+| `/charity/dashboard` | Analytics overview |
+| `/charity/profile` | Charity profile edit |
+| `/charity/projects` | Project list and CRUD |
+| `/charity/projects/[id]` | Project detail |
+| `/charity/opportunities` | Opportunity list and CRUD |
+| `/charity/opportunities/[id]` | Opportunity detail + application review |
+| `/charity/applications` | All applications with filters |
+| `/charity/ratings` | Volunteer ratings |
+| `/charity/certificates` | Certificate management |
+| `/charity/rooms` | Chat room list |
+| `/charity/rooms/[opportunityId]` | Real-time chat room |
 
 ---
 
 ## Authentication & Security
 
-Authentication is session-based using **HttpOnly cookies**:
+Both portals use **HttpOnly cookie** sessions.
 
-- Login submits credentials to `POST /api/auth/login` which sets an `access_token` cookie
-- The `ProtectedRoute` component and `UserContext` guard all `/admin/` pages client-side
-- The `ProtectedRoute` component wraps all dashboard layouts as a client-side guard
-- The Axios instance includes a **response interceptor** that:
-  - Catches `401 Unauthorized` responses
-  - Attempts a silent token refresh via `POST /api/auth/refresh`
-  - Queues concurrent requests during refresh and replays them on success
-  - Redirects to `/login` if refresh also fails
-- Logout calls `POST /api/auth/logout` to invalidate the session cookie server-side
+**Flow:**
+1. `POST /api/auth/login` → backend sets an `access_token` HttpOnly cookie
+2. `ProtectedRoute` / `ProtectedCharityRoute` reads the session via the profile endpoint and redirects to the portal's login page if unauthenticated
+3. Each portal's Axios instance has a **response interceptor** that:
+   - Catches `401 Unauthorized`
+   - Attempts a silent refresh via `POST /api/auth/refresh`
+   - Queues concurrent failed requests and replays them on success
+   - Redirects to the portal's own login page if refresh fails
+4. `POST /api/auth/logout` clears the cookie server-side
+
+**Route isolation:** Login pages live in separate route groups (`(public)`, `(charity-public)`) so the portal layout — and its auth guard — never wraps them.
 
 ---
 
-## API Integration
+## Real-time Chat
 
-All HTTP communication is handled through a single configured Axios instance in `lib/axios.ts`.
+The charity rooms feature uses **Socket.io** for real-time communication.
 
-**Base configuration:**
+**Connection:**
 ```
-Base URL:    process.env.NEXT_PUBLIC_API_URL
-Credentials: true (sends cookies cross-origin)
+Auth: JWT token via socket.handshake.auth.token
+      (fetched from GET /api/auth/socket-token)
+Transport: websocket
 ```
 
-**Key API endpoints:**
+**Client → Server events:**
 
-| Method | Endpoint | Description |
+| Event | Payload | Description |
 |---|---|---|
-| POST | `/api/auth/login` | Admin login |
-| POST | `/api/auth/logout` | Admin logout |
-| POST | `/api/auth/refresh` | Refresh access token |
-| GET | `/api/admin/profile` | Fetch current admin profile |
-| PUT | `/api/admin/profile` | Update profile information |
-| PUT | `/api/admin/profile/password` | Change password |
-| PUT | `/api/admin/profile/avatar` | Upload / remove avatar |
-| GET | `/api/admin/dashboard/stats` | Dashboard KPIs and chart data |
-| GET | `/api/admin/notifications` | Paginated notifications |
-| GET | `/api/admin/notifications/unread-count` | Unread notification count |
-| PUT | `/api/admin/notifications/:id/read` | Mark notification as read |
-| PUT | `/api/admin/notifications/read-all` | Mark all notifications as read |
-| DELETE | `/api/admin/notifications/:id` | Delete a notification |
-| GET | `/api/users` | Paginated user list with filters |
-| POST | `/api/users` | Create new user |
-| GET | `/api/users/:id` | User detail |
-| PUT | `/api/users/:id` | Update user |
-| DELETE | `/api/users/:id` | Delete user |
-| GET | `/api/charities` | Paginated NGO/charity list |
-| POST | `/api/charities` | Create new charity |
-| GET | `/api/charities/:id` | Charity detail |
-| PUT | `/api/charities/:id` | Update charity |
-| GET | `/api/requests/registration` | Registration request list |
-| GET | `/api/requests/verification` | Verification request list |
-| POST | `/api/requests/:id/approve` | Approve a request |
-| POST | `/api/requests/:id/decline` | Decline a request |
-| POST | `/api/upload/single` | Upload file (images / documents) |
+| `join_room` | `{ opportunityId }` | Join the room on connect |
+| `send_message` | `{ opportunityId, content }` | Send a message |
+| `leave_room` | `{ opportunityId }` | Leave the room |
+| `typing` | `{ opportunityId }` | Broadcast typing indicator |
+
+**Server → Client events:**
+
+| Event | Payload | Description |
+|---|---|---|
+| `new_message` | Message object | New message received |
+| `user_joined` | `{ userId, name }` | A member joined |
+| `user_left` | `{ userId, name }` | A member left |
+| `user_typing` | `{ userId, name }` | Typing indicator (clears after 3s) |
+| `error` | `{ message }` | Error from server |
 
 ---
 
 ## Components
 
+### Shared
+
 | Component | Description |
 |---|---|
-| `Navbar` | Top header with notification bell (unread badge), user avatar, and dropdown menu |
-| `Sidebar` | Collapsible left navigation with route highlighting and logout |
-| `ProtectedRoute` | Client-side auth guard — redirects to `/login` if no user session |
 | `ConfirmModal` | Generic confirmation dialog for destructive actions |
-| `CustomDropdown` | Accessible dropdown with optional search and multi-select |
-| `CustomDatePicker` | Styled date input field with calendar support |
+| `CustomDropdown` | Accessible dropdown with search and multi-select |
+| `CustomDatePicker` | Styled date input with calendar |
 | `Fileuploader` | Drag-and-drop file upload with preview |
-| `logo` | Hope Link SVG logo with gradient rendering |
+| `logo` | Hope Link SVG logo with gradient |
+
+### Admin
+
+| Component | Description |
+|---|---|
+| `Navbar` | Top header — notification bell with unread badge, user dropdown |
+| `Sidebar` | Left nav — route highlighting, logout |
+| `ProtectedRoute` | Auth guard → redirects to `/login` |
+
+### Charity
+
+| Component | Description |
+|---|---|
+| `CharityNavbar` | Top header — charity name/logo, user dropdown |
+| `CharitySidebar` | Left nav — emerald theme, 8 items, logout |
+| `ProtectedCharityRoute` | Auth guard → redirects to `/charity/login` |
 
 ---
 
