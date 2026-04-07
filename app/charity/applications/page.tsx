@@ -7,6 +7,7 @@ import {
 import charityApi from "@/lib/charityAxios";
 import { getAvatarUrl } from "@/lib/avatarUrl";
 import Dropdown from "@/components/charity/Dropdown";
+import CustomDatePicker from "@/components/CustomDatePicker";
 
 interface Application {
   id: number;
@@ -53,26 +54,23 @@ export default function ApplicationsPage() {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [oppFilter, setOppFilter] = useState("ALL");
+  const [createdAt, setCreatedAt] = useState("");
   const [declineId, setDeclineId] = useState<number | null>(null);
   const [declineReason, setDeclineReason] = useState("");
 
-  const fetchData = () => {
+const fetchData = () => {
   setLoading(true);
   const params = new URLSearchParams();
   if (statusFilter !== "ALL") params.set("status", statusFilter);
   if (oppFilter !== "ALL") params.set("opportunityId", oppFilter);
+  if (createdAt) {
+    params.set("from", createdAt);
+    params.set("to", createdAt);
+  }
 
-  Promise.all([
-    charityApi.get(`/api/charity/applications?${params}`),
-    charityApi.get("/api/charity/opportunities"),
-  ])
-    .then(([aRes, oRes]) => {
-      // Log to see the actual shape
-      console.log("Applications response:", aRes.data);
-      console.log("Opportunities response:", oRes.data);
-
-      setApplications(aRes.data?.data?.applications || []);
-      setOpportunities(oRes.data?.data?.opportunities || oRes.data?.data?.recentOpportunities || []);
+  charityApi.get(`/api/charity/applications?${params}`)
+    .then((res) => {
+      setApplications(res.data?.data?.applications || []);
     })
     .catch((err) => {
       console.error("Fetch error:", err);
@@ -80,7 +78,14 @@ export default function ApplicationsPage() {
     .finally(() => setLoading(false));
 };
 
-  useEffect(() => { fetchData(); }, [statusFilter, oppFilter]);
+  useEffect(() => {
+  charityApi.get("/api/charity/opportunities")
+    .then((res) => {
+      setOpportunities(res.data?.data?.opportunities || res.data?.data?.recentOpportunities || []);
+    });
+  }, []);
+
+  useEffect(() => { fetchData(); }, [statusFilter, oppFilter, createdAt]);
 
   const handleApprove = async (id: number) => {
     await charityApi.patch(`/api/charity/applications/${id}/approve`);
@@ -138,6 +143,8 @@ export default function ApplicationsPage() {
           ]}
           triggerClassName="flex items-center gap-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg px-2 py-1.5 hover:border-gray-300 cursor-pointer"
         />
+        <div className="h-5 w-px bg-gray-200" />
+        <CustomDatePicker value={createdAt} onChange={setCreatedAt} placeholder="Created At" className="w-36" />
       </div>
 
       {/* Table */}

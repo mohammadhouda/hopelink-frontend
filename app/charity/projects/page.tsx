@@ -1,10 +1,11 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { PlusIcon, PencilIcon, TrashIcon, FolderIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, PencilIcon, TrashIcon, FolderIcon, FunnelIcon } from "@heroicons/react/24/outline";
 import charityApi from "@/lib/charityAxios";
 import ConfirmModal from "@/components/ConfirmModal";
 import Dropdown from "@/components/charity/Dropdown";
+import CustomDatePicker from "@/components/CustomDatePicker";
 
 interface Project {
   id: number;
@@ -35,14 +36,22 @@ export default function ProjectsPage() {
   const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ title: "", description: "", status: "ACTIVE", startDate: "", endDate: "" });
+  const [statusFilter, setStatusFilter] = useState("ALL");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
 
-const fetchProjects = () => {
-  charityApi.get("/api/charity/projects")
-    .then((res) => setProjects(res.data?.data?.projects || []))
-    .finally(() => setLoading(false));
-};
+  const fetchProjects = () => {
+    setLoading(true);
+    const params = new URLSearchParams();
+    if (statusFilter !== "ALL") params.set("status", statusFilter);
+    if (dateFrom) params.set("startFrom", dateFrom);
+    if (dateTo) params.set("startTo", dateTo);
+    charityApi.get(`/api/charity/projects?${params}`)
+      .then((res) => setProjects(res.data?.data?.projects || []))
+      .finally(() => setLoading(false));
+  };
 
-  useEffect(() => { fetchProjects(); }, []);
+  useEffect(() => { fetchProjects(); }, [statusFilter, dateFrom, dateTo]);
 
   const openCreate = () => {
     setEditProject(null);
@@ -104,6 +113,28 @@ const handleDelete = async () => {
         >
           <PlusIcon className="h-4 w-4" /> New Project
         </button>
+      </div>
+
+      {/* Filters */}
+      <div className="flex items-center gap-3 flex-wrap">
+        <FunnelIcon className="h-4 w-4 text-gray-400 shrink-0" />
+        <div className="flex gap-1">
+          {(["ALL", "ACTIVE", "PAUSED", "CLOSED"] as const).map((s) => (
+            <button
+              key={s}
+              onClick={() => setStatusFilter(s)}
+              className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors cursor-pointer ${
+                statusFilter === s ? "bg-emerald-100 text-emerald-700" : "text-gray-500 hover:bg-gray-100"
+              }`}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+        <div className="h-5 w-px bg-gray-200" />
+        <CustomDatePicker value={dateFrom} onChange={setDateFrom} placeholder="From" className="w-36" />
+        <span className="text-xs text-gray-400">→</span>
+        <CustomDatePicker value={dateTo} onChange={setDateTo} placeholder="To" className="w-36" />
       </div>
 
       {/* Table */}
@@ -253,10 +284,10 @@ const handleDelete = async () => {
       {/* Delete confirm */}
       {deleteTarget && (
         <ConfirmModal
-          isOpen={true}
           title="Delete Project"
           message={`Are you sure you want to delete "${deleteTarget.title}"? This action cannot be undone.`}
           confirmLabel="Delete"
+          confirmClass="text-white bg-red-500 hover:bg-red-600"
           onConfirm={handleDelete}
           onCancel={() => setDeleteTarget(null)}
         />
