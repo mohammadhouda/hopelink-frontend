@@ -1,6 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import { useCharity } from "@/context/CharityContext";
+import { getAvatarUrl } from "@/lib/avatarUrl";
 import { useRouter } from "next/navigation";
 import {
   ChevronDownIcon,

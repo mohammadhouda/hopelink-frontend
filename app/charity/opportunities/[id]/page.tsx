@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -6,6 +7,7 @@ import {
   CheckCircleIcon, XCircleIcon, ClockIcon,
 } from "@heroicons/react/24/outline";
 import charityApi from "@/lib/charityAxios";
+import { getAvatarUrl } from "@/lib/avatarUrl";
 
 interface Opportunity {
   id: number;
@@ -192,12 +194,20 @@ const fetchData = () => {
     <td className="px-5 py-3">
       <div className="flex items-center gap-2.5">
         {a.user.baseProfile?.avatarUrl ? (
-          <img src={a.user.baseProfile.avatarUrl} alt={a.user.name} className="h-7 w-7 rounded-full object-cover" />
-        ) : (
-          <div className="h-7 w-7 rounded-full bg-emerald-50 flex items-center justify-center text-[11px] font-bold text-emerald-600">
-            {a.user.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
-          </div>
-        )}
+              <img
+                src={
+                  a.user.baseProfile.avatarUrl.startsWith("http")
+                    ? a.user.baseProfile.avatarUrl
+                    : getAvatarUrl(a.user.baseProfile.avatarUrl)!
+                }
+                alt={a.user.name}
+                className="h-7 w-7 rounded-full object-cover"
+              />
+            ) : (
+              <div className="h-7 w-7 rounded-full bg-emerald-50 flex items-center justify-center text-[11px] font-bold text-emerald-600">
+                {a.user.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
+              </div>
+            )}
         <div>
           <p className="text-sm font-medium text-gray-900">{a.user.name}</p>
           <p className="text-xs text-gray-400">{a.user.email}</p>

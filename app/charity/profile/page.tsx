@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useCharity } from "@/context/CharityContext";
 import charityApi from "@/lib/charityAxios";
+import { getAvatarUrl } from "@/lib/avatarUrl";
 import Dropdown from "@/components/charity/Dropdown";
 
 interface ProfileData {
@@ -128,7 +129,7 @@ export default function CharityProfilePage() {
               <div className={`h-16 w-16 rounded-2xl bg-emerald-100 flex items-center justify-center text-2xl font-bold text-emerald-700 overflow-hidden ${uploading ? "opacity-50" : ""}`}>
                 {form.logoUrl ? (
                   <img
-                    src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/logos/${form.logoUrl}`}
+                    src={getAvatarUrl(form.logoUrl)!}
                     alt={form.name}
                     className="h-full w-full object-cover"
                   />

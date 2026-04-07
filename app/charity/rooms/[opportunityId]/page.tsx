@@ -1,8 +1,10 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { io, Socket } from "socket.io-client";
 import charityApi from "@/lib/charityAxios";
+import { getAvatarUrl } from "@/lib/avatarUrl";
 
 /* ── types ──────────────────────────────────────────────────────────── */
 
@@ -643,11 +645,15 @@ export default function ChatRoomPage() {
                           <div
                             className={`h-8 w-8 rounded-full bg-gradient-to-br ${avatarColor(
                               msg.senderId
-                            )} flex items-center justify-center shadow-sm`}
+                            )} flex items-center justify-center shadow-sm overflow-hidden`}
                           >
                             {msg.sender.baseProfile?.avatarUrl ? (
                               <img
-                                src={msg.sender.baseProfile.avatarUrl}
+                                src={
+                                  msg.sender.baseProfile.avatarUrl.startsWith("http")
+                                    ? msg.sender.baseProfile.avatarUrl
+                                    : getAvatarUrl(msg.sender.baseProfile.avatarUrl)!
+                                }
                                 alt=""
                                 className="h-8 w-8 rounded-full object-cover"
                               />

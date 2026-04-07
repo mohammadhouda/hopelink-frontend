@@ -1,6 +1,7 @@
 'use client';
 import { useState, useRef, useEffect } from "react";
 import Logo from "@/components/logo";
+import { getAvatarUrl } from "@/lib/avatarUrl";
 import { useUser } from "@/context/UserContext";
 import { useRouter } from "next/navigation";
 import {

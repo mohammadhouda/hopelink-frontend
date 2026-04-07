@@ -11,6 +11,7 @@ import {
   TrashIcon,
 } from "@heroicons/react/24/outline";
 import api from "@/lib/axios";
+import { getAvatarUrl } from "@/lib/avatarUrl";
 
 /* ── types ────────────────────────────────────────────────── */
 interface ProfileData {
@@ -201,7 +202,7 @@ function AvatarCard({
             uploading ? "opacity-50" : ""
           }`}>
             {profile.avatarUrl ? (
-              <img src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/logos/${profile.avatarUrl}`} alt={profile.name} className="h-full w-full object-cover object-center" />
+              <img src={getAvatarUrl(profile.avatarUrl)!} alt={profile.name} className="h-full w-full object-cover object-center" />
             ) : (
               <span className="text-2xl font-bold text-blue-600">{initials}</span>
             )}

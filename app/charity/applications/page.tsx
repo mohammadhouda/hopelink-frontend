@@ -5,6 +5,7 @@ import {
   CheckCircleIcon, XCircleIcon, ClockIcon, FunnelIcon,
 } from "@heroicons/react/24/outline";
 import charityApi from "@/lib/charityAxios";
+import { getAvatarUrl } from "@/lib/avatarUrl";
 import Dropdown from "@/components/charity/Dropdown";
 
 interface Application {
@@ -174,7 +175,7 @@ export default function ApplicationsPage() {
     <td className="px-5 py-3.5">
       <div className="flex items-center gap-2.5">
         {a.user.baseProfile?.avatarUrl ? (
-          <img src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/logos/${a.user.baseProfile.avatarUrl}`} alt={a.user.name} className="h-7 w-7 rounded-full object-cover" />
+          <img src={getAvatarUrl(a.user.baseProfile.avatarUrl)!} alt={a.user.name} className="h-7 w-7 rounded-full object-cover" />
         ) : (
           <div className="h-7 w-7 rounded-full bg-emerald-50 flex items-center justify-center text-[11px] font-bold text-emerald-600">
             {a.user.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
