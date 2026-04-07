@@ -72,7 +72,7 @@ export default function CharityLoginPage() {
             </h1>
             <p className="text-emerald-300/60 mt-6 text-base leading-relaxed">
               Manage your opportunities, connect with volunteers, and track the
-              impact of your charity — all from one place.
+              impact of your charity all from one place.
             </p>
 
             {/* Stats row */}
