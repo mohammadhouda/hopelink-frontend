@@ -12,6 +12,7 @@ import {
   UserCircleIcon,
   BellIcon,
   ArrowRightStartOnRectangleIcon,
+  UsersIcon,
 } from "@heroicons/react/24/outline";
 import {
   HomeIcon as HomeIconSolid,
@@ -23,6 +24,7 @@ import {
   ChatBubbleLeftRightIcon as ChatIconSolid,
   UserCircleIcon as UserCircleIconSolid,
   BellIcon as BellIconSolid,
+  UsersIcon as UsersIconSolid,
 } from "@heroicons/react/24/solid";
 import charityApi from "@/lib/charityAxios";
 
@@ -31,6 +33,7 @@ const menuItems = [
   { label: "Projects",      href: "/charity/projects",       icon: FolderIcon,                activeIcon: FolderIconSolid },
   { label: "Opportunities", href: "/charity/opportunities",  icon: CalendarIcon,              activeIcon: CalendarIconSolid },
   { label: "Applications",  href: "/charity/applications",   icon: ClipboardDocumentListIcon, activeIcon: ClipboardIconSolid },
+  { label: "Volunteers",    href: "/charity/volunteers",     icon: UsersIcon,                 activeIcon: UsersIconSolid },
   { label: "Ratings",       href: "/charity/ratings",        icon: StarIcon,                  activeIcon: StarIconSolid },
   { label: "Certificates",  href: "/charity/certificates",   icon: DocumentCheckIcon,         activeIcon: DocumentCheckIconSolid },
   { label: "Chat Rooms",    href: "/charity/rooms",          icon: ChatBubbleLeftRightIcon,   activeIcon: ChatIconSolid },
