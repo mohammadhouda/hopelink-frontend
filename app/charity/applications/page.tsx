@@ -144,7 +144,7 @@ const fetchData = () => {
           triggerClassName="flex items-center gap-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-200 rounded-lg px-2 py-1.5 hover:border-gray-300 cursor-pointer"
         />
         <div className="h-5 w-px bg-gray-200" />
-        <CustomDatePicker value={createdAt} onChange={setCreatedAt} placeholder="Created At" className="w-36" />
+        <CustomDatePicker value={createdAt} onChange={setCreatedAt} placeholder="Date Added" className="w-36" />
       </div>
 
       {/* Table */}
@@ -209,7 +209,7 @@ const fetchData = () => {
       </span>
     </td>
     <td className="px-5 py-3.5 text-sm text-gray-500">
-      {new Date(a.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+      {new Date(a.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
     </td>
     <td className="px-5 py-3.5">
       {a.status === "PENDING" && (
