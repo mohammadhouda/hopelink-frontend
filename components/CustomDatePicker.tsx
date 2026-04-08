@@ -46,7 +46,7 @@ function buildCalendar(year: number, month: number) {
     cells.push({ day: d, current: true, iso: `${year}-${pad(month + 1)}-${pad(d)}` });
   }
 
-  // Next month leading days (fill to complete 6 rows × 7)
+  // Next month leading days
   const remaining = 42 - cells.length;
   for (let d = 1; d <= remaining; d++) {
     const nm = month === 11 ? 0 : month + 1;
@@ -59,7 +59,7 @@ function buildCalendar(year: number, month: number) {
 
 /* ── component ────────────────────────────────────────────── */
 interface CustomDatePickerProps {
-  value: string;              // ISO string "YYYY-MM-DD" or ""
+  value: string;              
   onChange: (iso: string) => void;
   placeholder?: string;
   className?: string;
@@ -167,7 +167,7 @@ export default function CustomDatePicker({
       {open && (
         <div className="
           absolute z-50 left-0 mt-1.5
-          w-[280px] bg-white border border-gray-200 rounded-xl shadow-lg
+          w-70 bg-white border border-gray-200 rounded-xl shadow-lg
           ring-1 ring-black/5 overflow-hidden
         ">
           {/* Month / Year header */}
