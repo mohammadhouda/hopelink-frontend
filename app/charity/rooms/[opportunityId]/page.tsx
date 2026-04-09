@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { io, Socket } from "socket.io-client";
 import charityApi from "@/lib/charityAxios";
 import { getAvatarUrl } from "@/lib/avatarUrl";
+import ConfirmModal from "@/components/ConfirmModal";
 
 /* ── types ──────────────────────────────────────────────────────────── */
 
@@ -263,6 +264,7 @@ export default function ChatRoomPage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [myUserId, setMyUserId] = useState<number | null>(null);
   const [connected, setConnected] = useState(false);
+  const [showCloseConfirm, setShowCloseConfirm] = useState(false);
 
   const socketRef = useRef<Socket | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -412,21 +414,16 @@ export default function ChatRoomPage() {
     }, 2000);
   };
 
-  const handleCloseRoom = async () => {
-    if (
-      !confirm(
-        "Close this chat room? Volunteers will no longer be able to send messages."
-      )
-    )
-      return;
-    setClosing(true);
-    try {
-      await charityApi.patch(`/api/charity/rooms/${opportunityId}/close`);
-      setRoom((prev) => (prev ? { ...prev, status: "CLOSED" } : prev));
-    } finally {
-      setClosing(false);
-    }
-  };
+const handleCloseRoom = async () => {
+  setClosing(true);
+  try {
+    await charityApi.patch(`/api/charity/rooms/${opportunityId}/close`);
+    setRoom((prev) => (prev ? { ...prev, status: "CLOSED" } : prev));
+  } finally {
+    setClosing(false);
+    setShowCloseConfirm(false);
+  }
+};
 
   /* ── group consecutive messages by same sender ─────────────────── */
 
@@ -544,7 +541,7 @@ export default function ChatRoomPage() {
 
           {!isClosed && (
             <button
-              onClick={handleCloseRoom}
+              onClick={() => setShowCloseConfirm(true)}
               disabled={closing}
               className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-xl transition-all duration-200 cursor-pointer disabled:opacity-40"
             >
@@ -592,6 +589,17 @@ export default function ChatRoomPage() {
                 )}
               </button>
             </div>
+          )}
+
+          {showCloseConfirm && (
+            <ConfirmModal
+              title="Close this room?"
+              message="This will archive the conversation and prevent new messages from being sent. Are you sure?"
+              confirmLabel="Yes, close it"
+              confirmClass="text-white bg-red-500 hover:bg-red-600"
+              onConfirm={handleCloseRoom}
+              onCancel={() => setShowCloseConfirm(false)}
+            />
           )}
 
           {/* Messages */}

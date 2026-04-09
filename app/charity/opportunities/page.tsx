@@ -299,6 +299,7 @@ const handleEnd = async () => {
           title="Delete Opportunity"
           message={`Delete "${deleteTarget.title}"? This action cannot be undone.`}
           confirmLabel="Delete"
+          confirmClass="text-white bg-red-500 hover:bg-red-600"
           onConfirm={handleDelete}
           onCancel={() => setDeleteTarget(null)}
         />
@@ -310,6 +311,7 @@ const handleEnd = async () => {
           title="End Opportunity"
           message={`End "${endTarget.title}"? This will close the volunteer room and prevent new applications.`}
           confirmLabel="End Opportunity"
+          confirmClass="text-white bg-red-500 hover:bg-red-600"
           onConfirm={handleEnd}
           onCancel={() => setEndTarget(null)}
         />
