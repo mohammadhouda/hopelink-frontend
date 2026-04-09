@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { PlusIcon, PencilIcon, TrashIcon, CalendarIcon, StopCircleIcon } from "@heroicons/react/24/outline";
 import charityApi from "@/lib/charityAxios";
 import ConfirmModal from "@/components/ConfirmModal";
@@ -38,6 +38,7 @@ const Skeleton = ({ className }: { className: string }) => (
 
 export default function OpportunitiesPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -62,6 +63,15 @@ const fetchData = () => {
 };
 
   useEffect(() => { fetchData(); }, []);
+
+  useEffect(() => {
+    const projectId = searchParams.get("projectId");
+    if (projectId) {
+      setEditOpp(null);
+      setForm({ title: "", description: "", slots: "1", date: "", location: "", projectId });
+      setShowForm(true);
+    }
+  }, [searchParams]);
 
   const openCreate = () => {
     setEditOpp(null);

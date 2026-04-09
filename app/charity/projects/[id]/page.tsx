@@ -210,7 +210,7 @@ export default function ProjectDetailPage() {
 
             {/* Actions */}
             <button
-              onClick={() => router.push("/charity/opportunities")}
+              onClick={() => router.push(`/charity/opportunities?projectId=${id}`)}
               className="inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 rounded-xl shadow-sm shadow-emerald-200 transition-all cursor-pointer shrink-0"
             >
               <PlusIcon className="h-4 w-4" />
