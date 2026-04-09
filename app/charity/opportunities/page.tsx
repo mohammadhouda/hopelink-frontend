@@ -295,7 +295,6 @@ const handleEnd = async () => {
 
       {deleteTarget && (
         <ConfirmModal
-          isOpen={!!deleteTarget}
           title="Delete Opportunity"
           message={`Delete "${deleteTarget.title}"? This action cannot be undone.`}
           confirmLabel="Delete"
@@ -307,7 +306,6 @@ const handleEnd = async () => {
 
       {endTarget && (
         <ConfirmModal
-          isOpen={!!endTarget}
           title="End Opportunity"
           message={`End "${endTarget.title}"? This will close the volunteer room and prevent new applications.`}
           confirmLabel="End Opportunity"
