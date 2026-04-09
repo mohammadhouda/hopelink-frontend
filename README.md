@@ -205,6 +205,7 @@ npm run lint     # ESLint
 - Full notification feed with type filters
 - Mark individual or all as read, delete
 - Unread badge counter in navbar (polled every 30s)
+- Notifications are scoped per user — admin notifications are never visible in the charity portal
 
 **Reports & Analytics**
 - Registration trends, NGO distribution, user analytics, project stats
@@ -248,10 +249,13 @@ npm run lint     # ESLint
 
 **Projects** — `/charity/projects`, `/charity/projects/[id]`
 - Full CRUD with inline modal
-- Project detail page showing linked opportunities
+- Project detail page showing only opportunities linked to that project
+- "New Opportunity" button on the detail page navigates to `/charity/opportunities?projectId=X`, pre-filling the project in the create form
 
 **Opportunities** — `/charity/opportunities`, `/charity/opportunities/[id]`
 - Create, edit, delete, and end opportunities
+- Optional project assignment — opportunities can be linked to a project via the `projectId` field
+- When opened with `?projectId=X` in the URL, the create form opens automatically with that project pre-selected
 - Per-opportunity application review (approve / decline with optional reason)
 - Auto-creates a volunteer chat room on first approval
 
