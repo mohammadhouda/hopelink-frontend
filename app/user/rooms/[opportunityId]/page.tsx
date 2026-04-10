@@ -141,6 +141,7 @@ export default function UserRoomPage() {
         });
 
         socket.on("user_typing", ({ userId, name, isTyping }: { userId: number; name: string; isTyping: boolean }) => {
+          if (userId === volunteer?.id) return;
           setTypingUsers((prev) =>
             isTyping ? [...prev.filter((u) => u.userId !== userId), { userId, name }]
                      : prev.filter((u) => u.userId !== userId)
@@ -279,7 +280,7 @@ export default function UserRoomPage() {
                           {!isMe && !sameSender && (
                             <span className="text-[11px] font-semibold text-gray-500 mb-1 px-1">{msg.sender.name}</span>
                           )}
-                          <div className={`px-3.5 py-2 rounded-2xl text-sm leading-relaxed break-words ${
+                          <div className={`px-3.5 py-2 rounded-2xl text-sm leading-relaxed wrap-break-word ${
                             isMe
                               ? "bg-violet-600 text-white rounded-br-sm"
                               : "bg-white border border-gray-200 text-gray-900 rounded-bl-sm shadow-sm"
@@ -338,7 +339,7 @@ export default function UserRoomPage() {
                 disabled={!input.trim() || sending || !socketReady}
                 className="h-11 w-11 rounded-2xl bg-violet-600 hover:bg-violet-700 text-white flex items-center justify-center transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed shrink-0"
               >
-                <PaperAirplaneIcon className="h-4.5 w-4.5 h-5 w-5" />
+                <PaperAirplaneIcon className="h-5 w-5" />
               </button>
             </form>
           )}
