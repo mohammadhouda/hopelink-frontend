@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   UserCircleIcon,
   PencilIcon,
@@ -7,9 +7,11 @@ import {
   XMarkIcon,
   PlusIcon,
   TrashIcon,
+  CameraIcon
 } from "@heroicons/react/24/outline";
 import { useVolunteer } from "@/context/VolunteerContext";
 import userApi from "@/lib/userAxios";
+import { getAvatarUrl } from "@/lib/avatarUrl";
 
 interface Profile {
   id: number;
@@ -77,6 +79,9 @@ export default function ProfilePage() {
   const [savingPw, setSavingPw] = useState(false);
   const [pwError, setPwError] = useState("");
 
+  const [uploading, setUploading] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
   const fetchProfile = () => {
     setLoading(true);
     userApi.get("/api/user/profile")
@@ -101,6 +106,45 @@ export default function ProfilePage() {
   };
 
   useEffect(() => { fetchProfile(); }, []);
+
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  if (!["image/jpeg", "image/png", "image/webp", "image/svg+xml"].includes(file.type)) return;
+  if (file.size > 2 * 1024 * 1024) return;
+
+  setUploading(true);
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+    const uploadRes = await userApi.post("/api/upload/single?bucket=logos", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    const avatarPath = uploadRes.data.data.path;
+    await userApi.patch("/api/user/profile", { avatarUrl: avatarPath });
+    fetchProfile();
+    refreshVolunteer();
+  } catch {
+    // silent
+  } finally {
+    setUploading(false);
+    if (avatarInputRef.current) avatarInputRef.current.value = "";
+  }
+};
+
+const handleRemoveAvatar = async () => {
+  setUploading(true);
+  try {
+    await userApi.patch("/api/user/profile", { avatarUrl: "" });
+    fetchProfile();
+    refreshVolunteer();
+  } catch {
+    // silent
+  } finally {
+    setUploading(false);
+  }
+};
 
   const saveInfo = async () => {
     setSavingInfo(true);
@@ -209,20 +253,66 @@ export default function ProfilePage() {
           </div>
         ) : (
           <div>
-            <div className="flex items-start justify-between mb-5">
-              <div className="flex items-center gap-4">
-                <div className="h-14 w-14 rounded-full bg-violet-100 flex items-center justify-center text-lg font-bold text-violet-700">
-                  {profile.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
-                </div>
-                <div>
-                  <p className="text-base font-bold text-gray-900">{profile.name}</p>
-                  <p className="text-sm text-gray-500">{profile.email}</p>
-                </div>
-              </div>
-              <button onClick={() => setEditingInfo(true)} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 border border-gray-200 rounded-xl hover:bg-gray-50 cursor-pointer">
-                <PencilIcon className="h-3.5 w-3.5" /> Edit
-              </button>
-            </div>
+            {/* Replace the old avatar + info block */}
+<div className="flex items-start justify-between mb-5">
+  <div className="flex items-center gap-4">
+    {/* Uploadable avatar */}
+    <div className="relative group">
+      <div className={`h-14 w-14 rounded-full bg-violet-100 flex items-center justify-center text-lg font-bold text-violet-700 overflow-hidden ${uploading ? "opacity-50" : ""}`}>
+        {profile.baseProfile?.avatarUrl ? (
+          <img
+            src={getAvatarUrl(profile.baseProfile.avatarUrl)!}
+            alt={profile.name}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          profile.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+        )}
+        {uploading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-white/60 rounded-full">
+            <svg className="h-5 w-5 animate-spin text-violet-600" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+            </svg>
+          </div>
+        )}
+      </div>
+      <button
+        onClick={() => avatarInputRef.current?.click()}
+        disabled={uploading}
+        className="absolute -bottom-0.5 -right-0.5 h-6 w-6 bg-white border border-gray-200 rounded-full flex items-center justify-center shadow-sm hover:bg-gray-50 transition-colors cursor-pointer disabled:opacity-50"
+      >
+        <CameraIcon className="h-3 w-3 text-gray-500" />
+      </button>
+      <input
+        ref={avatarInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/svg+xml"
+        className="hidden"
+        onChange={handleAvatarUpload}
+      />
+    </div>
+
+    <div>
+      <p className="text-base font-bold text-gray-900">{profile.name}</p>
+      <p className="text-sm text-gray-500">{profile.email}</p>
+      {profile.baseProfile?.avatarUrl && (
+        <button
+          onClick={handleRemoveAvatar}
+          disabled={uploading}
+          className="mt-1 flex items-center gap-1 text-[11px] text-gray-400 hover:text-red-500 transition-colors cursor-pointer disabled:opacity-50"
+        >
+          <TrashIcon className="h-3 w-3" />
+          Remove photo
+        </button>
+      )}
+    </div>
+  </div>
+
+  <button onClick={() => setEditingInfo(true)} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 border border-gray-200 rounded-xl hover:bg-gray-50 cursor-pointer">
+    <PencilIcon className="h-3.5 w-3.5" /> Edit
+  </button>
+</div>
             <div className="grid grid-cols-2 gap-3 text-sm">
               {[
                 { label: "Phone",   value: profile.baseProfile?.phone },
