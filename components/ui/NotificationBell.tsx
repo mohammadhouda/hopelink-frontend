@@ -34,11 +34,12 @@ const TYPE_COLOR: Record<string, string> = {
   error: "text-red-500 bg-red-50",
 };
 
-type Theme = "blue" | "emerald";
+type Theme = "blue" | "emerald" | "violet";
 
 const THEME: Record<Theme, { spinner: string; unreadBg: string; unreadDot: string; accent: string }> = {
   blue:    { spinner: "border-t-blue-600",    unreadBg: "bg-blue-50/30",    unreadDot: "bg-blue-500",    accent: "text-blue-600 hover:text-blue-700" },
   emerald: { spinner: "border-t-emerald-500", unreadBg: "bg-emerald-50/20", unreadDot: "bg-emerald-500", accent: "text-emerald-600 hover:text-emerald-700" },
+  violet:  { spinner: "border-t-violet-500",  unreadBg: "bg-violet-50/30",  unreadDot: "bg-violet-500",  accent: "text-violet-600 hover:text-violet-700" },
 };
 
 /* ── helpers ─────────────────────────────────────────────── */

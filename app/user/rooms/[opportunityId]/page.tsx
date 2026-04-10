@@ -121,15 +121,18 @@ export default function UserRoomPage() {
     const connect = async () => {
       try {
         const tokenRes = await userApi.get("/api/auth/socket-token");
-        const token = tokenRes.data?.token;
+        const token: string = tokenRes.data?.data?.token ?? tokenRes.data?.token ?? "";
         const socket = io(process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000", {
           auth: { token },
-          transports: ["websocket"],
+          transports: ["websocket", "polling"],
         });
         socketRef.current = socket;
 
         socket.on("connect", () => {
           socket.emit("join_room", { opportunityId: oppId });
+        });
+
+        socket.on("joined_room", () => {
           setSocketReady(true);
         });
 
