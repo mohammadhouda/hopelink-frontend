@@ -7,6 +7,7 @@ import {
   UsersIcon,
   InboxStackIcon,
   ChartBarIcon,
+  ShieldCheckIcon,
   Cog6ToothIcon,
   ArrowRightStartOnRectangleIcon,
 } from "@heroicons/react/24/outline";
@@ -16,6 +17,7 @@ import {
   UsersIcon as UsersIconSolid,
   InboxStackIcon as InboxStackIconSolid,
   ChartBarIcon as ChartBarIconSolid,
+  ShieldCheckIcon as ShieldCheckIconSolid,
   Cog6ToothIcon as Cog6ToothIconSolid,
 } from "@heroicons/react/24/solid";
 import api from "@/lib/axios";
@@ -34,8 +36,9 @@ export default function Sidebar() {
     { label: "NGOs", href: "/admin/ngo", icon: BuildingOfficeIcon, activeIcon: BuildingOfficeIconSolid },
     { label: "Users", href: "/admin/users", icon: UsersIcon, activeIcon: UsersIconSolid },
     { label: "Requests", href: "/admin/requests", icon: InboxStackIcon, activeIcon: InboxStackIconSolid },
-    { label: "Reports", href: "/admin/reports", icon: ChartBarIcon, activeIcon: ChartBarIconSolid },
-    { label: "Settings", href: "/admin/settings", icon: Cog6ToothIcon, activeIcon: Cog6ToothIconSolid },
+    { label: "Reports",     href: "/admin/reports",  icon: ChartBarIcon,    activeIcon: ChartBarIconSolid },
+    { label: "Roles",       href: "/admin/roles",    icon: ShieldCheckIcon, activeIcon: ShieldCheckIconSolid },
+    { label: "Settings",    href: "/admin/settings", icon: Cog6ToothIcon,   activeIcon: Cog6ToothIconSolid },
   ];
 
   const handleLogout = async () => {
@@ -53,7 +56,7 @@ export default function Sidebar() {
     <aside className="w-64 bg-white border-r border-gray-200 flex flex-col justify-between overflow-y-auto">
       <nav className="flex flex-col gap-1 px-3 py-4">
         {menuItems.map((item) => {
-          const isActive = pathname === item.href;
+          const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
           const Icon = isActive ? item.activeIcon : item.icon;
 
           return (

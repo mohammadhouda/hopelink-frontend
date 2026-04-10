@@ -1,6 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import { DocumentCheckIcon, PlusIcon, SparklesIcon, DocumentArrowDownIcon } from "@heroicons/react/24/outline";
+import { DocumentCheckIcon, PlusIcon, SparklesIcon, DocumentArrowDownIcon, CheckIcon, ArrowUpTrayIcon } from "@heroicons/react/24/outline";
 import charityApi from "@/lib/charityAxios";
 import Dropdown, { DropdownOption } from "@/components/charity/Dropdown";
 import FileUploader, { UploadedFile } from "@/components/Fileuploader";
@@ -249,75 +249,157 @@ const handleIndividual = async (e: React.FormEvent) => {
 
       {/* Individual modal */}
       {showIndividual && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 space-y-4">
+  <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+      {/* Accent bar */}
+      <div className="h-1 bg-gradient-to-r from-emerald-400 via-teal-500 to-emerald-600" />
+
+      <div className="p-6">
+        {/* Header */}
+        <div className="flex items-center gap-3 mb-6">
+          <div className="h-10 w-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center">
+            <DocumentArrowDownIcon className="h-5 w-5 text-emerald-600" />
+          </div>
+          <div>
             <h2 className="text-base font-bold text-gray-900">Issue Certificate</h2>
-            <form onSubmit={handleIndividual} className="space-y-4">
-              <FormField label="Ended Opportunity" required>
-                <Dropdown
-                  value={selectedOpp}
-                  onChange={onOppChange}
-                  options={oppOptions}
-                  placeholder="Select opportunity..."
-                />
-              </FormField>
-              <FormField label="Volunteer" required>
-                <Dropdown
-                  value={selectedVol}
-                  onChange={setSelectedVol}
-                  options={volOptions}
-                  placeholder={loadingVols ? "Loading..." : "Select volunteer..."}
-                  disabled={!selectedOpp || loadingVols}
-                />
-              </FormField>
-
-              {/* PDF option */}
-              <div className="space-y-3">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Certificate PDF
-                </label>
-                <div className="flex items-center gap-4">
-                  <label className="flex items-center gap-1.5 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="pdfMode"
-                      checked={!useCustomPdf}
-                      onChange={() => setUseCustomPdf(false)}
-                      className="accent-emerald-500"
-                    />
-                    <span className="text-sm text-gray-700">Auto-generate</span>
-                  </label>
-                  <label className="flex items-center gap-1.5 cursor-pointer">
-                    <input
-                      type="radio"
-                      name="pdfMode"
-                      checked={useCustomPdf}
-                      onChange={() => setUseCustomPdf(true)}
-                      className="accent-emerald-500"
-                    />
-                    <span className="text-sm text-gray-700">Upload my own</span>
-                  </label>
-                </div>
-                {useCustomPdf && (
-                  <FileUploader
-                    files={pdfUploadFiles}
-                    onChange={setPdfUploadFiles}
-                    bucket="documents"
-                    maxFiles={1}
-                  />
-                )}
-              </div>
-
-              <div className="flex justify-end gap-2 pt-1">
-                <button type="button" onClick={() => setShowIndividual(false)} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-xl cursor-pointer">Cancel</button>
-                <button type="submit" disabled={submitting || !selectedOpp || !selectedVol || (useCustomPdf && pdfUploadFiles.length === 0) || (useCustomPdf && pdfUploadFiles[0]?.uploading)} className="px-5 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-sm font-semibold rounded-xl cursor-pointer disabled:opacity-60">
-                  {submitting ? "Issuing..." : "Issue Certificate"}
-                </button>
-              </div>
-            </form>
+            <p className="text-xs text-gray-400 mt-0.5">Generate and assign to a volunteer</p>
           </div>
         </div>
-      )}
+
+        <form onSubmit={handleIndividual} className="space-y-5">
+          <FormField label="Ended Opportunity" required>
+            <Dropdown
+              value={selectedOpp}
+              onChange={onOppChange}
+              options={oppOptions}
+              placeholder="Select opportunity..."
+            />
+          </FormField>
+
+          <FormField label="Volunteer" required>
+            <Dropdown
+              value={selectedVol}
+              onChange={setSelectedVol}
+              options={volOptions}
+              placeholder={loadingVols ? "Loading..." : "Select volunteer..."}
+              disabled={!selectedOpp || loadingVols}
+            />
+          </FormField>
+
+          {/* PDF mode selector */}
+          <div>
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-3">
+              Certificate PDF
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              {/* Auto-generate card */}
+              <button
+                type="button"
+                onClick={() => setUseCustomPdf(false)}
+                className={`relative p-4 rounded-xl border-2 text-left transition-all cursor-pointer ${
+                  !useCustomPdf
+                    ? "border-emerald-400 bg-emerald-50/50"
+                    : "border-gray-200 bg-white hover:border-gray-300"
+                }`}
+              >
+                {!useCustomPdf && (
+                  <div className="absolute top-2.5 right-2.5 h-5 w-5 rounded-full bg-emerald-500 flex items-center justify-center">
+                    <CheckIcon className="h-3 w-3 text-white" />
+                  </div>
+                )}
+                <div className={`h-8 w-8 rounded-lg flex items-center justify-center mb-2.5 ${
+                  !useCustomPdf ? "bg-emerald-100" : "bg-gray-100"
+                }`}>
+                  <SparklesIcon className={`h-4 w-4 ${!useCustomPdf ? "text-emerald-600" : "text-gray-400"}`} />
+                </div>
+                <p className={`text-sm font-semibold ${!useCustomPdf ? "text-emerald-900" : "text-gray-700"}`}>
+                  Auto-generate
+                </p>
+                <p className={`text-[11px] mt-0.5 ${!useCustomPdf ? "text-emerald-600" : "text-gray-400"}`}>
+                  Professional PDF created automatically
+                </p>
+              </button>
+
+              {/* Upload card */}
+              <button
+                type="button"
+                onClick={() => setUseCustomPdf(true)}
+                className={`relative p-4 rounded-xl border-2 text-left transition-all cursor-pointer ${
+                  useCustomPdf
+                    ? "border-emerald-400 bg-emerald-50/50"
+                    : "border-gray-200 bg-white hover:border-gray-300"
+                }`}
+              >
+                {useCustomPdf && (
+                  <div className="absolute top-2.5 right-2.5 h-5 w-5 rounded-full bg-emerald-500 flex items-center justify-center">
+                    <CheckIcon className="h-3 w-3 text-white" />
+                  </div>
+                )}
+                <div className={`h-8 w-8 rounded-lg flex items-center justify-center mb-2.5 ${
+                  useCustomPdf ? "bg-emerald-100" : "bg-gray-100"
+                }`}>
+                  <ArrowUpTrayIcon className={`h-4 w-4 ${useCustomPdf ? "text-emerald-600" : "text-gray-400"}`} />
+                </div>
+                <p className={`text-sm font-semibold ${useCustomPdf ? "text-emerald-900" : "text-gray-700"}`}>
+                  Upload custom
+                </p>
+                <p className={`text-[11px] mt-0.5 ${useCustomPdf ? "text-emerald-600" : "text-gray-400"}`}>
+                  Use your own designed PDF
+                </p>
+              </button>
+            </div>
+
+            {/* File uploader (shown when custom selected) */}
+            {useCustomPdf && (
+              <div className="mt-3">
+                <FileUploader
+                  files={pdfUploadFiles}
+                  onChange={setPdfUploadFiles}
+                  bucket="documents"
+                  maxFiles={1}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Actions */}
+          <div className="flex justify-end gap-2 pt-2 border-t border-gray-100">
+            <button
+              type="button"
+              onClick={() => setShowIndividual(false)}
+              className="px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={
+                submitting ||
+                !selectedOpp ||
+                !selectedVol ||
+                (useCustomPdf && pdfUploadFiles.length === 0) ||
+                (useCustomPdf && pdfUploadFiles[0]?.uploading)
+              }
+              className="px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-sm font-semibold rounded-xl shadow-sm shadow-emerald-200 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            >
+              {submitting ? (
+                <>
+                  <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                  </svg>
+                  Issuing...
+                </>
+              ) : (
+                "Issue Certificate"
+              )}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+)}
 
       {/* Bulk modal */}
       {showBulk && (
