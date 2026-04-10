@@ -122,8 +122,8 @@ export default function ProfilePage() {
     const uploadRes = await userApi.post("/api/upload/single?bucket=logos&folder=profile", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
-    const avatarUrl = uploadRes.data.data.url;
-    await userApi.patch("/api/user/profile", { avatarUrl });
+    const avatarPath = uploadRes.data.data.path;
+    await userApi.patch("/api/user/profile", { avatarUrl: avatarPath });
     fetchProfile();
     refreshVolunteer();
   } catch {

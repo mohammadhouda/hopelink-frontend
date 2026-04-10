@@ -74,7 +74,7 @@ export default function CharityNavbar() {
                 <div className="h-8 w-8 rounded-full bg-emerald-100 overflow-hidden flex items-center justify-center text-sm font-semibold text-emerald-700">
                   {charity?.logoUrl ? (
                     <img
-                      src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/logos/${charity.logoUrl}`}
+                      src={getAvatarUrl(charity.logoUrl)!}
                       alt={charity?.name}
                       className="h-full w-full object-cover"
                     />

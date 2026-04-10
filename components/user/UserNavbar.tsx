@@ -10,6 +10,7 @@ import {
 } from "@heroicons/react/24/outline";
 import userApi from "@/lib/userAxios";
 import NotificationBell from "@/components/ui/NotificationBell";
+import { getAvatarUrl } from "@/lib/avatarUrl";
 
 interface UserNavbarProps {
   onMenuToggle?: () => void;
@@ -89,7 +90,7 @@ export default function UserNavbar({ onMenuToggle }: UserNavbarProps) {
                 <div className="h-8 w-8 rounded-full bg-violet-100 overflow-hidden flex items-center justify-center text-sm font-semibold text-violet-700">
                   {avatarUrl ? (
                     <img
-                      src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/logos/${avatarUrl}`}
+                      src={getAvatarUrl(avatarUrl)!}
                       alt={volunteer?.name}
                       className="h-full w-full object-cover"
                     />

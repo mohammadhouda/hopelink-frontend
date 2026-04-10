@@ -65,7 +65,7 @@ export default function Navbar() {
                 <div className="h-8 w-8 rounded-full bg-gray-300 overflow-hidden flex items-center justify-center text-sm font-medium text-gray-600">
                   {user?.avatarUrl ? (
                     <img
-                      src={`${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/logos/${user.avatarUrl}`}
+                      src={getAvatarUrl(user.avatarUrl)!}
                       alt={user?.name}
                       className="h-full w-full object-cover"
                     />

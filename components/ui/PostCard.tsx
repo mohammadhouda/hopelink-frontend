@@ -7,6 +7,7 @@ import {
   PaperAirplaneIcon,
 } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartSolid } from "@heroicons/react/24/solid";
+import { getAvatarUrl } from "@/lib/avatarUrl";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 export interface PostAuthor {
@@ -60,10 +61,11 @@ function timeAgo(iso: string) {
 }
 
 function Avatar({ author }: { author: PostAuthor }) {
-  const imgUrl =
+  const rawPath =
     author.role === "CHARITY"
       ? author.charityAccount?.logoUrl
       : author.baseProfile?.avatarUrl;
+  const imgUrl = getAvatarUrl(rawPath);
   const displayName =
     author.role === "CHARITY" ? author.charityAccount?.name ?? author.name : author.name;
   const initials = displayName
@@ -283,7 +285,7 @@ export default function PostCard({
             return (
               <div key={c.id} className="flex items-start gap-2 group">
                 {cImg ? (
-                  <img src={cImg} alt={cName} className="h-7 w-7 rounded-full object-cover shrink-0 mt-0.5" />
+                  <img src={getAvatarUrl(cImg)!} alt={cName} className="h-7 w-7 rounded-full object-cover shrink-0 mt-0.5" />
                 ) : (
                   <div className="h-7 w-7 rounded-full bg-gray-100 flex items-center justify-center shrink-0 mt-0.5">
                     <span className="text-xs font-semibold text-gray-400">{cName[0]?.toUpperCase()}</span>

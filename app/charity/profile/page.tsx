@@ -61,9 +61,9 @@ export default function CharityProfilePage() {
       const uploadRes = await charityApi.post("/api/upload/single?bucket=logos&folder=profile", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      const logoUrl = uploadRes.data.data.url;
-      await charityApi.patch("/api/charity/profile", { logoUrl });
-      setForm((prev) => ({ ...prev, logoUrl }));
+      const logoPath = uploadRes.data.data.path;
+      await charityApi.patch("/api/charity/profile", { logoUrl: logoPath });
+      setForm((prev) => ({ ...prev, logoUrl: logoPath }));
       refreshCharity();
       setSuccess(true);
     } catch {

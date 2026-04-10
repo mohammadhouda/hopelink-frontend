@@ -169,10 +169,10 @@ function AvatarCard({
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      const avatarUrl = uploadRes.data.data.url;
+      const avatarPath = uploadRes.data.data.path;
 
       // Update the profile with the new avatar URL
-      const profileRes = await api.put("/api/admin/profile/avatar", { avatarUrl });
+      const profileRes = await api.put("/api/admin/profile/avatar", { avatarUrl: avatarPath });
       setProfile(profileRes.data);
       setToast({ type: "success", message: "Avatar updated" });
     } catch {
