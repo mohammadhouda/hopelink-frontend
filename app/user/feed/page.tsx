@@ -4,6 +4,7 @@ import { PlusIcon, NewspaperIcon } from "@heroicons/react/24/outline";
 import userApi from "@/lib/userAxios";
 import PostCard, { PostData } from "@/components/ui/PostCard";
 import CreatePostModal from "@/components/ui/CreatePostModal";
+import { getAvatarUrl } from "@/lib/avatarUrl";
 
 interface Me {
   id: number;
@@ -93,7 +94,7 @@ export default function UserFeedPage() {
           className="w-full flex items-center gap-3 bg-white border border-gray-100 rounded-2xl px-5 py-3.5 shadow-sm hover:shadow-md transition-shadow text-left"
         >
           {me.baseProfile?.avatarUrl ? (
-            <img src={me.baseProfile.avatarUrl} alt={me.name} className="h-9 w-9 rounded-full object-cover shrink-0" />
+            <img src={getAvatarUrl(me.baseProfile.avatarUrl)!} alt={me.name} className="h-9 w-9 rounded-full object-cover shrink-0" />
           ) : (
             <div className="h-9 w-9 rounded-full bg-violet-100 flex items-center justify-center shrink-0">
               <span className="text-xs font-semibold text-violet-600">{me.name[0]?.toUpperCase()}</span>

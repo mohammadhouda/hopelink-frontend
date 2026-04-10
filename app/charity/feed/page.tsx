@@ -4,6 +4,7 @@ import { PlusIcon, NewspaperIcon } from "@heroicons/react/24/outline";
 import charityApi from "@/lib/charityAxios";
 import PostCard, { PostData } from "@/components/ui/PostCard";
 import CreatePostModal from "@/components/ui/CreatePostModal";
+import { getAvatarUrl } from "@/lib/avatarUrl";
 
 interface Me {
   id: number;
@@ -96,7 +97,7 @@ export default function CharityFeedPage() {
           className="w-full flex items-center gap-3 bg-white border border-gray-100 rounded-2xl px-5 py-3.5 shadow-sm hover:shadow-md transition-shadow text-left"
         >
           {charityLogo ? (
-            <img src={charityLogo} alt={charityName} className="h-9 w-9 rounded-full object-cover shrink-0" />
+            <img src={getAvatarUrl(charityLogo)!} alt={charityName} className="h-9 w-9 rounded-full object-cover shrink-0" />
           ) : (
             <div className="h-9 w-9 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
               <span className="text-xs font-semibold text-emerald-600">{charityName[0]?.toUpperCase()}</span>
