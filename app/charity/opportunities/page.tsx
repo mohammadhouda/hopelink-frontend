@@ -1,20 +1,25 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { PlusIcon, PencilIcon, TrashIcon, CalendarIcon, StopCircleIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, PencilIcon, TrashIcon, CalendarIcon, StopCircleIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import charityApi from "@/lib/charityAxios";
 import ConfirmModal from "@/components/ConfirmModal";
 import Dropdown from "@/components/charity/Dropdown";
+
+const DAYS = ["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY","SUNDAY"] as const;
+const DAY_SHORT: Record<string, string> = { MONDAY:"Mon", TUESDAY:"Tue", WEDNESDAY:"Wed", THURSDAY:"Thu", FRIDAY:"Fri", SATURDAY:"Sat", SUNDAY:"Sun" };
 
 interface Opportunity {
   id: number;
   title: string;
   description?: string;
   status: "OPEN" | "CLOSED" | "ENDED" | "FULL";
-  maxSlots: number;          // API returns "maxSlots" not "slots"
-  startDate?: string;        // API returns "startDate" not "date"
+  maxSlots: number;
+  startDate?: string;
   endDate?: string;
   location?: string;
+  requiredSkills: string[];
+  availabilityDays: string[];
   projectId?: number;
   createdAt: string;
   project?: { id: number; title: string } | null;
@@ -49,7 +54,9 @@ export default function OpportunitiesPage() {
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
     title: "", description: "", slots: "1", date: "", location: "", projectId: "",
+    requiredSkills: [] as string[], availabilityDays: [] as string[],
   });
+  const [newSkill, setNewSkill] = useState("");
 
 const fetchData = () => {
   setLoading(true);
@@ -68,14 +75,15 @@ const fetchData = () => {
     const projectId = searchParams.get("projectId");
     if (projectId) {
       setEditOpp(null);
-      setForm({ title: "", description: "", slots: "1", date: "", location: "", projectId });
+      setForm({ title: "", description: "", slots: "1", date: "", location: "", projectId, requiredSkills: [], availabilityDays: [] });
       setShowForm(true);
     }
   }, [searchParams]);
 
   const openCreate = () => {
     setEditOpp(null);
-    setForm({ title: "", description: "", slots: "1", date: "", location: "", projectId: "" });
+    setForm({ title: "", description: "", slots: "1", date: "", location: "", projectId: "", requiredSkills: [], availabilityDays: [] });
+    setNewSkill("");
     setShowForm(true);
   };
 
@@ -88,7 +96,10 @@ const fetchData = () => {
       date: o.startDate ? o.startDate.slice(0, 10) : "",
       location: o.location || "",
       projectId: o.projectId ? String(o.projectId) : "",
+      requiredSkills: o.requiredSkills || [],
+      availabilityDays: o.availabilityDays || [],
     });
+    setNewSkill("");
     setShowForm(true);
   };
 
@@ -148,7 +159,7 @@ const handleEnd = async () => {
         </div>
         <button
           onClick={openCreate}
-          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-all cursor-pointer"
+          className="flex items-center gap-2 px-4 py-2 bg-linear-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-all cursor-pointer"
         >
           <PlusIcon className="h-4 w-4" /> New Opportunity
         </button>
@@ -270,6 +281,55 @@ const handleEnd = async () => {
               <FormField label="Location">
                 <input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} className="modal-input" placeholder="City or address" />
               </FormField>
+              {/* Required Skills */}
+              <FormField label="Required Skills">
+                <div className="space-y-2">
+                  <div className="flex flex-wrap gap-1.5 min-h-7">
+                    {form.requiredSkills.map((skill) => (
+                      <span key={skill} className="inline-flex items-center gap-1 px-2.5 py-0.5 text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full">
+                        {skill}
+                        <button type="button" onClick={() => setForm({ ...form, requiredSkills: form.requiredSkills.filter((s) => s !== skill) })} className="hover:text-red-500 cursor-pointer"><XMarkIcon className="h-3 w-3" /></button>
+                      </span>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      value={newSkill}
+                      onChange={(e) => setNewSkill(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); const s = newSkill.trim(); if (s && !form.requiredSkills.includes(s)) { setForm({ ...form, requiredSkills: [...form.requiredSkills, s] }); setNewSkill(""); } } }}
+                      placeholder="Add skill (press Enter)"
+                      className="modal-input flex-1"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => { const s = newSkill.trim(); if (s && !form.requiredSkills.includes(s)) { setForm({ ...form, requiredSkills: [...form.requiredSkills, s] }); setNewSkill(""); } }}
+                      className="px-3 py-1.5 text-xs font-semibold bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-lg hover:bg-emerald-100 cursor-pointer"
+                    >
+                      Add
+                    </button>
+                  </div>
+                </div>
+              </FormField>
+
+              {/* Availability Days */}
+              <FormField label="Available Days">
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {DAYS.map((day) => {
+                    const active = form.availabilityDays.includes(day);
+                    return (
+                      <button
+                        key={day}
+                        type="button"
+                        onClick={() => setForm({ ...form, availabilityDays: active ? form.availabilityDays.filter((d) => d !== day) : [...form.availabilityDays, day] })}
+                        className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all cursor-pointer ${active ? "bg-emerald-600 text-white border-emerald-600" : "bg-gray-50 text-gray-500 border-gray-200 hover:border-emerald-300 hover:text-emerald-600"}`}
+                      >
+                        {DAY_SHORT[day]}
+                      </button>
+                    );
+                  })}
+                </div>
+              </FormField>
+
               <FormField label="Project (optional)">
                 <Dropdown
                   value={form.projectId}
@@ -284,7 +344,7 @@ const handleEnd = async () => {
                 <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-xl transition-colors cursor-pointer">
                   Cancel
                 </button>
-                <button type="submit" disabled={submitting} className="px-5 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-sm font-semibold rounded-xl transition-all cursor-pointer disabled:opacity-60">
+                <button type="submit" disabled={submitting} className="px-5 py-2 bg-linear-to-r from-emerald-500 to-teal-600 text-white text-sm font-semibold rounded-xl transition-all cursor-pointer disabled:opacity-60">
                   {submitting ? "Saving..." : editOpp ? "Save changes" : "Create"}
                 </button>
               </div>

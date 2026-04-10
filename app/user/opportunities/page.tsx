@@ -9,6 +9,7 @@ import {
   FunnelIcon,
   BuildingOffice2Icon,
   CheckBadgeIcon,
+  SparklesIcon,
 } from "@heroicons/react/24/outline";
 import userApi from "@/lib/userAxios";
 
@@ -21,7 +22,10 @@ interface Opportunity {
   startDate?: string;
   endDate?: string;
   location?: string;
+  requiredSkills: string[];
+  availabilityDays: string[];
   myApplicationStatus?: string | null;
+  matchScore?: number | null;
   charity: { id: number; name: string; logoUrl?: string; category?: string; isVerified?: boolean };
   _count?: { applications: number };
 }
@@ -54,6 +58,7 @@ export default function OpportunitiesPage() {
   const router = useRouter();
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [total, setTotal] = useState(0);
+  const [hasProfile, setHasProfile] = useState(false);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
@@ -70,6 +75,7 @@ export default function OpportunitiesPage() {
       .then((res) => {
         setOpportunities(res.data?.data?.opportunities || []);
         setTotal(res.data?.data?.total || 0);
+        setHasProfile(res.data?.data?.hasProfile || false);
       })
       .finally(() => setLoading(false));
   }, [search, category, page]);
@@ -124,11 +130,18 @@ export default function OpportunitiesPage() {
         </div>
       </div>
 
-      {/* Results count */}
+      {/* Results count + sort note */}
       {!loading && (
-        <p className="text-xs text-gray-400">
-          {total} {total === 1 ? "opportunity" : "opportunities"} found
-        </p>
+        <div className="flex items-center gap-2">
+          <p className="text-xs text-gray-400">
+            {total} {total === 1 ? "opportunity" : "opportunities"} found
+          </p>
+          {hasProfile && (
+            <span className="flex items-center gap-1 text-[11px] font-medium text-violet-600">
+              <SparklesIcon className="h-3 w-3" /> Sorted by match
+            </span>
+          )}
+        </div>
       )}
 
       {/* Grid */}
@@ -197,12 +210,35 @@ export default function OpportunitiesPage() {
                 </span>
               </div>
 
-              {/* Applied badge */}
-              {opp.myApplicationStatus && (
-                <div className={`text-[11px] font-semibold px-2.5 py-1 rounded-lg border text-center ${APP_STYLE[opp.myApplicationStatus]}`}>
-                  Applied — {opp.myApplicationStatus}
+              {/* Required skills */}
+              {opp.requiredSkills?.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {opp.requiredSkills.slice(0, 3).map((skill) => (
+                    <span key={skill} className="px-2 py-0.5 text-[10px] font-medium bg-violet-50 text-violet-600 border border-violet-100 rounded-full">
+                      {skill}
+                    </span>
+                  ))}
+                  {opp.requiredSkills.length > 3 && (
+                    <span className="px-2 py-0.5 text-[10px] font-medium bg-gray-50 text-gray-400 border border-gray-200 rounded-full">
+                      +{opp.requiredSkills.length - 3}
+                    </span>
+                  )}
                 </div>
               )}
+
+              {/* Applied badge + match score */}
+              <div className="flex items-center justify-between gap-2">
+                {opp.myApplicationStatus ? (
+                  <div className={`text-[11px] font-semibold px-2.5 py-1 rounded-lg border ${APP_STYLE[opp.myApplicationStatus]}`}>
+                    Applied — {opp.myApplicationStatus}
+                  </div>
+                ) : <div />}
+                {hasProfile && opp.matchScore != null && opp.matchScore > 0 && (
+                  <span className="flex items-center gap-1 text-[11px] font-semibold text-violet-600">
+                    <SparklesIcon className="h-3 w-3" />{opp.matchScore} pts
+                  </span>
+                )}
+              </div>
             </div>
           ))
         }
