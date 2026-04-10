@@ -13,6 +13,7 @@ import {
   BellIcon,
   ArrowRightStartOnRectangleIcon,
   UsersIcon,
+  NewspaperIcon,
 } from "@heroicons/react/24/outline";
 import {
   HomeIcon as HomeIconSolid,
@@ -25,12 +26,14 @@ import {
   UserCircleIcon as UserCircleIconSolid,
   BellIcon as BellIconSolid,
   UsersIcon as UsersIconSolid,
+  NewspaperIcon as NewspaperIconSolid,
 } from "@heroicons/react/24/solid";
 import charityApi from "@/lib/charityAxios";
 
 const menuItems = [
   { label: "Dashboard",     href: "/charity/dashboard",      icon: HomeIcon,                  activeIcon: HomeIconSolid },
   { label: "Projects",      href: "/charity/projects",       icon: FolderIcon,                activeIcon: FolderIconSolid },
+  { label: "Feed",          href: "/charity/feed",           icon: NewspaperIcon,             activeIcon: NewspaperIconSolid },
   { label: "Opportunities", href: "/charity/opportunities",  icon: CalendarIcon,              activeIcon: CalendarIconSolid },
   { label: "Applications",  href: "/charity/applications",   icon: ClipboardDocumentListIcon, activeIcon: ClipboardIconSolid },
   { label: "Volunteers",    href: "/charity/volunteers",     icon: UsersIcon,                 activeIcon: UsersIconSolid },

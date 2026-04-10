@@ -58,12 +58,12 @@ export default function CharityProfilePage() {
     try {
       const formData = new FormData();
       formData.append("file", file);
-      const uploadRes = await charityApi.post("/api/upload/single?bucket=logos", formData, {
+      const uploadRes = await charityApi.post("/api/upload/single?bucket=logos&folder=profile", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      const logoPath = uploadRes.data.data.path;
-      await charityApi.patch("/api/charity/profile", { logoUrl: logoPath });
-      setForm((prev) => ({ ...prev, logoUrl: logoPath }));
+      const logoUrl = uploadRes.data.data.url;
+      await charityApi.patch("/api/charity/profile", { logoUrl });
+      setForm((prev) => ({ ...prev, logoUrl }));
       refreshCharity();
       setSuccess(true);
     } catch {

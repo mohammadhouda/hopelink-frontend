@@ -119,11 +119,11 @@ export default function ProfilePage() {
   try {
     const formData = new FormData();
     formData.append("file", file);
-    const uploadRes = await userApi.post("/api/upload/single?bucket=logos", formData, {
+    const uploadRes = await userApi.post("/api/upload/single?bucket=logos&folder=profile", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
-    const avatarPath = uploadRes.data.data.path;
-    await userApi.patch("/api/user/profile", { avatarUrl: avatarPath });
+    const avatarUrl = uploadRes.data.data.url;
+    await userApi.patch("/api/user/profile", { avatarUrl });
     fetchProfile();
     refreshVolunteer();
   } catch {

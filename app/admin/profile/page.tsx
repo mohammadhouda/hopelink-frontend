@@ -165,14 +165,14 @@ function AvatarCard({
       const formData = new FormData();
       formData.append("file", file);
 
-      const uploadRes = await api.post("/api/upload/single?bucket=logos", formData, {
+      const uploadRes = await api.post("/api/upload/single?bucket=logos&folder=profile", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      const avatarPath = uploadRes.data.data.path;
+      const avatarUrl = uploadRes.data.data.url;
 
       // Update the profile with the new avatar URL
-      const profileRes = await api.put("/api/admin/profile/avatar", {  avatarUrl: avatarPath });
+      const profileRes = await api.put("/api/admin/profile/avatar", { avatarUrl });
       setProfile(profileRes.data);
       setToast({ type: "success", message: "Avatar updated" });
     } catch {

@@ -10,6 +10,7 @@ import {
   BellIcon,
   UserCircleIcon,
   ArrowRightStartOnRectangleIcon,
+  NewspaperIcon,
 } from "@heroicons/react/24/outline";
 import {
   HomeIcon as HomeIconSolid,
@@ -19,12 +20,14 @@ import {
   DocumentCheckIcon as DocumentCheckIconSolid,
   BellIcon as BellIconSolid,
   UserCircleIcon as UserCircleIconSolid,
+  NewspaperIcon as NewspaperIconSolid,
 } from "@heroicons/react/24/solid";
 import userApi from "@/lib/userAxios";
 
 const menuItems = [
   { label: "Dashboard",       href: "/user/dashboard",         icon: HomeIcon,                  activeIcon: HomeIconSolid },
   { label: "Opportunities",   href: "/user/opportunities",     icon: MagnifyingGlassIcon,       activeIcon: SearchIconSolid },
+  { label: "Feed",            href: "/user/feed",              icon: NewspaperIcon,             activeIcon: NewspaperIconSolid },
   { label: "Applications",    href: "/user/applications",      icon: ClipboardDocumentListIcon, activeIcon: ClipboardIconSolid },
   { label: "Chat Rooms",      href: "/user/rooms",             icon: ChatBubbleLeftRightIcon,   activeIcon: ChatIconSolid },
   { label: "Certificates",    href: "/user/certificates",      icon: DocumentCheckIcon,         activeIcon: DocumentCheckIconSolid },
