@@ -95,7 +95,7 @@ export default function NotificationBell({
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const t = THEME[theme];
+  const t = THEME[theme] ?? THEME.blue;
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
