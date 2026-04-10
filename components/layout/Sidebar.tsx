@@ -37,7 +37,6 @@ export default function Sidebar() {
     { label: "Users", href: "/admin/users", icon: UsersIcon, activeIcon: UsersIconSolid },
     { label: "Requests", href: "/admin/requests", icon: InboxStackIcon, activeIcon: InboxStackIconSolid },
     { label: "Reports",     href: "/admin/reports",  icon: ChartBarIcon,    activeIcon: ChartBarIconSolid },
-    { label: "Roles",       href: "/admin/roles",    icon: ShieldCheckIcon, activeIcon: ShieldCheckIconSolid },
     { label: "Settings",    href: "/admin/settings", icon: Cog6ToothIcon,   activeIcon: Cog6ToothIconSolid },
   ];
 

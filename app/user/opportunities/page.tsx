@@ -12,6 +12,7 @@ import {
   SparklesIcon,
 } from "@heroicons/react/24/outline";
 import userApi from "@/lib/userAxios";
+import CustomDropdown from "@/components/CustomDropdown";
 
 interface Opportunity {
   id: number;
@@ -117,16 +118,11 @@ export default function OpportunitiesPage() {
 
         <div className="flex items-center gap-2">
           <FunnelIcon className="h-4 w-4 text-gray-400 shrink-0" />
-          <select
+          <CustomDropdown
+            options={CATEGORIES.map((cat) => ({ value: cat, label: cat.replace("_", " ") }))}
             value={category}
-            onChange={(e) => { setCategory(e.target.value); setPage(1); }}
-            className="text-sm bg-white border border-gray-200 rounded-xl px-3 py-2.5 outline-none focus:border-violet-300 cursor-pointer"
-          >
-            <option value="">All Categories</option>
-            {CATEGORIES.map((c) => (
-              <option key={c} value={c}>{c.replace("_", " ")}</option>
-            ))}
-          </select>
+            onChange={(val) => { setCategory(val); setPage(1); }}
+          />
         </div>
       </div>
 
