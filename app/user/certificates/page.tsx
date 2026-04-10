@@ -1,11 +1,12 @@
 "use client";
 import { useState, useEffect } from "react";
-import { DocumentCheckIcon, CalendarDaysIcon, BuildingOffice2Icon, MapPinIcon } from "@heroicons/react/24/outline";
+import { DocumentCheckIcon, CalendarDaysIcon, BuildingOffice2Icon, MapPinIcon, DocumentArrowDownIcon } from "@heroicons/react/24/outline";
 import userApi from "@/lib/userAxios";
 
 interface Certificate {
   id: number;
   issuedAt: string;
+  pdfUrl?: string;
   opportunity: { id: number; title: string; startDate?: string; endDate?: string; location?: string };
   charity: { id: number; name: string; logoUrl?: string };
 }
@@ -99,6 +100,18 @@ export default function CertificatesPage() {
                   </span>
                   <span className="text-[11px] text-gray-400">{formatDate(cert.issuedAt)}</span>
                 </div>
+
+                {/* Download */}
+                {cert.pdfUrl && (
+                  <a
+                    href={cert.pdfUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-1.5 w-full mt-1 py-2 text-xs font-semibold text-violet-700 bg-violet-50 border border-violet-200 rounded-lg hover:bg-violet-100 transition-colors"
+                  >
+                    <DocumentArrowDownIcon className="h-3.5 w-3.5" /> Download PDF
+                  </a>
+                )}
               </div>
             </div>
           ))

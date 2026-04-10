@@ -1,12 +1,14 @@
 "use client";
 import { useState, useEffect } from "react";
-import { DocumentCheckIcon, PlusIcon, SparklesIcon } from "@heroicons/react/24/outline";
+import { DocumentCheckIcon, PlusIcon, SparklesIcon, DocumentArrowDownIcon } from "@heroicons/react/24/outline";
 import charityApi from "@/lib/charityAxios";
 import Dropdown, { DropdownOption } from "@/components/charity/Dropdown";
+import FileUploader, { UploadedFile } from "@/components/Fileuploader";
 
 interface Certificate {
   id: number;
   issuedAt: string;
+  pdfUrl?: string;
   certificateData: {
     charityName: string;
     volunteerName: string;
@@ -55,6 +57,8 @@ export default function CertificatesPage() {
   const [submitting, setSubmitting] = useState(false);
   const [loadingVols, setLoadingVols] = useState(false);
   const [bulkResult, setBulkResult] = useState<string | null>(null);
+  const [pdfUploadFiles, setPdfUploadFiles] = useState<UploadedFile[]>([]);
+  const [useCustomPdf, setUseCustomPdf] = useState(false);
 
   const fetchCertificates = () => {
     charityApi.get("/api/charity/certificates")
@@ -73,6 +77,8 @@ export default function CertificatesPage() {
     await loadOpportunities();
     setSelectedOpp("");
     setSelectedVol("");
+    setPdfUploadFiles([]);
+    setUseCustomPdf(false);
     setShowIndividual(true);
   };
 
@@ -104,11 +110,15 @@ const handleIndividual = async (e: React.FormEvent) => {
   setSubmitting(true);
   try {
     const volunteer = volunteers.find((v) => String(v.applicationId) === selectedVol);
+    const pdfFileUrl = useCustomPdf && pdfUploadFiles[0]?.url ? pdfUploadFiles[0].url : undefined;
     await charityApi.post("/api/charity/certificates", {
       volunteerId: volunteer?.volunteerId,
       opportunityId: parseInt(selectedOpp),
+      pdfFileUrl,
     });
     setShowIndividual(false);
+    setPdfUploadFiles([]);
+    setUseCustomPdf(false);
     fetchCertificates();
   } finally {
     setSubmitting(false);
@@ -217,15 +227,17 @@ const handleIndividual = async (e: React.FormEvent) => {
                       {new Date(c.issuedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                     </td>
                     <td className="px-5 py-3.5">
-                      {c.certificateUrl && (
+                      {(c.pdfUrl || c.certificateUrl) ? (
                         <a
-                          href={c.certificateUrl}
+                          href={c.pdfUrl || c.certificateUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-xs font-medium text-emerald-600 hover:text-emerald-700 underline underline-offset-2"
+                          className="inline-flex items-center gap-1 text-xs font-medium text-emerald-600 hover:text-emerald-700"
                         >
-                          View
+                          <DocumentArrowDownIcon className="h-3.5 w-3.5" /> Download
                         </a>
+                      ) : (
+                        <span className="text-xs text-gray-400">—</span>
                       )}
                     </td>
                   </tr>
@@ -258,9 +270,47 @@ const handleIndividual = async (e: React.FormEvent) => {
                   disabled={!selectedOpp || loadingVols}
                 />
               </FormField>
+
+              {/* PDF option */}
+              <div className="space-y-3">
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Certificate PDF
+                </label>
+                <div className="flex items-center gap-4">
+                  <label className="flex items-center gap-1.5 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="pdfMode"
+                      checked={!useCustomPdf}
+                      onChange={() => setUseCustomPdf(false)}
+                      className="accent-emerald-500"
+                    />
+                    <span className="text-sm text-gray-700">Auto-generate</span>
+                  </label>
+                  <label className="flex items-center gap-1.5 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="pdfMode"
+                      checked={useCustomPdf}
+                      onChange={() => setUseCustomPdf(true)}
+                      className="accent-emerald-500"
+                    />
+                    <span className="text-sm text-gray-700">Upload my own</span>
+                  </label>
+                </div>
+                {useCustomPdf && (
+                  <FileUploader
+                    files={pdfUploadFiles}
+                    onChange={setPdfUploadFiles}
+                    bucket="documents"
+                    maxFiles={1}
+                  />
+                )}
+              </div>
+
               <div className="flex justify-end gap-2 pt-1">
                 <button type="button" onClick={() => setShowIndividual(false)} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-xl cursor-pointer">Cancel</button>
-                <button type="submit" disabled={submitting || !selectedOpp || !selectedVol} className="px-5 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-sm font-semibold rounded-xl cursor-pointer disabled:opacity-60">
+                <button type="submit" disabled={submitting || !selectedOpp || !selectedVol || (useCustomPdf && pdfUploadFiles.length === 0) || (useCustomPdf && pdfUploadFiles[0]?.uploading)} className="px-5 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-sm font-semibold rounded-xl cursor-pointer disabled:opacity-60">
                   {submitting ? "Issuing..." : "Issue Certificate"}
                 </button>
               </div>
