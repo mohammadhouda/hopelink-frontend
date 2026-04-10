@@ -1,7 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import {
-  UserCircleIcon,
   PencilIcon,
   CheckIcon,
   XMarkIcon,
@@ -21,7 +20,7 @@ interface Profile {
   baseProfile?: { phone?: string; city?: string; country?: string; bio?: string; avatarUrl?: string } | null;
   volunteerProfile?: {
     isAvailable: boolean;
-    availabilityNote?: string;
+    availabilityDays: string[];
     experience?: string;
     skills: { id: number; skill: string }[];
     preferences: { id: number; type: string; value: string }[];
@@ -54,6 +53,8 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 const inputCls = "w-full px-3.5 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-violet-300 focus:bg-white focus:ring-2 focus:ring-violet-100 transition-all";
+const DAYS = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"] as const;
+const DAY_SHORT: Record<string, string> = { MONDAY: "Mon", TUESDAY: "Tue", WEDNESDAY: "Wed", THURSDAY: "Thu", FRIDAY: "Fri", SATURDAY: "Sat", SUNDAY: "Sun" };
 
 export default function ProfilePage() {
   const { refreshVolunteer } = useVolunteer();
@@ -66,7 +67,7 @@ export default function ProfilePage() {
   const [savingInfo, setSavingInfo] = useState(false);
 
   const [editingVolunteer, setEditingVolunteer] = useState(false);
-  const [volForm, setVolForm] = useState({ isAvailable: true, availabilityNote: "", experience: "" });
+  const [volForm, setVolForm] = useState({ isAvailable: true, availabilityDays: [] as string[], experience: "" });
   const [savingVol, setSavingVol] = useState(false);
 
   const [newSkill, setNewSkill] = useState("");
@@ -97,7 +98,7 @@ export default function ProfilePage() {
         });
         setVolForm({
           isAvailable: p?.volunteerProfile?.isAvailable ?? true,
-          availabilityNote: p?.volunteerProfile?.availabilityNote || "",
+          availabilityDays: p?.volunteerProfile?.availabilityDays || [],
           experience: p?.volunteerProfile?.experience || "",
         });
         setSkills((p?.volunteerProfile?.skills || []).map((s: { skill: string }) => s.skill));
@@ -179,7 +180,7 @@ const handleRemoveAvatar = async () => {
     }
   };
 
-  const savePassword = async (e: React.FormEvent) => {
+  const savePassword = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (pwForm.newPassword !== pwForm.confirmPassword) { setPwError("Passwords do not match."); return; }
     if (pwForm.newPassword.length < 8) { setPwError("Password must be at least 8 characters."); return; }
@@ -350,7 +351,23 @@ const handleRemoveAvatar = async () => {
               />
               <label htmlFor="available" className="text-sm font-medium text-gray-700">Available for volunteering</label>
             </div>
-            <Field label="Availability Note"><input value={volForm.availabilityNote} onChange={(e) => setVolForm({ ...volForm, availabilityNote: e.target.value })} placeholder="e.g., Weekends only" className={inputCls} /></Field>
+            <Field label="Available Days">
+              <div className="flex flex-wrap gap-2 mt-1">
+                {DAYS.map((day) => {
+                  const active = volForm.availabilityDays.includes(day);
+                  return (
+                    <button
+                      key={day}
+                      type="button"
+                      onClick={() => setVolForm({ ...volForm, availabilityDays: active ? volForm.availabilityDays.filter((d) => d !== day) : [...volForm.availabilityDays, day] })}
+                      className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all cursor-pointer ${active ? "bg-violet-600 text-white border-violet-600" : "bg-gray-50 text-gray-500 border-gray-200 hover:border-violet-300 hover:text-violet-600"}`}
+                    >
+                      {DAY_SHORT[day]}
+                    </button>
+                  );
+                })}
+              </div>
+            </Field>
             <Field label="Experience"><textarea value={volForm.experience} onChange={(e) => setVolForm({ ...volForm, experience: e.target.value })} rows={3} placeholder="Describe your volunteer experience..." className={`${inputCls} resize-none`} /></Field>
             <div className="flex gap-2 justify-end">
               <button onClick={() => setEditingVolunteer(false)} className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-xl cursor-pointer"><XMarkIcon className="h-4 w-4" /> Cancel</button>
@@ -360,13 +377,21 @@ const handleRemoveAvatar = async () => {
         ) : (
           <div>
             <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <span className={`h-2.5 w-2.5 rounded-full ${profile.volunteerProfile?.isAvailable ? "bg-emerald-500" : "bg-gray-400"}`} />
-                <span className="text-sm font-medium text-gray-700">
-                  {profile.volunteerProfile?.isAvailable ? "Available" : "Not available"}
-                </span>
-                {profile.volunteerProfile?.availabilityNote && (
-                  <span className="text-xs text-gray-400">— {profile.volunteerProfile.availabilityNote}</span>
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <span className={`h-2.5 w-2.5 rounded-full ${profile.volunteerProfile?.isAvailable ? "bg-emerald-500" : "bg-gray-400"}`} />
+                  <span className="text-sm font-medium text-gray-700">
+                    {profile.volunteerProfile?.isAvailable ? "Available" : "Not available"}
+                  </span>
+                </div>
+                {(profile.volunteerProfile?.availabilityDays?.length ?? 0) > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {profile.volunteerProfile!.availabilityDays.map((day) => (
+                      <span key={day} className="px-2.5 py-1 text-xs font-semibold bg-violet-50 text-violet-700 border border-violet-200 rounded-lg">
+                        {DAY_SHORT[day]}
+                      </span>
+                    ))}
+                  </div>
                 )}
               </div>
               <button onClick={() => setEditingVolunteer(true)} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 border border-gray-200 rounded-xl hover:bg-gray-50 cursor-pointer">
@@ -385,7 +410,7 @@ const handleRemoveAvatar = async () => {
       {/* Skills */}
       <Section title="Skills">
         <div className="space-y-4">
-          <div className="flex flex-wrap gap-2 min-h-[2rem]">
+          <div className="flex flex-wrap gap-2 min-h-8">
             {skills.length === 0
               ? <p className="text-sm text-gray-400 italic">No skills added yet.</p>
               : skills.map((skill) => (

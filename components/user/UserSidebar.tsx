@@ -9,6 +9,7 @@ import {
   DocumentCheckIcon,
   BellIcon,
   UserCircleIcon,
+  SparklesIcon,
   ArrowRightStartOnRectangleIcon,
 } from "@heroicons/react/24/outline";
 import {
@@ -19,17 +20,19 @@ import {
   DocumentCheckIcon as DocumentCheckIconSolid,
   BellIcon as BellIconSolid,
   UserCircleIcon as UserCircleIconSolid,
+  SparklesIcon as SparklesIconSolid,
 } from "@heroicons/react/24/solid";
 import userApi from "@/lib/userAxios";
 
 const menuItems = [
-  { label: "Dashboard",    href: "/user/dashboard",     icon: HomeIcon,                  activeIcon: HomeIconSolid },
-  { label: "Opportunities",href: "/user/opportunities", icon: MagnifyingGlassIcon,       activeIcon: SearchIconSolid },
-  { label: "Applications", href: "/user/applications",  icon: ClipboardDocumentListIcon, activeIcon: ClipboardIconSolid },
-  { label: "Chat Rooms",   href: "/user/rooms",         icon: ChatBubbleLeftRightIcon,   activeIcon: ChatIconSolid },
-  { label: "Certificates", href: "/user/certificates",  icon: DocumentCheckIcon,         activeIcon: DocumentCheckIconSolid },
-  { label: "Notifications",href: "/user/notifications", icon: BellIcon,                  activeIcon: BellIconSolid },
-  { label: "Profile",      href: "/user/profile",       icon: UserCircleIcon,            activeIcon: UserCircleIconSolid },
+  { label: "Dashboard",       href: "/user/dashboard",         icon: HomeIcon,                  activeIcon: HomeIconSolid },
+  { label: "Opportunities",   href: "/user/opportunities",     icon: MagnifyingGlassIcon,       activeIcon: SearchIconSolid },
+  { label: "Recommendations", href: "/user/recommendations",   icon: SparklesIcon,              activeIcon: SparklesIconSolid },
+  { label: "Applications",    href: "/user/applications",      icon: ClipboardDocumentListIcon, activeIcon: ClipboardIconSolid },
+  { label: "Chat Rooms",      href: "/user/rooms",             icon: ChatBubbleLeftRightIcon,   activeIcon: ChatIconSolid },
+  { label: "Certificates",    href: "/user/certificates",      icon: DocumentCheckIcon,         activeIcon: DocumentCheckIconSolid },
+  { label: "Notifications",   href: "/user/notifications",     icon: BellIcon,                  activeIcon: BellIconSolid },
+  { label: "Profile",         href: "/user/profile",           icon: UserCircleIcon,            activeIcon: UserCircleIconSolid },
 ];
 
 export default function UserSidebar() {
