@@ -1,22 +1,6 @@
 # Hope Link — Frontend
 
-A multi-portal Next.js application for the **Hope Link** NGO platform. Three portals — Admin, Charity, and User — run within a single Next.js instance under path prefixes. A middleware layer will transparently rewrite subdomains to these prefixes when a production domain is available.
-
----
-
-## Table of Contents
-
-- [Tech Stack](#tech-stack)
-- [Portal Overview](#portal-overview)
-- [Project Structure](#project-structure)
-- [Getting Started](#getting-started)
-- [Environment Variables](#environment-variables)
-- [Available Scripts](#available-scripts)
-- [Admin Portal](#admin-portal)
-- [Charity Portal](#charity-portal)
-- [Authentication & Security](#authentication--security)
-- [Real-time Chat](#real-time-chat)
-- [Components](#components)
+A multi-portal Next.js 15 application for the **Hope Link** NGO platform. Admin, Charity, and User portals run within a single Next.js instance under path prefixes — each with its own auth context, layout, and Axios instance.
 
 ---
 
@@ -24,92 +8,92 @@ A multi-portal Next.js application for the **Hope Link** NGO platform. Three por
 
 | Layer | Technology |
 |---|---|
-| Framework | Next.js 16 (App Router) |
+| Framework | Next.js 15 (App Router) |
 | Language | TypeScript 5 |
-| UI Library | React 19 |
+| UI | React 19 |
 | Styling | Tailwind CSS v4 |
-| HTTP Client | Axios (with token-refresh interceptor) |
+| HTTP | Axios (with silent-refresh interceptor) |
 | Real-time | Socket.io Client |
 | Charts | Recharts |
 | Icons | Heroicons v2 |
 | State | React Context API |
-| Font | Inter (@fontsource/inter) |
-| Linting | ESLint (eslint-config-next) |
+| Font | Inter |
 
 ---
 
 ## Portal Overview
 
-| Portal | Path Prefix | Login Route | Status |
+| Portal | Path prefix | Login route | Theme |
 |---|---|---|---|
-| Admin | `/admin/...` | `/login` | Complete |
-| Charity | `/charity/...` | `/charity/login` | Complete |
-| User | `/user/...` | — | Skeleton |
+| Admin | `/admin/...` | `/login` | Slate / gray |
+| Charity | `/charity/...` | `/charity/login` | Emerald / teal |
+| User | `/user/...` | `/user/login` | Violet / purple |
 
-Each portal has its own auth context, Axios instance, protected route guard, sidebar, and navbar. The login pages are intentionally isolated from their portal's layout so the auth guard never wraps them.
+Each portal has its own: layout, auth context, Axios instance, protected route guard, sidebar, and navbar. Login pages live in isolated route groups so the portal layout — and its auth guard — never wraps them.
 
 ---
 
 ## Project Structure
 
 ```
-admin-frontend/
+hopelink-frontend/
 ├── app/
-│   ├── (public)/                   # Admin login  →  /login
-│   │   └── login/page.tsx
-│   ├── (charity-public)/           # Charity login  →  /charity/login
-│   │   └── charity/login/page.tsx
+│   ├── (public)/                    # Admin login  →  /login
+│   ├── (charity-public)/            # Charity login  →  /charity/login
+│   ├── (user-public)/               # User login/register  →  /user/login
 │   │
-│   ├── admin/                      # Admin portal  →  /admin/...
-│   │   ├── layout.tsx              # UserProvider + ProtectedRoute + Sidebar + Navbar
+│   ├── admin/                       # Admin portal  →  /admin/...
+│   │   ├── layout.tsx               # UserProvider + ProtectedRoute + Sidebar + Navbar
 │   │   ├── dashboard/
-│   │   ├── ngo/[id]/
-│   │   ├── users/[id]/
+│   │   ├── ngo/  [id]/
+│   │   ├── users/  [id]/
 │   │   ├── requests/
 │   │   ├── notifications/
 │   │   ├── reports/
 │   │   ├── profile/
-│   │   └── settings/               # page.tsx + 6 sub-component files
+│   │   └── settings/
 │   │
-│   ├── charity/                    # Charity portal  →  /charity/...
-│   │   ├── layout.tsx              # CharityProvider + ProtectedCharityRoute + Sidebar + Navbar
+│   ├── charity/                     # Charity portal  →  /charity/...
+│   │   ├── layout.tsx               # CharityProvider + ProtectedCharityRoute
 │   │   ├── dashboard/
 │   │   ├── profile/
-│   │   ├── projects/[id]/
-│   │   ├── opportunities/[id]/
+│   │   ├── projects/  [id]/
+│   │   ├── opportunities/  [id]/
 │   │   ├── applications/
 │   │   ├── ratings/
 │   │   ├── certificates/
-│   │   └── rooms/[opportunityId]/
+│   │   ├── volunteers/
+│   │   ├── rooms/  [opportunityId]/
+│   │   └── feed/
 │   │
-│   ├── user/                       # User portal (skeleton)
-│   ├── globals.css
-│   └── layout.tsx                  # Root layout (Inter font, metadata)
+│   └── user/                        # User portal  →  /user/...
+│       ├── layout.tsx               # VolunteerProvider + ProtectedUserRoute
+│       ├── dashboard/
+│       ├── profile/
+│       ├── opportunities/  [id]/
+│       ├── applications/
+│       ├── recommendations/
+│       ├── certificates/
+│       ├── rooms/  [opportunityId]/
+│       ├── notifications/
+│       └── feed/
 │
 ├── components/
-│   ├── layout/
-│   │   ├── Navbar.tsx              # Admin top navbar
-│   │   └── Sidebar.tsx             # Admin sidebar
-│   ├── charity/
-│   │   ├── CharityNavbar.tsx       # Charity top navbar
-│   │   ├── CharitySidebar.tsx      # Charity sidebar
-│   │   └── ProtectedCharityRoute.tsx
-│   ├── ConfirmModal.tsx
-│   ├── CustomDatePicker.tsx
-│   ├── CustomDropdown.tsx
-│   ├── Fileuploader.tsx
-│   ├── ProtectedRoute.tsx
-│   └── logo.tsx
+│   ├── layout/          Navbar, Sidebar (admin)
+│   ├── charity/         CharityNavbar, CharitySidebar, ProtectedCharityRoute, Dropdown
+│   ├── user/            UserNavbar, UserSidebar, ProtectedUserRoute
+│   └── ui/              PostCard, CreatePostModal, NotificationBell
 │
 ├── context/
-│   ├── UserContext.tsx             # Admin auth state
-│   └── CharityContext.tsx          # Charity auth state
+│   ├── UserContext.tsx          Admin auth state
+│   ├── CharityContext.tsx       Charity auth state
+│   └── VolunteerContext.tsx     User/volunteer auth state
 │
-├── lib/
-│   ├── axios.ts                    # Admin Axios instance (redirects → /login)
-│   └── charityAxios.ts             # Charity Axios instance (redirects → /charity/login)
-│
-└── public/
+└── lib/
+    ├── axios.ts            Admin Axios (redirects → /login on 401)
+    ├── charityAxios.ts     Charity Axios (redirects → /charity/login on 401)
+    ├── userAxios.ts        User Axios (redirects → /user/login on 401)
+    └── avatarUrl.ts        getAvatarUrl() — resolves paths to CDN URLs
 ```
 
 ---
@@ -119,258 +103,185 @@ admin-frontend/
 ### Prerequisites
 
 - Node.js 18+
-- A running instance of the Hope Link backend API
+- Running instance of the Hope Link backend API
 
 ### Installation
 
 ```bash
-# 1. Clone the repository
 git clone <repository-url>
-cd admin-frontend
-
-# 2. Install dependencies
+cd hopelink-frontend
 npm install
-
-# 3. Configure environment variables
-cp .env.example .env
-# Edit .env with your values
-
-# 4. Start the development server
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) — redirects to `/admin/dashboard`.
+Open [http://localhost:3000](http://localhost:3000).
 
----
-
-## Environment Variables
+### Environment Variables
 
 ```env
-# Backend API base URL
 NEXT_PUBLIC_API_URL=http://localhost:5000
-
-# Supabase project URL (used for avatar / logo CDN)
-NEXT_PUBLIC_SUPABASE_URL=https://<your-project>.supabase.co
-```
-
-| Variable | Required | Description |
-|---|---|---|
-| `NEXT_PUBLIC_API_URL` | Yes | Base URL for all backend API calls |
-| `NEXT_PUBLIC_SUPABASE_URL` | Yes | Supabase project URL for media storage |
-
----
-
-## Available Scripts
-
-```bash
-npm run dev      # Development server with hot reload  →  :3000
-npm run build    # Production build
-npm start        # Start production server (after build)
-npm run lint     # ESLint
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 ```
 
 ---
 
-## Admin Portal
+## Pages
 
-**Login:** `/login` — dark slate split-panel design
-
-### Features
-
-**Dashboard**
-- KPI cards: pending requests, active users, active projects
-- Registration trends line chart (7 months)
-- NGOs by city bar chart
-- Pending actions table with quick-review shortcuts
-- Recent decisions feed
-
-**NGO / Charity Management**
-- Paginated list with search, status, category, and city filters
-- Add / edit charity organizations
-- Individual charity profile with project listings
-- Status management (active / suspended / pending)
-
-**User Management**
-- Paginated user list with search and multi-filter
-- Add / edit users with role assignment
-- Individual user detail and activity history
-- Delete with confirmation
-
-**Request Management**
-- Tabbed view: Registration Requests / Verification Requests
-- Inline document review
-- Approve or decline with reviewer notes
-
-**Notifications**
-- Full notification feed with type filters
-- Mark individual or all as read, delete
-- Unread badge counter in navbar (polled every 30s)
-- Notifications are scoped per user — admin notifications are never visible in the charity portal
-
-**Reports & Analytics**
-- Registration trends, NGO distribution, user analytics, project stats
-- Multiple chart types via Recharts
-- CSV export
-
-**Profile & Settings**
-- Edit personal info, change password, upload avatar
-- Settings modules: Platform, Roles & Permissions, Security, Email Templates, Audit Log, API & Integrations
-
-### Admin Routes
+### Admin  `/admin/...`
 
 | Route | Description |
 |---|---|
 | `/login` | Admin sign-in |
-| `/admin/dashboard` | Metrics and overview |
-| `/admin/ngo` | NGO listing |
-| `/admin/ngo/[id]` | NGO detail |
-| `/admin/users` | User listing |
-| `/admin/users/[id]` | User detail |
-| `/admin/requests` | Request review |
+| `/admin/dashboard` | KPI cards, charts, pending actions |
+| `/admin/ngo` · `[id]` | Charity list and detail |
+| `/admin/users` · `[id]` | User management |
+| `/admin/requests` | Registration and verification request review |
+| `/admin/reports` | Analytics with Recharts |
 | `/admin/notifications` | Notification center |
-| `/admin/reports` | Analytics |
-| `/admin/profile` | Profile settings |
-| `/admin/settings` | Platform configuration |
+| `/admin/profile` | Personal settings |
+| `/admin/settings` | Platform config, roles, email templates, API keys, audit log |
 
----
-
-## Charity Portal
-
-**Login:** `/charity/login` — dark emerald/teal gradient centered-card design (distinct from admin)
-
-### Features
-
-**Dashboard**
-- KPI cards: total volunteers, active opportunities, pending applications, certificates issued
-- Average rating summary
-- Applications trend line chart
-- Opportunities by status bar chart
-- Recent applications table
-
-**Projects** — `/charity/projects`, `/charity/projects/[id]`
-- Full CRUD with inline modal
-- Project detail page showing only opportunities linked to that project
-- "New Opportunity" button on the detail page navigates to `/charity/opportunities?projectId=X`, pre-filling the project in the create form
-
-**Opportunities** — `/charity/opportunities`, `/charity/opportunities/[id]`
-- Create, edit, delete, and end opportunities
-- Optional project assignment — opportunities can be linked to a project via the `projectId` field
-- When opened with `?projectId=X` in the URL, the create form opens automatically with that project pre-selected
-- Per-opportunity application review (approve / decline with optional reason)
-- Auto-creates a volunteer chat room on first approval
-
-**Applications** — `/charity/applications`
-- Filterable by status (Pending / Approved / Declined) and opportunity
-- Bulk review from a single page
-
-**Ratings** — `/charity/ratings`
-- Rate volunteers (1–5 stars) after an opportunity has ended
-- Only available for approved volunteers of ended opportunities
-- Running average display
-
-**Certificates** — `/charity/certificates`
-- Issue certificates to individual volunteers
-- Bulk-issue to all approved volunteers for an ended opportunity
-
-**Chat Rooms** — `/charity/rooms`, `/charity/rooms/[opportunityId]`
-- Rooms auto-created on first application approval, auto-closed when opportunity ends
-- Active / closed room list with last-message preview
-- Real-time messaging (Socket.io), typing indicators, paginated message history
-- Collapsible members panel, manual close room action
-
-### Charity Routes
+### Charity  `/charity/...`
 
 | Route | Description |
 |---|---|
 | `/charity/login` | Charity sign-in |
-| `/charity/dashboard` | Analytics overview |
-| `/charity/profile` | Charity profile edit |
-| `/charity/projects` | Project list and CRUD |
-| `/charity/projects/[id]` | Project detail |
-| `/charity/opportunities` | Opportunity list and CRUD |
-| `/charity/opportunities/[id]` | Opportunity detail + application review |
-| `/charity/applications` | All applications with filters |
-| `/charity/ratings` | Volunteer ratings |
-| `/charity/certificates` | Certificate management |
-| `/charity/rooms` | Chat room list |
-| `/charity/rooms/[opportunityId]` | Real-time chat room |
+| `/charity/dashboard` | KPI cards, applications trend, opportunity status chart |
+| `/charity/profile` | Name, logo, description, contact info |
+| `/charity/projects` · `[id]` | Project CRUD, project detail with linked opportunities |
+| `/charity/opportunities` · `[id]` | Opportunity CRUD, per-opportunity application review |
+| `/charity/applications` | All applications — filter by status, opportunity, date |
+| `/charity/ratings` | Rate volunteers (star picker, 1–5, ENDED opps only) |
+| `/charity/certificates` | Issue individual or bulk certificates |
+| `/charity/volunteers` | Approved volunteer roster with profile drawer |
+| `/charity/rooms` · `[opportunityId]` | Real-time chat room list and detail |
+| `/charity/feed` | Community feed — post project updates, like, comment |
+
+### User  `/user/...`
+
+| Route | Description |
+|---|---|
+| `/user/login` · `/register` | User auth |
+| `/user/dashboard` | Stats, recent activity |
+| `/user/profile` | Personal info, volunteer preferences, skills, experience history, ratings received |
+| `/user/opportunities` · `[id]` | Browse and apply — match-scored when profile is complete |
+| `/user/applications` | Application history with statuses |
+| `/user/recommendations` | AI-matched top opportunities |
+| `/user/certificates` | Earned certificates |
+| `/user/rooms` · `[opportunityId]` | Real-time volunteer chat |
+| `/user/notifications` | Notification feed |
+| `/user/feed` | Community feed — share certificates and updates |
 
 ---
 
-## Authentication & Security
+## Key Components
 
-Both portals use **HttpOnly cookie** sessions.
+### `PostCard`
+
+Renders a community feed post (volunteer or charity). Handles like toggle, expandable comments, delete for own content, and supports `accent="violet"` (user) or `accent="emerald"` (charity). Avatars go through `getAvatarUrl()` to normalize stored paths and full URLs.
+
+### `CreatePostModal`
+
+Post composer with type selector (GENERAL / CERTIFICATE / PROJECT), optional image upload to Supabase (`?bucket=logos&folder=posts`), and character-aware textarea.
+
+### `NotificationBell`
+
+Polls `GET /notifications/unread-count` every 30 seconds. Renders an animated badge when there are unread items.
+
+### `getAvatarUrl(path)`
+
+Handles the dual storage format: seed data uses full picsum URLs, uploaded files store only the relative path. The function returns the path unchanged if it starts with `http`, otherwise prepends the Supabase CDN base URL.
+
+```ts
+export function getAvatarUrl(path: string | null | undefined): string | null {
+  if (!path) return null;
+  if (path.startsWith("http")) return path;
+  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/logos/${path}`;
+}
+```
+
+---
+
+## Authentication
+
+All three portals use **HttpOnly cookie** sessions set by the backend.
 
 **Flow:**
-1. `POST /api/auth/login` → backend sets an `access_token` HttpOnly cookie
-2. `ProtectedRoute` / `ProtectedCharityRoute` reads the session via the profile endpoint and redirects to the portal's login page if unauthenticated
-3. Each portal's Axios instance has a **response interceptor** that:
-   - Catches `401 Unauthorized`
-   - Attempts a silent refresh via `POST /api/auth/refresh`
-   - Queues concurrent failed requests and replays them on success
-   - Redirects to the portal's own login page if refresh fails
-4. `POST /api/auth/logout` clears the cookie server-side
-
-**Route isolation:** Login pages live in separate route groups (`(public)`, `(charity-public)`) so the portal layout — and its auth guard — never wraps them.
+1. `POST /api/auth/login` → backend sets `access_token` HttpOnly cookie
+2. The portal's `ProtectedRoute` reads the session via its profile endpoint; unauthenticated users are redirected to the portal's own login page
+3. On `POST /api/auth/logout` the cookie is cleared server-side
 
 ---
 
 ## Real-time Chat
 
-The charity rooms feature uses **Socket.io** for real-time communication.
+Volunteer rooms use Socket.io.
 
-**Connection:**
+```js
+// Connection uses a separate non-HttpOnly token for Socket.io handshake
+const socket = io(API_URL, { auth: { token } });
+
+socket.emit("join_room", { opportunityId });
+socket.on("new_message", (msg) => { /* render */ });
+socket.emit("send_message", { content });
+socket.emit("typing", { opportunityId });
 ```
-Auth: JWT token via socket.handshake.auth.token
-      (fetched from GET /api/auth/socket-token)
-Transport: websocket
-```
 
-**Client → Server events:**
-
-| Event | Payload | Description |
-|---|---|---|
-| `join_room` | `{ opportunityId }` | Join the room on connect |
-| `send_message` | `{ opportunityId, content }` | Send a message |
-| `leave_room` | `{ opportunityId }` | Leave the room |
-| `typing` | `{ opportunityId }` | Broadcast typing indicator |
-
-**Server → Client events:**
-
-| Event | Payload | Description |
-|---|---|---|
-| `new_message` | Message object | New message received |
-| `user_joined` | `{ userId, name }` | A member joined |
-| `user_left` | `{ userId, name }` | A member left |
-| `user_typing` | `{ userId, name }` | Typing indicator (clears after 3s) |
-| `error` | `{ message }` | Error from server |
+Rooms are created on the first application approval and closed automatically when the opportunity ends. Closed rooms reject new messages and joins.
 
 ---
 
-## Components
+## A Hard Problem We Solved
 
-### Shared
+### Silent Token Refresh With Concurrent Requests
 
-| Component | Description |
-|---|---|
-| `ConfirmModal` | Generic confirmation dialog for destructive actions |
-| `CustomDropdown` | Accessible dropdown with search and multi-select |
-| `CustomDatePicker` | Styled date input with calendar |
-| `Fileuploader` | Drag-and-drop file upload with preview |
-| `logo` | Hope Link SVG logo with gradient |
+**The situation:** The backend issues a short-lived (20-minute) access token as an HttpOnly cookie. When it expires, a silent `POST /api/auth/refresh` is needed to rotate the pair. This is straightforward for a single request, but in a real app multiple requests can be in-flight at the same time when the token expires — for example, the dashboard simultaneously fetches stats, notifications, and recent activity on mount.
 
-### Admin
+**Why it was tricky:** If all three fail with `401` and each one independently fires a refresh, two of them will see a **revoked token** — because the backend uses family-based rotation, meaning the first refresh immediately invalidates the old token. The second and third refresh calls fail, the interceptor gives up, and the user is logged out for no reason.
 
-| Component | Description |
-|---|---|
-| `Navbar` | Top header — notification bell with unread badge, user dropdown |
-| `Sidebar` | Left nav — route highlighting, logout |
-| `ProtectedRoute` | Auth guard → redirects to `/login` |
+**The solution — a request queue:** Each Axios instance (admin, charity, user) maintains a module-level flag and a queue:
 
-### Charity
+```ts
+let isRefreshing = false;
+let queue: Array<{ resolve: (token: string) => void; reject: (err: unknown) => void }> = [];
 
-| Component | Description |
-|---|---|
-| `CharityNavbar` | Top header — charity name/logo, user dropdown |
-| `CharitySidebar` | Left nav — emerald theme, 8 items, logout |
-| `ProtectedCharityRoute` | Auth guard → redirects to `/charity/login` |
+function processQueue(error: unknown) {
+  queue.forEach((p) => (error ? p.reject(error) : p.resolve("")));
+  queue = [];
+}
+```
+
+The response interceptor for every `401`:
+- If `isRefreshing` is already `true`, the request is added to the queue as a Promise and waits
+- The **first** `401` sets `isRefreshing = true` and fires the refresh
+- On refresh success: `processQueue(null)` resolves every waiting request, which then replay themselves
+- On refresh failure: `processQueue(err)` rejects all waiting requests and redirects to the login page
+
+```ts
+axiosInstance.interceptors.response.use(
+  (res) => res,
+  async (error) => {
+    if (error.response?.status !== 401) return Promise.reject(error);
+
+    if (isRefreshing) {
+      return new Promise((resolve, reject) => queue.push({ resolve, reject }))
+        .then(() => axiosInstance(error.config));
+    }
+
+    isRefreshing = true;
+    try {
+      await axios.post("/api/auth/refresh", {}, { withCredentials: true });
+      processQueue(null);
+      return axiosInstance(error.config);  // replay original request
+    } catch (err) {
+      processQueue(err);
+      window.location.href = "/login";
+      return Promise.reject(err);
+    } finally {
+      isRefreshing = false;
+    }
+  }
+);
+```
+
+This pattern guarantees exactly one refresh per expiry cycle regardless of how many concurrent requests are in flight — matching the backend's expectation of a single rotation per token family.
