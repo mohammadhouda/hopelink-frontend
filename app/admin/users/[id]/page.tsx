@@ -14,12 +14,13 @@ import { CheckCircleIcon as CheckCircleSolid } from "@heroicons/react/24/solid";
 // ── Types──
 interface Application {
   id: number;
+  status: "PENDING" | "APPROVED" | "DECLINED";
   message: string | null;
   createdAt: string;
-  charityProject: {
+  opportunity: {
     id: number;
     title: string;
-    status: "ACTIVE" | "PAUSED" | "CLOSED";
+    status: "OPEN" | "FULL" | "ENDED" | "CANCELLED";
     charity: { name: string };
   };
 }
@@ -41,13 +42,13 @@ interface UserDetail {
   } | null;
   volunteerProfile: {
     isAvailable: boolean;
-    availabilityNote: string | null;
+    availabilityDays: string[];
     experience: string | null;
     isVerified: boolean;
     skills: { skill: string }[];
     preferences: { type: string; value: string }[];
   } | null;
-  applications: Application[];
+  opportunityApplications: Application[];
 }
 
 // ── Helpers
@@ -60,10 +61,17 @@ function initials(name: string) {
   return name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
 }
 
-const PROJECT_STATUS_STYLES: Record<string, string> = {
-  ACTIVE: "bg-emerald-50 text-emerald-700 border border-emerald-200",
-  PAUSED: "bg-amber-50 text-amber-700 border border-amber-200",
-  CLOSED: "bg-gray-100 text-gray-500 border border-gray-200",
+const OPPORTUNITY_STATUS_STYLES: Record<string, string> = {
+  OPEN:      "bg-emerald-50 text-emerald-700 border border-emerald-200",
+  FULL:      "bg-amber-50 text-amber-700 border border-amber-200",
+  ENDED:     "bg-gray-100 text-gray-500 border border-gray-200",
+  CANCELLED: "bg-red-50 text-red-600 border border-red-200",
+};
+
+const APPLICATION_STATUS_STYLES: Record<string, string> = {
+  PENDING:  "bg-amber-50 text-amber-700 border border-amber-200",
+  APPROVED: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+  DECLINED: "bg-red-50 text-red-600 border border-red-200",
 };
 
 const AVATAR_BG: Record<string, string> = {
@@ -168,7 +176,7 @@ export default function UserDetail() {
     </div>
   );
 
-  const activeApplications = user.applications.filter((a) => a.charityProject.status === "ACTIVE").length;
+  const approvedApplications = user.opportunityApplications.filter((a) => a.status === "APPROVED").length;
 
   return (
     <div className="max-w-5xl mx-auto space-y-5">
@@ -252,8 +260,8 @@ export default function UserDetail() {
 
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <StatCard label="Applications"        value={user.applications.length} icon={BriefcaseIcon}   color="blue" />
-        <StatCard label="Active projects"     value={activeApplications}        icon={CheckCircleIcon} color="emerald" />
+        <StatCard label="Applications"   value={user.opportunityApplications.length} icon={BriefcaseIcon}   color="blue" />
+        <StatCard label="Approved"       value={approvedApplications}               icon={CheckCircleIcon} color="emerald" />
         <StatCard label="Last login"          value={formatDate(user.lastLoginAt)} icon={ClockIcon}   color="gray" />
         <StatCard
           label="Account status"
@@ -278,7 +286,7 @@ export default function UserDetail() {
               {tab}
               {tab === "applications" && (
                 <span className="ml-2 px-1.5 py-0.5 text-xs rounded-full bg-gray-100 text-gray-500">
-                  {user.applications.length}
+                  {user.opportunityApplications.length}
                 </span>
               )}
             </button>
@@ -327,8 +335,14 @@ export default function UserDetail() {
                     <p className="text-sm font-medium text-gray-800">
                       {user.volunteerProfile.isAvailable ? "Available" : "Not available"}
                     </p>
-                    {user.volunteerProfile.availabilityNote && (
-                      <p className="text-xs text-gray-500 mt-1">{user.volunteerProfile.availabilityNote}</p>
+                    {user.volunteerProfile.availabilityDays.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-1.5">
+                        {user.volunteerProfile.availabilityDays.map((day) => (
+                          <span key={day} className="px-1.5 py-0.5 text-xs bg-blue-50 text-blue-700 rounded border border-blue-100">
+                            {day}
+                          </span>
+                        ))}
+                      </div>
                     )}
                   </div>
                   <div className="p-3 rounded-lg bg-gray-50 border border-gray-100">
@@ -364,25 +378,28 @@ export default function UserDetail() {
         {/* ── Applications ── */}
         {activeTab === "applications" && (
           <div className="divide-y divide-gray-50">
-            {user.applications.length === 0 ? (
+            {user.opportunityApplications.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-gray-400">
                 <BriefcaseIcon className="h-10 w-10 mb-2 text-gray-300" />
                 <p className="text-sm text-gray-500">No applications yet</p>
               </div>
             ) : (
-              user.applications.map((app) => (
+              user.opportunityApplications.map((app) => (
                 <div key={app.id} className="p-5 hover:bg-gray-50/60 transition-colors">
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap mb-1">
-                        <p className="text-sm font-medium text-gray-900">{app.charityProject.title}</p>
-                        <span className={`px-2 py-0.5 rounded-md text-xs font-medium ${PROJECT_STATUS_STYLES[app.charityProject.status]}`}>
-                          {app.charityProject.status}
+                        <p className="text-sm font-medium text-gray-900">{app.opportunity.title}</p>
+                        <span className={`px-2 py-0.5 rounded-md text-xs font-medium ${APPLICATION_STATUS_STYLES[app.status]}`}>
+                          {app.status}
+                        </span>
+                        <span className={`px-2 py-0.5 rounded-md text-xs font-medium ${OPPORTUNITY_STATUS_STYLES[app.opportunity.status]}`}>
+                          {app.opportunity.status}
                         </span>
                       </div>
-                      <p className="text-xs text-gray-500 mb-1.5">{app.charityProject.charity.name}</p>
+                      <p className="text-xs text-gray-500 mb-1.5">{app.opportunity.charity.name}</p>
                       {app.message && (
-                        <p className="text-xs text-gray-500 italic line-clamp-2">"{app.message}"</p>
+                        <p className="text-xs text-gray-500 italic line-clamp-2">&ldquo;{app.message}&rdquo;</p>
                       )}
                     </div>
                     <span className="text-xs text-gray-400 flex items-center gap-1 flex-shrink-0">
