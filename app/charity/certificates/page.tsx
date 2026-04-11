@@ -158,12 +158,12 @@ const handleIndividual = async (e: React.FormEvent) => {
           <p className="text-sm text-gray-500 mt-1">Issue digital certificates to volunteers after completed opportunities.</p>
         </div>
         <div className="flex items-center gap-2">
-          <button
+          {/* <button
             onClick={openBulk}
             className="flex items-center gap-2 px-4 py-2 bg-white border border-emerald-200 text-emerald-700 hover:bg-emerald-50 text-sm font-semibold rounded-xl transition-all cursor-pointer"
           >
             <SparklesIcon className="h-4 w-4" /> Bulk Issue
-          </button>
+          </button> */}
           <button
             onClick={openIndividual}
             className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-all cursor-pointer"
