@@ -4,8 +4,9 @@ import { useRouter } from "next/navigation";
 import {
   CheckCircleIcon, XCircleIcon, ClockIcon, FunnelIcon,
   XMarkIcon, BriefcaseIcon, MapPinIcon, PhoneIcon, EnvelopeIcon,
-  CheckBadgeIcon, CalendarDaysIcon,
+  CheckBadgeIcon, CalendarDaysIcon, StarIcon,
 } from "@heroicons/react/24/outline";
+import { StarIcon as StarIconSolid } from "@heroicons/react/24/solid";
 import charityApi from "@/lib/charityAxios";
 import { getAvatarUrl } from "@/lib/avatarUrl";
 import Dropdown from "@/components/charity/Dropdown";
@@ -39,6 +40,14 @@ interface Opportunity {
   title: string;
 }
 
+interface ApplicantRating {
+  id: number;
+  rating: number;
+  comment?: string | null;
+  createdAt: string;
+  opportunity: { id: number; title: string };
+}
+
 interface ApplicantProfile {
   id: number;
   name: string;
@@ -47,6 +56,11 @@ interface ApplicantProfile {
   applicationMessage?: string | null;
   applicationStatus: string;
   appliedAt: string;
+  opportunityId: number;
+  opportunityStatus: string;
+  ratings: ApplicantRating[];
+  avgRating: string | null;
+  totalRatings: number;
   baseProfile: { avatarUrl?: string | null; phone?: string | null; city?: string | null; country?: string | null; bio?: string | null } | null;
   volunteerProfile: {
     isVerified: boolean;
@@ -56,6 +70,41 @@ interface ApplicantProfile {
     skills: { skill: string }[];
     experiences: { id: number; company: string; role: string; startDate: string; endDate?: string | null; isCurrent: boolean; description?: string | null }[];
   } | null;
+}
+
+function StarDisplay({ value, max = 5 }: { value: number; max?: number }) {
+  return (
+    <div className="flex items-center gap-0.5">
+      {[...Array(max)].map((_, i) =>
+        i < Math.round(value)
+          ? <StarIconSolid key={i} className="h-3.5 w-3.5 text-amber-400" />
+          : <StarIcon key={i} className="h-3.5 w-3.5 text-gray-200" />
+      )}
+    </div>
+  );
+}
+
+function StarPicker({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  const [hovered, setHovered] = useState(0);
+  return (
+    <div className="flex items-center gap-1">
+      {[1, 2, 3, 4, 5].map((n) => (
+        <button
+          key={n}
+          type="button"
+          onClick={() => onChange(n)}
+          onMouseEnter={() => setHovered(n)}
+          onMouseLeave={() => setHovered(0)}
+          className="cursor-pointer transition-colors"
+        >
+          {(hovered || value) >= n
+            ? <StarIconSolid className="h-7 w-7 text-amber-400" />
+            : <StarIcon className="h-7 w-7 text-gray-300 hover:text-amber-300" />
+          }
+        </button>
+      ))}
+    </div>
+  );
 }
 
 const DAY_SHORT: Record<string, string> = { MONDAY: "Mon", TUESDAY: "Tue", WEDNESDAY: "Wed", THURSDAY: "Thu", FRIDAY: "Fri", SATURDAY: "Sat", SUNDAY: "Sun" };
@@ -87,6 +136,10 @@ export default function ApplicationsPage() {
   const [declineReason, setDeclineReason] = useState("");
   const [applicantProfile, setApplicantProfile] = useState<ApplicantProfile | null>(null);
   const [loadingApplicant, setLoadingApplicant] = useState(false);
+  const [currentApplicationId, setCurrentApplicationId] = useState<number | null>(null);
+  const [ratingForm, setRatingForm] = useState({ rating: 0, comment: "" });
+  const [savingRating, setSavingRating] = useState(false);
+  const [ratingError, setRatingError] = useState("");
 
 const fetchData = () => {
   setLoading(true);
@@ -120,11 +173,41 @@ const fetchData = () => {
   const openApplicant = async (applicationId: number) => {
     setLoadingApplicant(true);
     setApplicantProfile(null);
+    setCurrentApplicationId(applicationId);
+    setRatingError("");
     try {
       const res = await charityApi.get(`/api/charity/applications/${applicationId}/applicant`);
-      setApplicantProfile(res.data?.data);
+      const profile: ApplicantProfile = res.data?.data;
+      setApplicantProfile(profile);
+      // Pre-fill rating form if already rated for this opportunity
+      const existing = profile?.ratings?.find((r) => r.opportunity.id === profile.opportunityId);
+      setRatingForm({ rating: existing?.rating ?? 0, comment: existing?.comment ?? "" });
     } finally {
       setLoadingApplicant(false);
+    }
+  };
+
+  const submitRating = async () => {
+    if (!applicantProfile || ratingForm.rating === 0 || !currentApplicationId) return;
+    setSavingRating(true);
+    setRatingError("");
+    try {
+      await charityApi.post("/api/charity/ratings", {
+        volunteerId: applicantProfile.id,
+        opportunityId: applicantProfile.opportunityId,
+        rating: ratingForm.rating,
+        comment: ratingForm.comment || undefined,
+      });
+      // Reload drawer to show updated ratings
+      const res = await charityApi.get(`/api/charity/applications/${currentApplicationId}/applicant`);
+      const updated: ApplicantProfile = res.data?.data;
+      setApplicantProfile(updated);
+      const existing = updated?.ratings?.find((r) => r.opportunity.id === updated.opportunityId);
+      setRatingForm({ rating: existing?.rating ?? 0, comment: existing?.comment ?? "" });
+    } catch (err: unknown) {
+      setRatingError((err as { response?: { data?: { message?: string } } })?.response?.data?.message || "Failed to submit rating.");
+    } finally {
+      setSavingRating(false);
     }
   };
 
@@ -398,6 +481,66 @@ const fetchData = () => {
                   <div>
                     <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Background</p>
                     <p className="text-sm text-gray-600 leading-relaxed">{applicantProfile.volunteerProfile.experience}</p>
+                  </div>
+                )}
+
+                {/* Past ratings from this charity */}
+                {applicantProfile.totalRatings > 0 && (
+                  <div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Your Ratings</p>
+                      <span className="flex items-center gap-1 text-xs font-semibold text-amber-600">
+                        <StarIconSolid className="h-3.5 w-3.5 text-amber-400" />
+                        {applicantProfile.avgRating} avg
+                      </span>
+                    </div>
+                    <div className="space-y-2">
+                      {applicantProfile.ratings.map((r) => (
+                        <div key={r.id} className="bg-amber-50/60 border border-amber-100 rounded-xl px-3 py-2.5">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-0.5">
+                              {[1,2,3,4,5].map((n) =>
+                                n <= r.rating
+                                  ? <StarIconSolid key={n} className="h-3.5 w-3.5 text-amber-400" />
+                                  : <StarIcon key={n} className="h-3.5 w-3.5 text-gray-200" />
+                              )}
+                            </div>
+                            <span className="text-[11px] text-gray-400 shrink-0">
+                              {new Date(r.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-500 truncate mt-0.5">{r.opportunity.title}</p>
+                          {r.comment && <p className="text-xs text-gray-600 mt-1 italic">&ldquo;{r.comment}&rdquo;</p>}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Rate volunteer — only for APPROVED applications on ENDED opportunities */}
+                {applicantProfile.applicationStatus === "APPROVED" && applicantProfile.opportunityStatus === "ENDED" && (
+                  <div className="border border-emerald-100 rounded-xl p-4 space-y-3 bg-emerald-50/30">
+                    <p className="text-xs font-semibold text-gray-700">
+                      {applicantProfile.ratings.some((r) => r.opportunity.id === applicantProfile.opportunityId)
+                        ? "Update Rating"
+                        : "Rate this Volunteer"}
+                    </p>
+                    <StarPicker value={ratingForm.rating} onChange={(v) => setRatingForm({ ...ratingForm, rating: v })} />
+                    <textarea
+                      value={ratingForm.comment}
+                      onChange={(e) => setRatingForm({ ...ratingForm, comment: e.target.value })}
+                      rows={2}
+                      placeholder="Add a comment (optional)"
+                      className="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl bg-white focus:border-emerald-300 focus:ring-2 focus:ring-emerald-100 outline-none resize-none"
+                    />
+                    {ratingError && <p className="text-xs text-red-500">{ratingError}</p>}
+                    <button
+                      onClick={submitRating}
+                      disabled={savingRating || ratingForm.rating === 0}
+                      className="w-full py-2 text-sm font-semibold text-white bg-emerald-500 hover:bg-emerald-600 rounded-xl transition-colors cursor-pointer disabled:opacity-50"
+                    >
+                      {savingRating ? "Submitting…" : "Submit Rating"}
+                    </button>
                   </div>
                 )}
               </div>

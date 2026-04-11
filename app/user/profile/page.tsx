@@ -8,7 +8,9 @@ import {
   TrashIcon,
   CameraIcon,
   BriefcaseIcon,
+  StarIcon,
 } from "@heroicons/react/24/outline";
+import { StarIcon as StarIconSolid } from "@heroicons/react/24/solid";
 import { useVolunteer } from "@/context/VolunteerContext";
 import userApi from "@/lib/userAxios";
 import { getAvatarUrl } from "@/lib/avatarUrl";
@@ -74,6 +76,27 @@ function fmtMonth(iso?: string | null) {
   return new Date(iso).toLocaleDateString("en-US", { month: "short", year: "numeric" });
 }
 
+interface Rating {
+  id: number;
+  rating: number;
+  comment?: string | null;
+  createdAt: string;
+  charity: { id: number; name: string };
+  opportunity: { id: number; title: string };
+}
+
+function StarDisplay({ value, max = 5 }: { value: number; max?: number }) {
+  return (
+    <div className="flex items-center gap-0.5">
+      {[...Array(max)].map((_, i) =>
+        i < Math.round(value)
+          ? <StarIconSolid key={i} className="h-3.5 w-3.5 text-amber-400" />
+          : <StarIcon key={i} className="h-3.5 w-3.5 text-gray-200" />
+      )}
+    </div>
+  );
+}
+
 export default function ProfilePage() {
   const { refreshVolunteer } = useVolunteer();
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -108,6 +131,9 @@ export default function ProfilePage() {
   const [expForm, setExpForm] = useState({ ...EMPTY_EXP });
   const [savingExp, setSavingExp] = useState(false);
 
+  // Ratings received
+  const [ratings, setRatings] = useState<Rating[]>([]);
+
   const fetchProfile = () => {
     setLoading(true);
     userApi.get("/api/user/profile")
@@ -137,7 +163,13 @@ export default function ProfilePage() {
       .catch(() => {});
   };
 
-  useEffect(() => { fetchProfile(); fetchExperiences(); }, []);
+  const fetchRatings = () => {
+    userApi.get("/api/user/profile/ratings")
+      .then((res) => setRatings(res.data?.data?.ratings || []))
+      .catch(() => {});
+  };
+
+  useEffect(() => { fetchProfile(); fetchExperiences(); fetchRatings(); }, []);
 
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -609,6 +641,49 @@ const handleRemoveAvatar = async () => {
             </button>
           )}
         </div>
+      </Section>
+
+      {/* Ratings Received */}
+      <Section title="Ratings Received">
+        {ratings.length === 0 ? (
+          <p className="text-sm text-gray-400 italic">No ratings received yet.</p>
+        ) : (
+          <div className="space-y-1">
+            {/* Average */}
+            <div className="flex items-center gap-3 pb-4 mb-4 border-b border-gray-100">
+              <span className="text-3xl font-bold text-gray-900">
+                {(ratings.reduce((s, r) => s + r.rating, 0) / ratings.length).toFixed(1)}
+              </span>
+              <div>
+                <StarDisplay value={ratings.reduce((s, r) => s + r.rating, 0) / ratings.length} />
+                <p className="text-xs text-gray-400 mt-0.5">{ratings.length} {ratings.length === 1 ? "rating" : "ratings"}</p>
+              </div>
+            </div>
+            {/* Individual ratings */}
+            <div className="space-y-3">
+              {ratings.map((r) => (
+                <div key={r.id} className="flex items-start gap-3">
+                  <div className="h-8 w-8 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center shrink-0 mt-0.5">
+                    <StarIconSolid className="h-3.5 w-3.5 text-amber-400" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <StarDisplay value={r.rating} />
+                      <span className="text-[11px] text-gray-400 shrink-0">
+                        {new Date(r.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                      </span>
+                    </div>
+                    <p className="text-xs font-semibold text-gray-700 mt-0.5">{r.charity.name}</p>
+                    <p className="text-xs text-gray-400 truncate">{r.opportunity.title}</p>
+                    {r.comment && (
+                      <p className="text-xs text-gray-500 mt-1 leading-relaxed bg-gray-50 rounded-lg px-3 py-2 border border-gray-100 italic">&ldquo;{r.comment}&rdquo;</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </Section>
 
       {/* Change Password */}
