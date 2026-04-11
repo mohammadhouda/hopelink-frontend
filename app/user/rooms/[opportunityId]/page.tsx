@@ -19,7 +19,7 @@ interface Message {
   senderId: number;
   content: string;
   createdAt: string;
-  sender: { id: number; name: string; baseProfile?: { avatarUrl?: string } };
+  sender: { id: number; name: string; baseProfile?: { avatarUrl?: string }; charityAccount?: { logoUrl?: string } };
 }
 
 interface RoomMember {
@@ -27,7 +27,7 @@ interface RoomMember {
   userId: number;
   role: "ADMIN" | "MEMBER";
   joinedAt: string;
-  user: { id: number; name: string; email: string; baseProfile?: { avatarUrl?: string } };
+  user: { id: number; name: string; email: string; baseProfile?: { avatarUrl?: string }; charityAccount?: { logoUrl?: string } };
 }
 
 interface RoomInfo {
@@ -274,7 +274,7 @@ export default function UserRoomPage() {
                         {!isMe && (
                           sameSender
                             ? <div className="w-9 shrink-0" />
-                            : <Avatar name={msg.sender.name} avatarUrl={msg.sender.baseProfile?.avatarUrl} />
+                            : <Avatar name={msg.sender.name} avatarUrl={ msg.sender.baseProfile?.avatarUrl ?? msg.sender.charityAccount?.logoUrl} />
                         )}
                         <div className={`group flex flex-col max-w-[72%] ${isMe ? "items-end" : "items-start"}`}>
                           {!isMe && !sameSender && (
@@ -361,7 +361,7 @@ export default function UserRoomPage() {
             <div className="flex-1 overflow-y-auto px-3 py-3 space-y-1">
               {room.members.map((m) => (
                 <div key={m.id} className="flex items-center gap-2.5 px-2 py-2 rounded-lg hover:bg-gray-50 transition-colors">
-                  <Avatar name={m.user.name} avatarUrl={m.user.baseProfile?.avatarUrl} size="sm" />
+                  <Avatar name={m.user.name} avatarUrl={m.user.baseProfile?.avatarUrl ?? m.user.charityAccount?.logoUrl} size="sm" />
                   <div className="min-w-0 flex-1">
                     <p className="text-xs font-semibold text-gray-900 truncate">
                       {m.user.name}
