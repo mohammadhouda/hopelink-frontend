@@ -262,10 +262,10 @@ const handleDelete = async () => {
               </FormField>
               <div className="grid grid-cols-2 gap-3">
                 <FormField label="Start Date">
-                  <input type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} className="modal-input" />
+                  <CustomDatePicker value={form.startDate} onChange={(v) => setForm({ ...form, startDate: v })} placeholder="Pick start date" className="w-full" />
                 </FormField>
                 <FormField label="End Date">
-                  <input type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} className="modal-input" />
+                  <CustomDatePicker value={form.endDate} onChange={(v) => setForm({ ...form, endDate: v })} placeholder="Pick end date" className="w-full" />
                 </FormField>
               </div>
               <div className="flex justify-end gap-2 pt-2">

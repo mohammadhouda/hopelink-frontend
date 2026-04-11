@@ -5,6 +5,7 @@ import { PlusIcon, PencilIcon, TrashIcon, CalendarIcon, StopCircleIcon, XMarkIco
 import charityApi from "@/lib/charityAxios";
 import ConfirmModal from "@/components/ConfirmModal";
 import Dropdown from "@/components/charity/Dropdown";
+import CustomDatePicker from "@/components/CustomDatePicker";
 
 const DAYS = ["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY","SUNDAY"] as const;
 const DAY_SHORT: Record<string, string> = { MONDAY:"Mon", TUESDAY:"Tue", WEDNESDAY:"Wed", THURSDAY:"Thu", FRIDAY:"Fri", SATURDAY:"Sat", SUNDAY:"Sun" };
@@ -275,7 +276,7 @@ const handleEnd = async () => {
                   <input type="number" min="1" value={form.slots} onChange={(e) => setForm({ ...form, slots: e.target.value })} required className="modal-input" />
                 </FormField>
                 <FormField label="Date">
-                  <input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} className="modal-input" />
+                  <CustomDatePicker value={form.date} onChange={(v) => setForm({ ...form, date: v })} placeholder="Pick a date" className="w-full" />
                 </FormField>
               </div>
               <FormField label="Location">

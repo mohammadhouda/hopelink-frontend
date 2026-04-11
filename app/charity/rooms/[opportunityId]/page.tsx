@@ -333,6 +333,8 @@ export default function ChatRoomPage() {
         socket.on(
           "user_typing",
           (data: { userId: number; name: string; isTyping: boolean }) => {
+            // Don't show the indicator to the user who is typing
+            if (data.userId === uid) return;
             setTypingUsers((prev) => {
               if (data.isTyping) {
                 return prev.some((u) => u.userId === data.userId)
