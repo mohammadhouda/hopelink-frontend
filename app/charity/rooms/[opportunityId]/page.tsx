@@ -350,10 +350,6 @@ export default function ChatRoomPage() {
             }
           }
         );
-
-        socket.on("error", (err: { message: string }) => {
-          console.error("Socket error:", err.message);
-        });
       } catch {
         /* socket-token endpoint not available */
       }
