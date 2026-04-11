@@ -58,6 +58,8 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 const inputCls = "w-full px-3.5 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-violet-300 focus:bg-white focus:ring-2 focus:ring-violet-100 transition-all";
 const DAYS = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"] as const;
 const DAY_SHORT: Record<string, string> = { MONDAY: "Mon", TUESDAY: "Tue", WEDNESDAY: "Wed", THURSDAY: "Thu", FRIDAY: "Fri", SATURDAY: "Sat", SUNDAY: "Sun" };
+const CATEGORIES = ["EDUCATION", "HEALTH", "ENVIRONMENT", "ANIMAL_WELFARE", "SOCIAL", "OTHER"] as const;
+const CAT_LABEL: Record<string, string> = { EDUCATION: "Education", HEALTH: "Health", ENVIRONMENT: "Environment", ANIMAL_WELFARE: "Animal Welfare", SOCIAL: "Social", OTHER: "Other" };
 
 interface VolunteerExperience {
   id: number;
@@ -131,6 +133,11 @@ export default function ProfilePage() {
   const [expForm, setExpForm] = useState({ ...EMPTY_EXP });
   const [savingExp, setSavingExp] = useState(false);
 
+  // Volunteering preferences
+  const [editingPrefs, setEditingPrefs] = useState(false);
+  const [prefForm, setPrefForm] = useState({ city: "", category: "" });
+  const [savingPrefs, setSavingPrefs] = useState(false);
+
   // Ratings received
   const [ratings, setRatings] = useState<Rating[]>([]);
 
@@ -153,6 +160,11 @@ export default function ProfilePage() {
           experience: p?.volunteerProfile?.experience || "",
         });
         setSkills((p?.volunteerProfile?.skills || []).map((s: { skill: string }) => s.skill));
+        const prefs: { type: string; value: string }[] = p?.volunteerProfile?.preferences || [];
+        setPrefForm({
+          city: prefs.find((pr) => pr.type === "CITY")?.value ?? "",
+          category: prefs.find((pr) => pr.type === "CATEGORY")?.value ?? "",
+        });
       })
       .finally(() => setLoading(false));
   };
@@ -240,6 +252,21 @@ const handleRemoveAvatar = async () => {
       fetchProfile();
     } finally {
       setSavingSkills(false);
+    }
+  };
+
+  const savePreferences = async () => {
+    setSavingPrefs(true);
+    try {
+      const preferences = [
+        prefForm.city.trim() ? { type: "CITY", value: prefForm.city.trim() } : null,
+        prefForm.category ? { type: "CATEGORY", value: prefForm.category } : null,
+      ].filter(Boolean);
+      await userApi.patch("/api/user/profile/preferences", { preferences });
+      setEditingPrefs(false);
+      fetchProfile();
+    } finally {
+      setSavingPrefs(false);
     }
   };
 
@@ -508,6 +535,83 @@ const handleRemoveAvatar = async () => {
             ) : (
               <p className="text-sm text-gray-400 italic">No experience added yet.</p>
             )}
+          </div>
+        )}
+      </Section>
+
+      {/* Volunteering Preferences */}
+      <Section title="Volunteering Preferences">
+        {editingPrefs ? (
+          <div className="space-y-4">
+            <div>
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1.5">Preferred City</label>
+              <input
+                value={prefForm.city}
+                onChange={(e) => setPrefForm({ ...prefForm, city: e.target.value })}
+                placeholder="e.g. Beirut"
+                className={inputCls}
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-2">Preferred Category</label>
+              <div className="flex flex-wrap gap-2">
+                {CATEGORIES.map((cat) => {
+                  const active = prefForm.category === cat;
+                  return (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => setPrefForm({ ...prefForm, category: active ? "" : cat })}
+                      className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
+                        active
+                          ? "bg-violet-600 text-white border-violet-600"
+                          : "bg-gray-50 text-gray-500 border-gray-200 hover:border-violet-300 hover:text-violet-600"
+                      }`}
+                    >
+                      {CAT_LABEL[cat]}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="flex gap-2 justify-end">
+              <button onClick={() => setEditingPrefs(false)} className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-xl cursor-pointer">
+                <XMarkIcon className="h-4 w-4" /> Cancel
+              </button>
+              <button onClick={savePreferences} disabled={savingPrefs} className="flex items-center gap-1.5 px-4 py-2 text-sm font-semibold text-white bg-violet-600 hover:bg-violet-700 rounded-xl cursor-pointer disabled:opacity-60">
+                <CheckIcon className="h-4 w-4" /> {savingPrefs ? "Saving..." : "Save"}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-start justify-between gap-4">
+            <div className="space-y-3 flex-1">
+              {!prefForm.city && !prefForm.category ? (
+                <p className="text-sm text-gray-400 italic">No preferences set yet.</p>
+              ) : (
+                <>
+                  {prefForm.city && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider w-16 shrink-0">City</span>
+                      <span className="px-2.5 py-1 text-xs font-medium bg-violet-50 text-violet-700 border border-violet-200 rounded-full">
+                        {prefForm.city}
+                      </span>
+                    </div>
+                  )}
+                  {prefForm.category && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider w-16 shrink-0">Focus</span>
+                      <span className="px-2.5 py-1 text-xs font-medium bg-violet-50 text-violet-700 border border-violet-200 rounded-full">
+                        {CAT_LABEL[prefForm.category] ?? prefForm.category}
+                      </span>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+            <button onClick={() => setEditingPrefs(true)} className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 border border-gray-200 rounded-xl hover:bg-gray-50 cursor-pointer shrink-0">
+              <PencilIcon className="h-3.5 w-3.5" /> Edit
+            </button>
           </div>
         )}
       </Section>
