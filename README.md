@@ -374,9 +374,3 @@ Transport: websocket
 | `CharityNavbar` | Top header — charity name/logo, user dropdown |
 | `CharitySidebar` | Left nav — emerald theme, 8 items, logout |
 | `ProtectedCharityRoute` | Auth guard → redirects to `/charity/login` |
-
----
-
-## License
-
-This project is private and proprietary. Unauthorized distribution or use is prohibited.
