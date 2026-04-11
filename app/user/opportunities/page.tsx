@@ -10,6 +10,7 @@ import {
   BuildingOffice2Icon,
   CheckBadgeIcon,
   SparklesIcon,
+  ClockIcon,
 } from "@heroicons/react/24/outline";
 import userApi from "@/lib/userAxios";
 import CustomDropdown from "@/components/CustomDropdown";
@@ -45,6 +46,11 @@ const APP_STYLE: Record<string, string> = {
 };
 
 const CATEGORIES = ["EDUCATION", "HEALTH", "ENVIRONMENT", "ANIMAL_WELFARE", "SOCIAL", "OTHER"];
+
+const DAY_SHORT: Record<string, string> = {
+  MONDAY: "Mon", TUESDAY: "Tue", WEDNESDAY: "Wed", THURSDAY: "Thu",
+  FRIDAY: "Fri", SATURDAY: "Sat", SUNDAY: "Sun",
+};
 
 const Skeleton = ({ className }: { className: string }) => (
   <div className={`animate-pulse bg-gray-100 rounded-xl ${className}`} />
@@ -219,6 +225,18 @@ export default function OpportunitiesPage() {
                       +{opp.requiredSkills.length - 3}
                     </span>
                   )}
+                </div>
+              )}
+
+              {/* Availability days */}
+              {opp.availabilityDays?.length > 0 && (
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <ClockIcon className="h-3 w-3 text-gray-400 shrink-0" />
+                  {opp.availabilityDays.map((day) => (
+                    <span key={day} className="px-1.5 py-0.5 text-[10px] font-medium bg-gray-50 text-gray-500 border border-gray-200 rounded">
+                      {DAY_SHORT[day] ?? day}
+                    </span>
+                  ))}
                 </div>
               )}
 

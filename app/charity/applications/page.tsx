@@ -3,6 +3,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   CheckCircleIcon, XCircleIcon, ClockIcon, FunnelIcon,
+  XMarkIcon, BriefcaseIcon, MapPinIcon, PhoneIcon, EnvelopeIcon,
+  CheckBadgeIcon, CalendarDaysIcon,
 } from "@heroicons/react/24/outline";
 import charityApi from "@/lib/charityAxios";
 import { getAvatarUrl } from "@/lib/avatarUrl";
@@ -37,6 +39,32 @@ interface Opportunity {
   title: string;
 }
 
+interface ApplicantProfile {
+  id: number;
+  name: string;
+  email: string;
+  createdAt: string;
+  applicationMessage?: string | null;
+  applicationStatus: string;
+  appliedAt: string;
+  baseProfile: { avatarUrl?: string | null; phone?: string | null; city?: string | null; country?: string | null; bio?: string | null } | null;
+  volunteerProfile: {
+    isVerified: boolean;
+    isAvailable: boolean;
+    availabilityDays: string[];
+    experience?: string | null;
+    skills: { skill: string }[];
+    experiences: { id: number; company: string; role: string; startDate: string; endDate?: string | null; isCurrent: boolean; description?: string | null }[];
+  } | null;
+}
+
+const DAY_SHORT: Record<string, string> = { MONDAY: "Mon", TUESDAY: "Tue", WEDNESDAY: "Wed", THURSDAY: "Thu", FRIDAY: "Fri", SATURDAY: "Sat", SUNDAY: "Sun" };
+
+function fmtMonth(iso?: string | null) {
+  if (!iso) return "";
+  return new Date(iso).toLocaleDateString("en-US", { month: "short", year: "numeric" });
+}
+
 const STATUS_STYLE: Record<string, string> = {
   PENDING: "bg-amber-50 text-amber-700 border-amber-200",
   APPROVED: "bg-emerald-50 text-emerald-700 border-emerald-200",
@@ -57,6 +85,8 @@ export default function ApplicationsPage() {
   const [createdAt, setCreatedAt] = useState("");
   const [declineId, setDeclineId] = useState<number | null>(null);
   const [declineReason, setDeclineReason] = useState("");
+  const [applicantProfile, setApplicantProfile] = useState<ApplicantProfile | null>(null);
+  const [loadingApplicant, setLoadingApplicant] = useState(false);
 
 const fetchData = () => {
   setLoading(true);
@@ -86,6 +116,17 @@ const fetchData = () => {
   }, []);
 
   useEffect(() => { fetchData(); }, [statusFilter, oppFilter, createdAt]);
+
+  const openApplicant = async (applicationId: number) => {
+    setLoadingApplicant(true);
+    setApplicantProfile(null);
+    try {
+      const res = await charityApi.get(`/api/charity/applications/${applicationId}/applicant`);
+      setApplicantProfile(res.data?.data);
+    } finally {
+      setLoadingApplicant(false);
+    }
+  };
 
   const handleApprove = async (id: number) => {
     await charityApi.patch(`/api/charity/applications/${id}/approve`);
@@ -180,7 +221,7 @@ const fetchData = () => {
               applications.map((a) => (
   <tr key={a.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
     <td className="px-5 py-3.5">
-      <div className="flex items-center gap-2.5">
+      <button onClick={() => openApplicant(a.id)} className="flex items-center gap-2.5 text-left hover:opacity-80 transition-opacity cursor-pointer">
         {a.user.baseProfile?.avatarUrl ? (
           <img src={getAvatarUrl(a.user.baseProfile.avatarUrl)!} alt={a.user.name} className="h-7 w-7 rounded-full object-cover" />
         ) : (
@@ -189,10 +230,10 @@ const fetchData = () => {
           </div>
         )}
         <div>
-          <p className="text-sm font-medium text-gray-900">{a.user.name}</p>
+          <p className="text-sm font-medium text-gray-900 hover:text-emerald-600 transition-colors">{a.user.name}</p>
           <p className="text-xs text-gray-400">{a.user.email}</p>
         </div>
-      </div>
+      </button>
     </td>
     <td className="px-5 py-3.5">
       <button
@@ -229,6 +270,141 @@ const fetchData = () => {
           </tbody>
         </table>
       </div>
+
+      {/* Applicant profile drawer */}
+      {(applicantProfile || loadingApplicant) && (
+        <div className="fixed inset-0 z-50 flex">
+          {/* Backdrop */}
+          <div className="flex-1 bg-black/30" onClick={() => setApplicantProfile(null)} />
+          {/* Panel */}
+          <div className="w-full max-w-md bg-white shadow-2xl overflow-y-auto flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 sticky top-0 bg-white z-10">
+              <h2 className="text-base font-bold text-gray-900">Applicant Profile</h2>
+              <button onClick={() => setApplicantProfile(null)} className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer">
+                <XMarkIcon className="h-5 w-5" />
+              </button>
+            </div>
+
+            {loadingApplicant ? (
+              <div className="flex-1 flex items-center justify-center p-10">
+                <div className="h-8 w-8 rounded-full border-2 border-gray-200 border-t-emerald-500 animate-spin" />
+              </div>
+            ) : applicantProfile && (
+              <div className="p-6 space-y-6">
+                {/* Identity */}
+                <div className="flex items-start gap-4">
+                  {applicantProfile.baseProfile?.avatarUrl ? (
+                    <img src={getAvatarUrl(applicantProfile.baseProfile.avatarUrl)!} alt={applicantProfile.name} className="h-14 w-14 rounded-full object-cover shrink-0" />
+                  ) : (
+                    <div className="h-14 w-14 rounded-full bg-emerald-100 flex items-center justify-center text-lg font-bold text-emerald-700 shrink-0">
+                      {applicantProfile.name.split(" ").map(n => n[0]).join("").slice(0, 2)}
+                    </div>
+                  )}
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-base font-bold text-gray-900">{applicantProfile.name}</h3>
+                      {applicantProfile.volunteerProfile?.isVerified && (
+                        <CheckBadgeIcon className="h-4 w-4 text-blue-500 shrink-0" title="Verified volunteer" />
+                      )}
+                    </div>
+                    <div className="flex flex-wrap gap-x-3 gap-y-1 mt-1">
+                      {applicantProfile.baseProfile?.city && (
+                        <span className="flex items-center gap-1 text-xs text-gray-500"><MapPinIcon className="h-3 w-3" />{applicantProfile.baseProfile.city}{applicantProfile.baseProfile.country ? `, ${applicantProfile.baseProfile.country}` : ""}</span>
+                      )}
+                      {applicantProfile.baseProfile?.phone && (
+                        <span className="flex items-center gap-1 text-xs text-gray-500"><PhoneIcon className="h-3 w-3" />{applicantProfile.baseProfile.phone}</span>
+                      )}
+                      <span className="flex items-center gap-1 text-xs text-gray-500"><EnvelopeIcon className="h-3 w-3" />{applicantProfile.email}</span>
+                    </div>
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className={`text-[11px] font-semibold px-2 py-0.5 rounded border ${STATUS_STYLE[applicantProfile.applicationStatus]}`}>
+                        {applicantProfile.applicationStatus}
+                      </span>
+                      <span className="text-xs text-gray-400">Applied {new Date(applicantProfile.appliedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Bio */}
+                {applicantProfile.baseProfile?.bio && (
+                  <div>
+                    <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">About</p>
+                    <p className="text-sm text-gray-600 leading-relaxed">{applicantProfile.baseProfile.bio}</p>
+                  </div>
+                )}
+
+                {/* Application message */}
+                {applicantProfile.applicationMessage && (
+                  <div>
+                    <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Application Message</p>
+                    <p className="text-sm text-gray-600 leading-relaxed bg-gray-50 rounded-xl px-4 py-3 border border-gray-100 italic">"{applicantProfile.applicationMessage}"</p>
+                  </div>
+                )}
+
+                {/* Skills */}
+                {(applicantProfile.volunteerProfile?.skills?.length ?? 0) > 0 && (
+                  <div>
+                    <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Skills</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {applicantProfile.volunteerProfile!.skills.map((s) => (
+                        <span key={s.skill} className="px-2.5 py-1 text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-100 rounded-full">{s.skill}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Availability days */}
+                {(applicantProfile.volunteerProfile?.availabilityDays?.length ?? 0) > 0 && (
+                  <div>
+                    <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Availability</p>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <CalendarDaysIcon className="h-3.5 w-3.5 text-gray-400" />
+                      {applicantProfile.volunteerProfile!.availabilityDays.map((d) => (
+                        <span key={d} className="px-2 py-0.5 text-xs font-medium bg-gray-100 text-gray-600 rounded">{DAY_SHORT[d] ?? d}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Experience history */}
+                {(applicantProfile.volunteerProfile?.experiences?.length ?? 0) > 0 && (
+                  <div>
+                    <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-3">Experience</p>
+                    <div className="space-y-4">
+                      {applicantProfile.volunteerProfile!.experiences.map((exp) => (
+                        <div key={exp.id} className="flex items-start gap-3">
+                          <div className="h-8 w-8 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center shrink-0 mt-0.5">
+                            <BriefcaseIcon className="h-3.5 w-3.5 text-emerald-600" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-gray-900">{exp.role}</p>
+                            <p className="text-xs text-gray-500">{exp.company}</p>
+                            <p className="text-xs text-gray-400 mt-0.5">
+                              {fmtMonth(exp.startDate)} — {exp.isCurrent ? "Present" : fmtMonth(exp.endDate)}
+                            </p>
+                            {exp.description && (
+                              <p className="text-xs text-gray-500 mt-1 leading-relaxed">{exp.description}</p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Legacy experience note */}
+                {applicantProfile.volunteerProfile?.experience && (applicantProfile.volunteerProfile.experiences?.length ?? 0) === 0 && (
+                  <div>
+                    <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Background</p>
+                    <p className="text-sm text-gray-600 leading-relaxed">{applicantProfile.volunteerProfile.experience}</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Decline modal */}
       {declineId && (

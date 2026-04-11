@@ -6,7 +6,8 @@ import {
   XMarkIcon,
   PlusIcon,
   TrashIcon,
-  CameraIcon
+  CameraIcon,
+  BriefcaseIcon,
 } from "@heroicons/react/24/outline";
 import { useVolunteer } from "@/context/VolunteerContext";
 import userApi from "@/lib/userAxios";
@@ -56,6 +57,23 @@ const inputCls = "w-full px-3.5 py-2.5 text-sm bg-gray-50 border border-gray-200
 const DAYS = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"] as const;
 const DAY_SHORT: Record<string, string> = { MONDAY: "Mon", TUESDAY: "Tue", WEDNESDAY: "Wed", THURSDAY: "Thu", FRIDAY: "Fri", SATURDAY: "Sat", SUNDAY: "Sun" };
 
+interface VolunteerExperience {
+  id: number;
+  company: string;
+  role: string;
+  startDate: string;
+  endDate?: string | null;
+  isCurrent: boolean;
+  description?: string | null;
+}
+
+const EMPTY_EXP = { company: "", role: "", startDate: "", endDate: "", isCurrent: false, description: "" };
+
+function fmtMonth(iso?: string | null) {
+  if (!iso) return "";
+  return new Date(iso).toLocaleDateString("en-US", { month: "short", year: "numeric" });
+}
+
 export default function ProfilePage() {
   const { refreshVolunteer } = useVolunteer();
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -83,6 +101,13 @@ export default function ProfilePage() {
   const [uploading, setUploading] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
+  // Experience history
+  const [experiences, setExperiences] = useState<VolunteerExperience[]>([]);
+  const [showExpForm, setShowExpForm] = useState(false);
+  const [editingExp, setEditingExp] = useState<VolunteerExperience | null>(null);
+  const [expForm, setExpForm] = useState({ ...EMPTY_EXP });
+  const [savingExp, setSavingExp] = useState(false);
+
   const fetchProfile = () => {
     setLoading(true);
     userApi.get("/api/user/profile")
@@ -106,7 +131,13 @@ export default function ProfilePage() {
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { fetchProfile(); }, []);
+  const fetchExperiences = () => {
+    userApi.get("/api/user/profile/experiences")
+      .then((res) => setExperiences(res.data?.data || []))
+      .catch(() => {});
+  };
+
+  useEffect(() => { fetchProfile(); fetchExperiences(); }, []);
 
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -178,6 +209,48 @@ const handleRemoveAvatar = async () => {
     } finally {
       setSavingSkills(false);
     }
+  };
+
+  const openAddExp = () => { setEditingExp(null); setExpForm({ ...EMPTY_EXP }); setShowExpForm(true); };
+  const openEditExp = (exp: VolunteerExperience) => {
+    setEditingExp(exp);
+    setExpForm({
+      company: exp.company,
+      role: exp.role,
+      startDate: exp.startDate?.slice(0, 7) ?? "",
+      endDate: exp.endDate?.slice(0, 7) ?? "",
+      isCurrent: exp.isCurrent,
+      description: exp.description ?? "",
+    });
+    setShowExpForm(true);
+  };
+  const cancelExp = () => { setShowExpForm(false); setEditingExp(null); setExpForm({ ...EMPTY_EXP }); };
+
+  const saveExp = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setSavingExp(true);
+    try {
+      const payload = {
+        ...expForm,
+        startDate: expForm.startDate ? `${expForm.startDate}-01` : "",
+        endDate: expForm.isCurrent ? null : (expForm.endDate ? `${expForm.endDate}-01` : null),
+      };
+      if (editingExp) {
+        await userApi.put(`/api/user/profile/experiences/${editingExp.id}`, payload);
+      } else {
+        await userApi.post("/api/user/profile/experiences", payload);
+      }
+      cancelExp();
+      fetchExperiences();
+    } finally {
+      setSavingExp(false);
+    }
+  };
+
+  const deleteExp = async (id: number) => {
+    if (!confirm("Remove this experience?")) return;
+    await userApi.delete(`/api/user/profile/experiences/${id}`);
+    fetchExperiences();
   };
 
   const savePassword = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -451,6 +524,90 @@ const handleRemoveAvatar = async () => {
           >
             {savingSkills ? "Saving..." : "Save Skills"}
           </button>
+        </div>
+      </Section>
+
+      {/* Experience History */}
+      <Section title="Experience History">
+        <div className="space-y-4">
+          {/* Existing entries */}
+          {experiences.length > 0 && (
+            <div className="space-y-3">
+              {experiences.map((exp) => (
+                <div key={exp.id} className="flex items-start gap-3 group">
+                  <div className="h-9 w-9 rounded-xl bg-violet-50 border border-violet-100 flex items-center justify-center shrink-0 mt-0.5">
+                    <BriefcaseIcon className="h-4 w-4 text-violet-500" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <p className="text-sm font-semibold text-gray-900">{exp.role}</p>
+                        <p className="text-xs text-gray-500">{exp.company}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          {fmtMonth(exp.startDate)} — {exp.isCurrent ? "Present" : fmtMonth(exp.endDate)}
+                        </p>
+                        {exp.description && (
+                          <p className="text-xs text-gray-500 mt-1 leading-relaxed">{exp.description}</p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                        <button onClick={() => openEditExp(exp)} className="p-1.5 text-gray-400 hover:text-violet-600 hover:bg-violet-50 rounded-lg transition-colors cursor-pointer">
+                          <PencilIcon className="h-3.5 w-3.5" />
+                        </button>
+                        <button onClick={() => deleteExp(exp.id)} className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer">
+                          <TrashIcon className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Add / Edit form */}
+          {showExpForm ? (
+            <form onSubmit={saveExp} className="border border-violet-100 rounded-xl p-4 space-y-3 bg-violet-50/30">
+              <p className="text-xs font-semibold text-gray-700">{editingExp ? "Edit Experience" : "Add Experience"}</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="col-span-2">
+                  <label className="text-xs font-medium text-gray-500 block mb-1">Organization</label>
+                  <input required value={expForm.company} onChange={(e) => setExpForm({ ...expForm, company: e.target.value })} className={inputCls} placeholder="e.g. Beit El Baraka" />
+                </div>
+                <div className="col-span-2">
+                  <label className="text-xs font-medium text-gray-500 block mb-1">Role / Position</label>
+                  <input required value={expForm.role} onChange={(e) => setExpForm({ ...expForm, role: e.target.value })} className={inputCls} placeholder="e.g. Volunteer Coordinator" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-500 block mb-1">Start Date</label>
+                  <input required type="month" value={expForm.startDate} onChange={(e) => setExpForm({ ...expForm, startDate: e.target.value })} className={inputCls} />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-500 block mb-1">End Date</label>
+                  <input type="month" disabled={expForm.isCurrent} value={expForm.isCurrent ? "" : expForm.endDate} onChange={(e) => setExpForm({ ...expForm, endDate: e.target.value })} className={`${inputCls} ${expForm.isCurrent ? "opacity-40" : ""}`} />
+                  <label className="flex items-center gap-1.5 mt-1.5 cursor-pointer">
+                    <input type="checkbox" checked={expForm.isCurrent} onChange={(e) => setExpForm({ ...expForm, isCurrent: e.target.checked, endDate: "" })} className="rounded" />
+                    <span className="text-xs text-gray-500">Currently working here</span>
+                  </label>
+                </div>
+                <div className="col-span-2">
+                  <label className="text-xs font-medium text-gray-500 block mb-1">Description (optional)</label>
+                  <textarea rows={2} value={expForm.description} onChange={(e) => setExpForm({ ...expForm, description: e.target.value })} className={`${inputCls} resize-none`} placeholder="Briefly describe your role…" />
+                </div>
+              </div>
+              <div className="flex gap-2 justify-end">
+                <button type="button" onClick={cancelExp} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-xl cursor-pointer">Cancel</button>
+                <button type="submit" disabled={savingExp} className="px-4 py-2 text-sm font-semibold text-white bg-violet-600 hover:bg-violet-700 rounded-xl cursor-pointer disabled:opacity-60">
+                  {savingExp ? "Saving…" : editingExp ? "Update" : "Add"}
+                </button>
+              </div>
+            </form>
+          ) : (
+            <button onClick={openAddExp} className="flex items-center gap-2 text-sm font-medium text-violet-600 hover:text-violet-700 transition-colors cursor-pointer">
+              <PlusIcon className="h-4 w-4" />
+              Add experience
+            </button>
+          )}
         </div>
       </Section>
 
