@@ -59,6 +59,24 @@ const inputCls = "w-full px-3.5 py-2.5 text-sm bg-gray-50 border border-gray-200
 const DAYS = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"] as const;
 const DAY_SHORT: Record<string, string> = { MONDAY: "Mon", TUESDAY: "Tue", WEDNESDAY: "Wed", THURSDAY: "Thu", FRIDAY: "Fri", SATURDAY: "Sat", SUNDAY: "Sun" };
 const CATEGORIES = ["EDUCATION", "HEALTH", "ENVIRONMENT", "ANIMAL_WELFARE", "SOCIAL", "OTHER"] as const;
+const CITIES: { value: string; label: string }[] = [
+  { value: "",         label: "—" },
+  { value: "BEIRUT",   label: "Beirut" },
+  { value: "TRIPOLI",  label: "Tripoli" },
+  { value: "SIDON",    label: "Sidon" },
+  { value: "TYRE",     label: "Tyre" },
+  { value: "JOUNIEH",  label: "Jounieh" },
+  { value: "BYBLOS",   label: "Byblos" },
+  { value: "ZAHLE",    label: "Zahle" },
+  { value: "BAALBEK",  label: "Baalbek" },
+  { value: "NABATIEH", label: "Nabatieh" },
+  { value: "ALEY",     label: "Aley" },
+  { value: "CHOUF",    label: "Chouf" },
+  { value: "METN",     label: "Metn" },
+  { value: "KESREWAN", label: "Kesrewan" },
+  { value: "AKKAR",    label: "Akkar" },
+  { value: "OTHER",    label: "Other" },
+];
 const CAT_LABEL: Record<string, string> = { EDUCATION: "Education", HEALTH: "Health", ENVIRONMENT: "Environment", ANIMAL_WELFARE: "Animal Welfare", SOCIAL: "Social", OTHER: "Other" };
 
 interface VolunteerExperience {
@@ -375,7 +393,11 @@ const handleRemoveAvatar = async () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field label="Full Name"><input value={infoForm.name} onChange={(e) => setInfoForm({ ...infoForm, name: e.target.value })} className={inputCls} /></Field>
               <Field label="Phone"><input value={infoForm.phone} onChange={(e) => setInfoForm({ ...infoForm, phone: e.target.value })} className={inputCls} /></Field>
-              <Field label="City"><input value={infoForm.city} onChange={(e) => setInfoForm({ ...infoForm, city: e.target.value })} className={inputCls} /></Field>
+              <Field label="City">
+                <select value={infoForm.city} onChange={(e) => setInfoForm({ ...infoForm, city: e.target.value })} className={inputCls}>
+                  {CITIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+                </select>
+              </Field>
               <Field label="Country"><input value={infoForm.country} onChange={(e) => setInfoForm({ ...infoForm, country: e.target.value })} className={inputCls} /></Field>
             </div>
             <Field label="Bio"><textarea value={infoForm.bio} onChange={(e) => setInfoForm({ ...infoForm, bio: e.target.value })} rows={3} className={`${inputCls} resize-none`} /></Field>
@@ -545,12 +567,9 @@ const handleRemoveAvatar = async () => {
           <div className="space-y-4">
             <div>
               <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1.5">Preferred City</label>
-              <input
-                value={prefForm.city}
-                onChange={(e) => setPrefForm({ ...prefForm, city: e.target.value })}
-                placeholder="e.g. Beirut"
-                className={inputCls}
-              />
+              <select value={prefForm.city} onChange={(e) => setPrefForm({ ...prefForm, city: e.target.value })} className={inputCls}>
+                {CITIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+              </select>
             </div>
             <div>
               <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-2">Preferred Category</label>

@@ -30,6 +30,24 @@ interface User {
 
 const ITEMS_PER_PAGE = 10;
 const DEBOUNCE_MS = 1000;
+const CITIES: DropdownOption[] = [
+  { value: "",         label: "Select city" },
+  { value: "BEIRUT",   label: "Beirut" },
+  { value: "TRIPOLI",  label: "Tripoli" },
+  { value: "SIDON",    label: "Sidon" },
+  { value: "TYRE",     label: "Tyre" },
+  { value: "JOUNIEH",  label: "Jounieh" },
+  { value: "BYBLOS",   label: "Byblos" },
+  { value: "ZAHLE",    label: "Zahle" },
+  { value: "BAALBEK",  label: "Baalbek" },
+  { value: "NABATIEH", label: "Nabatieh" },
+  { value: "ALEY",     label: "Aley" },
+  { value: "CHOUF",    label: "Chouf" },
+  { value: "METN",     label: "Metn" },
+  { value: "KESREWAN", label: "Kesrewan" },
+  { value: "AKKAR",    label: "Akkar" },
+  { value: "OTHER",    label: "Other" },
+];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function initials(name: string) {
@@ -124,7 +142,7 @@ function AddUserModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
         password: form.password,
         role:     form.role,
         phone:    form.phone.trim() || undefined,
-        city:     form.city.trim()  || undefined,
+        city:     form.city || undefined,
       });
       onSuccess();
       onClose();
@@ -188,7 +206,12 @@ function AddUserModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
               <input type="text" inputMode="tel" autoComplete="nope" placeholder="+961 1 234 567" value={form.phone} onChange={set("phone")} className={inputCls(false)} />
             </Field>
             <Field label="City">
-              <input type="text" autoComplete="nope" placeholder="e.g. Beirut" value={form.city} onChange={set("city")} className={inputCls(false)} />
+              <CustomDropdown
+                value={form.city}
+                onChange={(v) => setForm((p) => ({ ...p, city: v }))}
+                options={CITIES}
+                className="w-full"
+              />
             </Field>
           </div>
 

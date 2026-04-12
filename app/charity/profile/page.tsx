@@ -19,6 +19,24 @@ interface ProfileData {
 const CATEGORIES = [
   "EDUCATION", "HEALTH", "ENVIRONMENT", "ANIMAL_WELFARE", "SOCIAL", "OTHER",
 ];
+const CITIES = [
+  { value: "",         label: "Select city" },
+  { value: "BEIRUT",   label: "Beirut" },
+  { value: "TRIPOLI",  label: "Tripoli" },
+  { value: "SIDON",    label: "Sidon" },
+  { value: "TYRE",     label: "Tyre" },
+  { value: "JOUNIEH",  label: "Jounieh" },
+  { value: "BYBLOS",   label: "Byblos" },
+  { value: "ZAHLE",    label: "Zahle" },
+  { value: "BAALBEK",  label: "Baalbek" },
+  { value: "NABATIEH", label: "Nabatieh" },
+  { value: "ALEY",     label: "Aley" },
+  { value: "CHOUF",    label: "Chouf" },
+  { value: "METN",     label: "Metn" },
+  { value: "KESREWAN", label: "Kesrewan" },
+  { value: "AKKAR",    label: "Akkar" },
+  { value: "OTHER",    label: "Other" },
+];
 
 export default function CharityProfilePage() {
   const { refreshCharity } = useCharity();
@@ -224,11 +242,10 @@ export default function CharityProfilePage() {
               />
             </Field>
             <Field label="City">
-              <input
+              <Dropdown
                 value={form.city || ""}
-                onChange={(e) => handleChange("city", e.target.value)}
-                className="input"
-                placeholder="Beirut"
+                onChange={(v) => handleChange("city", v)}
+                options={CITIES}
               />
             </Field>
             <Field label="Website">

@@ -361,10 +361,25 @@ function PersonalInfoForm({
           </div>
           <div>
             <label className="text-[11px] font-medium text-gray-500 block mb-1">City</label>
-            <input type="text" value={form.city}
-              onChange={(e) => update("city", e.target.value)}
-              placeholder="e.g. Byblos"
-              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-gray-50 focus:bg-white focus:border-blue-300 focus:ring-1 focus:ring-blue-100 outline-none" />
+            <select value={form.city} onChange={(e) => update("city", e.target.value)}
+              className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-gray-50 focus:bg-white focus:border-blue-300 focus:ring-1 focus:ring-blue-100 outline-none">
+              <option value="">—</option>
+              <option value="BEIRUT">Beirut</option>
+              <option value="TRIPOLI">Tripoli</option>
+              <option value="SIDON">Sidon</option>
+              <option value="TYRE">Tyre</option>
+              <option value="JOUNIEH">Jounieh</option>
+              <option value="BYBLOS">Byblos</option>
+              <option value="ZAHLE">Zahle</option>
+              <option value="BAALBEK">Baalbek</option>
+              <option value="NABATIEH">Nabatieh</option>
+              <option value="ALEY">Aley</option>
+              <option value="CHOUF">Chouf</option>
+              <option value="METN">Metn</option>
+              <option value="KESREWAN">Kesrewan</option>
+              <option value="AKKAR">Akkar</option>
+              <option value="OTHER">Other</option>
+            </select>
           </div>
         </div>
 

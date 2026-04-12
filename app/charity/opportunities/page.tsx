@@ -8,6 +8,24 @@ import Dropdown from "@/components/charity/Dropdown";
 import CustomDatePicker from "@/components/CustomDatePicker";
 
 const DAYS = ["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY","SUNDAY"] as const;
+const CITIES = [
+  { value: "", label: "None" },
+  { value: "BEIRUT",   label: "Beirut" },
+  { value: "TRIPOLI",  label: "Tripoli" },
+  { value: "SIDON",    label: "Sidon" },
+  { value: "TYRE",     label: "Tyre" },
+  { value: "JOUNIEH",  label: "Jounieh" },
+  { value: "BYBLOS",   label: "Byblos" },
+  { value: "ZAHLE",    label: "Zahle" },
+  { value: "BAALBEK",  label: "Baalbek" },
+  { value: "NABATIEH", label: "Nabatieh" },
+  { value: "ALEY",     label: "Aley" },
+  { value: "CHOUF",    label: "Chouf" },
+  { value: "METN",     label: "Metn" },
+  { value: "KESREWAN", label: "Kesrewan" },
+  { value: "AKKAR",    label: "Akkar" },
+  { value: "OTHER",    label: "Other" },
+];
 const DAY_SHORT: Record<string, string> = { MONDAY:"Mon", TUESDAY:"Tue", WEDNESDAY:"Wed", THURSDAY:"Thu", FRIDAY:"Fri", SATURDAY:"Sat", SUNDAY:"Sun" };
 
 interface Opportunity {
@@ -54,7 +72,7 @@ export default function OpportunitiesPage() {
   const [endTarget, setEndTarget] = useState<Opportunity | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
-    title: "", description: "", slots: "1", date: "", location: "", projectId: "",
+    title: "", description: "", slots: "1", date: "", endDate: "", location: "", projectId: "",
     requiredSkills: [] as string[], availabilityDays: [] as string[],
   });
   const [newSkill, setNewSkill] = useState("");
@@ -76,14 +94,14 @@ const fetchData = () => {
     const projectId = searchParams.get("projectId");
     if (projectId) {
       setEditOpp(null);
-      setForm({ title: "", description: "", slots: "1", date: "", location: "", projectId, requiredSkills: [], availabilityDays: [] });
+      setForm({ title: "", description: "", slots: "1", date: "", endDate: "", location: "", projectId, requiredSkills: [], availabilityDays: [] });
       setShowForm(true);
     }
   }, [searchParams]);
 
   const openCreate = () => {
     setEditOpp(null);
-    setForm({ title: "", description: "", slots: "1", date: "", location: "", projectId: "", requiredSkills: [], availabilityDays: [] });
+    setForm({ title: "", description: "", slots: "1", date: "", endDate: "", location: "", projectId: "", requiredSkills: [], availabilityDays: [] });
     setNewSkill("");
     setShowForm(true);
   };
@@ -95,6 +113,7 @@ const fetchData = () => {
       description: o.description || "",
       slots: String(o.maxSlots),
       date: o.startDate ? o.startDate.slice(0, 10) : "",
+      endDate: o.endDate ? o.endDate.slice(0, 10) : "",
       location: o.location || "",
       projectId: o.projectId ? String(o.projectId) : "",
       requiredSkills: o.requiredSkills || [],
@@ -113,6 +132,7 @@ const fetchData = () => {
         maxSlots: parseInt(form.slots),
         projectId: form.projectId ? parseInt(form.projectId) : undefined,
         startDate: form.date || undefined,
+        endDate: form.endDate || undefined,
       };
       if (editOpp) {
         await charityApi.patch(`/api/charity/opportunities/${editOpp.id}`, payload);
@@ -275,12 +295,20 @@ const handleEnd = async () => {
                 <FormField label="Slots" required>
                   <input type="number" min="1" value={form.slots} onChange={(e) => setForm({ ...form, slots: e.target.value })} required className="modal-input" />
                 </FormField>
-                <FormField label="Date">
+                <FormField label="Start Date" required>
                   <CustomDatePicker value={form.date} onChange={(v) => setForm({ ...form, date: v })} placeholder="Pick a date" className="w-full" />
                 </FormField>
               </div>
+              <FormField label="End Date" required>
+                <CustomDatePicker value={form.endDate} onChange={(v) => setForm({ ...form, endDate: v })} placeholder="Pick end date" className="w-full" />
+              </FormField>
               <FormField label="Location">
-                <input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} className="modal-input" placeholder="City or address" />
+                <Dropdown
+                  value={form.location}
+                  onChange={(v) => setForm({ ...form, location: v })}
+                  options={CITIES}
+                  placeholder="Select city"
+                />
               </FormField>
               {/* Required Skills */}
               <FormField label="Required Skills">

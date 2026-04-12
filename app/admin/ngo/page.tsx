@@ -33,6 +33,24 @@ const CATEGORIES = [
   "SOCIAL",
   "OTHER",
 ];
+const CITIES: DropdownOption[] = [
+  { value: "",         label: "Select city" },
+  { value: "BEIRUT",   label: "Beirut" },
+  { value: "TRIPOLI",  label: "Tripoli" },
+  { value: "SIDON",    label: "Sidon" },
+  { value: "TYRE",     label: "Tyre" },
+  { value: "JOUNIEH",  label: "Jounieh" },
+  { value: "BYBLOS",   label: "Byblos" },
+  { value: "ZAHLE",    label: "Zahle" },
+  { value: "BAALBEK",  label: "Baalbek" },
+  { value: "NABATIEH", label: "Nabatieh" },
+  { value: "ALEY",     label: "Aley" },
+  { value: "CHOUF",    label: "Chouf" },
+  { value: "METN",     label: "Metn" },
+  { value: "KESREWAN", label: "Kesrewan" },
+  { value: "AKKAR",    label: "Akkar" },
+  { value: "OTHER",    label: "Other" },
+];
 
 // ── Add Charity Modal ─────────────────────────────────────────────────────────
 interface AddCharityForm {
@@ -87,7 +105,7 @@ function AddCharityModal({ onClose, onSuccess }: { onClose: () => void; onSucces
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Invalid email address";
     if (!form.password.trim()) e.password = "Password is required";
     else if (form.password.length < 8) e.password = "Minimum 8 characters";
-    if (!form.city.trim()) e.city = "City is required";
+    if (!form.city) e.city = "City is required";
     return e;
   };
 
@@ -101,7 +119,7 @@ function AddCharityModal({ onClose, onSuccess }: { onClose: () => void; onSucces
         name:     form.name.trim(),
         email:    form.email.trim(),
         password: form.password,
-        city:     form.city.trim(),
+        city:     form.city,
         phone:    form.phone.trim()  || undefined,
         category: form.category      || undefined,
       });
@@ -159,7 +177,12 @@ function AddCharityModal({ onClose, onSuccess }: { onClose: () => void; onSucces
             <input type="password" placeholder="Min. 8 characters" value={form.password} autoComplete="nope" onChange={set("password")} className={inputCls(!!errors.password)} />
           </Field>
           <Field label="City" required error={errors.city}>
-            <input type="text" placeholder="e.g. Beirut" value={form.city} autoComplete="nope" onChange={set("city")} className={inputCls(!!errors.city)} />
+            <CustomDropdown
+              value={form.city}
+              onChange={(v) => { setForm((p) => ({ ...p, city: v })); setErrors((p) => ({ ...p, city: "" })); }}
+              options={CITIES}
+              className="w-full"
+            />
           </Field>
           </div>
 
