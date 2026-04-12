@@ -164,7 +164,7 @@ NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 | `/user/login` · `/register` | User auth |
 | `/user/dashboard` | Stats, recent activity |
 | `/user/profile` | Personal info, volunteer preferences, skills, experience history, ratings received |
-| `/user/opportunities` · `[id]` | Browse and apply — match-scored when profile is complete |
+| `/user/opportunities` · `[id]` | Browse and apply — opportunities ordered by pre-computed match score when profile is complete; `MatchBadge` shows fit tier on each card |
 | `/user/applications` | Application history with statuses |
 | `/user/recommendations` | AI-matched top opportunities |
 | `/user/certificates` | Earned certificates |
@@ -183,6 +183,18 @@ Renders a community feed post (volunteer or charity). Handles like toggle, expan
 ### `CreatePostModal`
 
 Post composer with type selector (GENERAL / CERTIFICATE / PROJECT), optional image upload to Supabase (`?bucket=logos&folder=posts`), and character-aware textarea.
+
+### `MatchBadge`
+
+Displayed on each opportunity card when the backend returns `hasScores: true`. Converts the raw numeric score into a human-readable fit tier:
+
+| Score | Label | Color |
+|---|---|---|
+| ≥ 8 | Great match | Emerald |
+| 4 – 7 | Good match | Violet |
+| 1 – 3 | Some match | Gray |
+
+The score itself is computed in the background by the API's BullMQ worker and stored in the `VolunteerMatchScore` table. The frontend simply reads the `matchScore` field returned per opportunity — no client-side calculation involved.
 
 ### `NotificationBell`
 
