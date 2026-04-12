@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   MagnifyingGlassIcon,
@@ -65,7 +65,7 @@ export default function OpportunitiesPage() {
   const router = useRouter();
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [total, setTotal] = useState(0);
-  const [hasProfile, setHasProfile] = useState(false);
+  const [hasScores, setHasScores] = useState(false);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
@@ -73,7 +73,7 @@ export default function OpportunitiesPage() {
   const [page, setPage] = useState(1);
   const limit = 12;
 
-  const fetch = useCallback(() => {
+  function loadOpportunities() {
     setLoading(true);
     const params = new URLSearchParams({ page: String(page), limit: String(limit) });
     if (search) params.set("search", search);
@@ -82,14 +82,14 @@ export default function OpportunitiesPage() {
       .then((res) => {
         setOpportunities(res.data?.data?.opportunities || []);
         setTotal(res.data?.data?.total || 0);
-        setHasProfile(res.data?.data?.hasProfile || false);
+        setHasScores(res.data?.data?.hasScores || false);
       })
       .finally(() => setLoading(false));
-  }, [search, category, page]);
+  }
 
-  useEffect(() => { fetch(); }, [fetch]);
+  useEffect(() => { loadOpportunities(); }, [search, category, page]); // eslint-disable-line react-hooks/set-state-in-effect, react-hooks/exhaustive-deps
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSearch(searchInput);
     setPage(1);
@@ -138,7 +138,7 @@ export default function OpportunitiesPage() {
           <p className="text-xs text-gray-400">
             {total} {total === 1 ? "opportunity" : "opportunities"} found
           </p>
-          {hasProfile && (
+          {hasScores && (
             <span className="flex items-center gap-1 text-[11px] font-medium text-violet-600">
               <SparklesIcon className="h-3 w-3" /> Sorted by match
             </span>
@@ -164,7 +164,7 @@ export default function OpportunitiesPage() {
               onClick={() => router.push(`/user/opportunities/${opp.id}`)}
               className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md hover:border-violet-200 transition-all cursor-pointer group flex flex-col gap-3"
             >
-              {/* Charity + status */}
+              {/* Charity + status + match score */}
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
                   <div className="h-8 w-8 rounded-lg bg-violet-50 border border-violet-100 flex items-center justify-center shrink-0">
@@ -180,9 +180,14 @@ export default function OpportunitiesPage() {
                     )}
                   </div>
                 </div>
-                <span className={`text-[11px] font-semibold px-2 py-0.5 rounded border shrink-0 ${STATUS_STYLE[opp.status] || STATUS_STYLE.OPEN}`}>
-                  {opp.status}
-                </span>
+                <div className="flex flex-col items-end gap-1 shrink-0">
+                  <span className={`text-[11px] font-semibold px-2 py-0.5 rounded border ${STATUS_STYLE[opp.status] || STATUS_STYLE.OPEN}`}>
+                    {opp.status}
+                  </span>
+                  {opp.matchScore != null && opp.matchScore > 0 && (
+                    <MatchBadge score={opp.matchScore} />
+                  )}
+                </div>
               </div>
 
               {/* Title */}
@@ -240,19 +245,12 @@ export default function OpportunitiesPage() {
                 </div>
               )}
 
-              {/* Applied badge + match score */}
-              <div className="flex items-center justify-between gap-2">
-                {opp.myApplicationStatus ? (
-                  <div className={`text-[11px] font-semibold px-2.5 py-1 rounded-lg border ${APP_STYLE[opp.myApplicationStatus]}`}>
-                    Applied — {opp.myApplicationStatus}
-                  </div>
-                ) : <div />}
-                {hasProfile && opp.matchScore != null && opp.matchScore > 0 && (
-                  <span className="flex items-center gap-1 text-[11px] font-semibold text-violet-600">
-                    <SparklesIcon className="h-3 w-3" />{opp.matchScore} pts
-                  </span>
-                )}
-              </div>
+              {/* Applied badge */}
+              {opp.myApplicationStatus && (
+                <div className={`text-[11px] font-semibold px-2.5 py-1 rounded-lg border w-fit ${APP_STYLE[opp.myApplicationStatus]}`}>
+                  Applied — {opp.myApplicationStatus}
+                </div>
+              )}
             </div>
           ))
         }
@@ -279,5 +277,19 @@ export default function OpportunitiesPage() {
         </div>
       )}
     </div>
+  );
+}
+
+function MatchBadge({ score }: { score: number }) {
+  const level =
+    score >= 8 ? { label: "Great match", cls: "bg-emerald-50 text-emerald-700 border-emerald-200" } :
+    score >= 4 ? { label: "Good match",  cls: "bg-violet-50 text-violet-700 border-violet-200"  } :
+                 { label: "Some match",  cls: "bg-gray-50 text-gray-500 border-gray-200"         };
+
+  return (
+    <span className={`flex items-center gap-0.5 text-[10px] font-semibold px-1.5 py-0.5 rounded border ${level.cls}`}>
+      <SparklesIcon className="h-2.5 w-2.5" />
+      {level.label}
+    </span>
   );
 }
