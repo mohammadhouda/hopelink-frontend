@@ -4,7 +4,10 @@ import { PlusIcon, NewspaperIcon } from "@heroicons/react/24/outline";
 import userApi from "@/lib/userAxios";
 import PostCard, { PostData } from "@/components/ui/PostCard";
 import CreatePostModal from "@/components/ui/CreatePostModal";
+import CompleteProfileModal from "@/components/ui/CompleteProfileModal";
 import { getAvatarUrl } from "@/lib/avatarUrl";
+import { canPostToFeed, getMissingFields } from "@/lib/profileCompleteness";
+import { useVolunteer } from "@/context/VolunteerContext";
 
 interface Me {
   id: number;
@@ -18,12 +21,15 @@ const Skeleton = ({ className }: { className: string }) => (
 );
 
 export default function UserFeedPage() {
+  const { volunteer } = useVolunteer();
   const [posts, setPosts] = useState<PostData[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
+  const [showCompleteProfile, setShowCompleteProfile] = useState(false);
+  const [missingFields, setMissingFields] = useState<string[]>([]);
   const [me, setMe] = useState<Me | null>(null);
   const limit = 10;
 
@@ -50,6 +56,17 @@ export default function UserFeedPage() {
   }, []);
 
   useEffect(() => { loadPosts(1, true); }, [loadPosts]);
+
+  const handleNewPost = () => {
+    // Check profile completeness
+    if (volunteer && !canPostToFeed(volunteer)) {
+      const missing = getMissingFields(volunteer, 'post');
+      setMissingFields(missing);
+      setShowCompleteProfile(true);
+      return;
+    }
+    setShowCreate(true);
+  };
 
   function handleCreated(post: unknown) {
     setPosts((prev) => [post as PostData, ...prev]);
@@ -79,7 +96,7 @@ export default function UserFeedPage() {
           <p className="text-sm text-gray-500 mt-0.5">Updates from volunteers and charities.</p>
         </div>
         <button
-          onClick={() => setShowCreate(true)}
+          onClick={handleNewPost}
           className="flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium rounded-xl transition-colors shadow-sm"
         >
           <PlusIcon className="h-4 w-4" />
@@ -90,7 +107,7 @@ export default function UserFeedPage() {
       {/* Create post shortcut */}
       {me && (
         <button
-          onClick={() => setShowCreate(true)}
+          onClick={handleNewPost}
           className="w-full flex items-center gap-3 bg-white border border-gray-100 rounded-2xl px-5 py-3.5 shadow-sm hover:shadow-md transition-shadow text-left"
         >
           {me.baseProfile?.avatarUrl ? (
@@ -154,6 +171,16 @@ export default function UserFeedPage() {
           uploadApi={userApi as any}
           accent="violet"
           showProjectType={false}
+        />
+      )}
+
+      {/* Complete profile modal */}
+      {showCompleteProfile && (
+        <CompleteProfileModal
+          onClose={() => setShowCompleteProfile(false)}
+          missingFields={missingFields}
+          action="post"
+          accent="violet"
         />
       )}
     </div>

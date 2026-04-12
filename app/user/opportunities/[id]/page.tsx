@@ -13,6 +13,9 @@ import {
   XCircleIcon,
 } from "@heroicons/react/24/outline";
 import userApi from "@/lib/userAxios";
+import { useVolunteer } from "@/context/VolunteerContext";
+import { canApplyToOpportunity, getMissingFields } from "@/lib/profileCompleteness";
+import CompleteProfileModal from "@/components/ui/CompleteProfileModal";
 
 interface Opportunity {
   id: number;
@@ -50,6 +53,7 @@ function formatDate(iso?: string | null) {
 export default function OpportunityDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const { volunteer, loading: volunteerLoading } = useVolunteer();
   const [opp, setOpp] = useState<Opportunity | null>(null);
   const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState(false);
@@ -57,6 +61,8 @@ export default function OpportunityDetailPage() {
   const [message, setMessage] = useState("");
   const [showApplyForm, setShowApplyForm] = useState(false);
   const [error, setError] = useState("");
+  const [showCompleteProfile, setShowCompleteProfile] = useState(false);
+  const [missingFields, setMissingFields] = useState<string[]>([]);
 
   const fetchOpp = () => {
     setLoading(true);
@@ -69,6 +75,15 @@ export default function OpportunityDetailPage() {
 
   const handleApply = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Check profile completeness
+    if (volunteer && !canApplyToOpportunity(volunteer)) {
+      const missing = getMissingFields(volunteer, 'apply');
+      setMissingFields(missing);
+      setShowCompleteProfile(true);
+      return;
+    }
+    
     setApplying(true);
     setError("");
     try {
@@ -81,6 +96,17 @@ export default function OpportunityDetailPage() {
     } finally {
       setApplying(false);
     }
+  };
+
+  const handleApplyClick = () => {
+    // Check profile completeness
+    if (volunteer && !canApplyToOpportunity(volunteer)) {
+      const missing = getMissingFields(volunteer, 'apply');
+      setMissingFields(missing);
+      setShowCompleteProfile(true);
+      return;
+    }
+    setShowApplyForm(true);
   };
 
   const handleWithdraw = async () => {
@@ -262,7 +288,7 @@ export default function OpportunityDetailPage() {
             </form>
           ) : (
             <button
-              onClick={() => setShowApplyForm(true)}
+              onClick={handleApplyClick}
               className="w-full py-3 text-sm font-semibold text-white bg-linear-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 rounded-xl shadow-sm shadow-violet-200 transition-all cursor-pointer"
             >
               Apply Now
@@ -276,6 +302,16 @@ export default function OpportunityDetailPage() {
           </p>
         )}
       </div>
+
+      {/* Complete profile modal */}
+      {showCompleteProfile && (
+        <CompleteProfileModal
+          onClose={() => setShowCompleteProfile(false)}
+          missingFields={missingFields}
+          action="apply"
+          accent="violet"
+        />
+      )}
     </div>
   );
 }
