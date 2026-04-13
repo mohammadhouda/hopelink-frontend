@@ -16,6 +16,7 @@ import {
 import { CheckCircleIcon as CheckCircleSolid } from "@heroicons/react/24/solid";
 import CustomDropdown, { DropdownOption } from "@/components/CustomDropdown";
 import { useSearchParams } from "next/navigation";
+import { formatDate } from "@/lib/dateUtils";
 
 // ── Types
 interface RegistrationRequest {
@@ -55,15 +56,6 @@ interface VerificationRequest {
 
 const ITEMS_PER_PAGE = 10;
 
-// ── Helpers
-function formatDate(iso: string | null) {
-  if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
 
 const STATUS_STYLES: Record<string, string> = {
   PENDING: "bg-amber-50 text-amber-700 border border-amber-200",

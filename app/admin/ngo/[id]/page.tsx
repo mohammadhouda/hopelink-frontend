@@ -21,6 +21,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { CheckCircleIcon as CheckCircleSolid } from "@heroicons/react/24/solid";
 import ConfirmModal from "@/components/ConfirmModal";
+import { formatDate } from "@/lib/dateUtils";
 
 // Types
 interface Project {
@@ -63,12 +64,6 @@ const STATUS_STYLES: Record<Project["status"], string> = {
   CLOSED: "bg-gray-100 text-gray-500 border border-gray-200",
 };
 
-function formatDate(iso: string | null) {
-  if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("en-US", {
-    year: "numeric", month: "short", day: "numeric",
-  });
-}
 
 // Sub-components
 function StatCard({ label, value, icon: Icon, color = "blue" }: {

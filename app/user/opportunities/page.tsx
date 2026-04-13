@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import userApi from "@/lib/userAxios";
 import CustomDropdown from "@/components/CustomDropdown";
 import { getAvatarUrl } from "@/lib/avatarUrl";
+import { DAY_OPTIONS as DAY_ALL, DAY_SHORT, CATEGORY_VALUES } from "@/lib/constants";
+import { formatDate } from "@/lib/dateUtils";
 
 /* ━━━ Types ━━━ */
 interface Opportunity {
@@ -43,19 +45,7 @@ const APP_CFG: Record<string, { label: string; icon: string; bg: string; text: s
   DECLINED: { label: "Not Selected",   icon: "✗",  bg: "#FEF2F2", text: "#991B1B", border: "#FECACA" },
 };
 
-const CATEGORIES = ["EDUCATION", "HEALTH", "ENVIRONMENT", "ANIMAL_WELFARE", "SOCIAL", "OTHER"];
-
-const DAY_ALL = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"] as const;
-const DAY_SHORT: Record<string, string> = {
-  MONDAY: "Mo", TUESDAY: "Tu", WEDNESDAY: "We",
-  THURSDAY: "Th", FRIDAY: "Fr", SATURDAY: "Sa", SUNDAY: "Su",
-};
-
-/* ━━━ Helpers ━━━ */
-function formatDate(iso?: string | null) {
-  if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
-}
+const CATEGORIES = CATEGORY_VALUES;
 
 function accentForStatus(status: string) {
   switch (status) {

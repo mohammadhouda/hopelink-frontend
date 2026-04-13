@@ -13,6 +13,7 @@ import {
   ArrowTopRightOnSquareIcon,
 } from "@heroicons/react/24/outline";
 import charityApi from "@/lib/charityAxios";
+import { formatDate } from "@/lib/dateUtils";
 
 /* ── types ────────────────────────────────────────────────── */
 interface Project {
@@ -62,10 +63,6 @@ const ACCENT_MAP: Record<string, string> = {
 };
 
 /* ── helpers ──────────────────────────────────────────────── */
-function formatDate(iso?: string | null) {
-  if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-}
 
 function daysRemaining(endDate?: string | null) {
   if (!endDate) return null;

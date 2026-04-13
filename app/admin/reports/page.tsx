@@ -16,6 +16,7 @@ import {
 import api from "@/lib/axios";
 import CustomDropdown from "@/components/CustomDropdown";
 import CustomDatePicker from "@/components/CustomDatePicker";
+import { formatDate } from "@/lib/dateUtils";
 
 /* types */
 type TabKey = "registration" | "ngos" | "users" | "projects";
@@ -58,13 +59,6 @@ const STATUS_STYLES: Record<string, string> = {
 const Skeleton = ({ className }: { className: string }) => (
   <div className={`animate-pulse bg-gray-100 rounded ${className}`} />
 );
-
-function formatDate(iso: string | null) {
-  if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("en-US", {
-    year: "numeric", month: "short", day: "numeric",
-  });
-}
 
 function exportToCsv(filename: string, headers: string[], rows: string[][]) {
   const csvContent = [

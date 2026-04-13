@@ -10,6 +10,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { CheckCircleIcon as CheckCircleSolid } from "@heroicons/react/24/solid";
 import CustomDropdown, { DropdownOption } from "@/components/CustomDropdown";
+import { CITY_OPTIONS_WITH_PLACEHOLDER, CATEGORY_VALUES } from "@/lib/constants";
 
 interface Charity {
   id: number;
@@ -25,32 +26,8 @@ interface Charity {
 const ITEMS_PER_PAGE = 8;
 const DEBOUNCE_MS = 1000;
 
-const CATEGORIES = [
-  "EDUCATION",
-  "HEALTH",
-  "ENVIRONMENT",
-  "ANIMAL_WELFARE",
-  "SOCIAL",
-  "OTHER",
-];
-const CITIES: DropdownOption[] = [
-  { value: "",         label: "Select city" },
-  { value: "BEIRUT",   label: "Beirut" },
-  { value: "TRIPOLI",  label: "Tripoli" },
-  { value: "SIDON",    label: "Sidon" },
-  { value: "TYRE",     label: "Tyre" },
-  { value: "JOUNIEH",  label: "Jounieh" },
-  { value: "BYBLOS",   label: "Byblos" },
-  { value: "ZAHLE",    label: "Zahle" },
-  { value: "BAALBEK",  label: "Baalbek" },
-  { value: "NABATIEH", label: "Nabatieh" },
-  { value: "ALEY",     label: "Aley" },
-  { value: "CHOUF",    label: "Chouf" },
-  { value: "METN",     label: "Metn" },
-  { value: "KESREWAN", label: "Kesrewan" },
-  { value: "AKKAR",    label: "Akkar" },
-  { value: "OTHER",    label: "Other" },
-];
+const CATEGORIES = CATEGORY_VALUES;
+const CITIES: DropdownOption[] = CITY_OPTIONS_WITH_PLACEHOLDER("Select city");
 
 // ── Add Charity Modal ─────────────────────────────────────────────────────────
 interface AddCharityForm {

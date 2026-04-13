@@ -14,6 +14,14 @@ import { StarIcon as StarIconSolid } from "@heroicons/react/24/solid";
 import { useVolunteer } from "@/context/VolunteerContext";
 import userApi from "@/lib/userAxios";
 import { getAvatarUrl } from "@/lib/avatarUrl";
+import {
+  DAY_OPTIONS as DAYS,
+  DAY_SHORT,
+  CATEGORY_OPTIONS,
+  CITY_OPTIONS_WITH_PLACEHOLDER,
+  categoryLabel,
+} from "@/lib/constants";
+import { formatDate, formatMonthYear } from "@/lib/dateUtils";
 
 interface Profile {
   id: number;
@@ -56,28 +64,9 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 const inputCls = "w-full px-3.5 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-violet-300 focus:bg-white focus:ring-2 focus:ring-violet-100 transition-all";
-const DAYS = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"] as const;
-const DAY_SHORT: Record<string, string> = { MONDAY: "Mon", TUESDAY: "Tue", WEDNESDAY: "Wed", THURSDAY: "Thu", FRIDAY: "Fri", SATURDAY: "Sat", SUNDAY: "Sun" };
-const CATEGORIES = ["EDUCATION", "HEALTH", "ENVIRONMENT", "ANIMAL_WELFARE", "SOCIAL", "OTHER"] as const;
-const CITIES: { value: string; label: string }[] = [
-  { value: "",         label: "—" },
-  { value: "BEIRUT",   label: "Beirut" },
-  { value: "TRIPOLI",  label: "Tripoli" },
-  { value: "SIDON",    label: "Sidon" },
-  { value: "TYRE",     label: "Tyre" },
-  { value: "JOUNIEH",  label: "Jounieh" },
-  { value: "BYBLOS",   label: "Byblos" },
-  { value: "ZAHLE",    label: "Zahle" },
-  { value: "BAALBEK",  label: "Baalbek" },
-  { value: "NABATIEH", label: "Nabatieh" },
-  { value: "ALEY",     label: "Aley" },
-  { value: "CHOUF",    label: "Chouf" },
-  { value: "METN",     label: "Metn" },
-  { value: "KESREWAN", label: "Kesrewan" },
-  { value: "AKKAR",    label: "Akkar" },
-  { value: "OTHER",    label: "Other" },
-];
-const CAT_LABEL: Record<string, string> = { EDUCATION: "Education", HEALTH: "Health", ENVIRONMENT: "Environment", ANIMAL_WELFARE: "Animal Welfare", SOCIAL: "Social", OTHER: "Other" };
+const CATEGORIES = CATEGORY_OPTIONS;
+const CITIES = CITY_OPTIONS_WITH_PLACEHOLDER("—");
+// categoryLabel() from constants replaces the old CAT_LABEL lookup
 
 interface VolunteerExperience {
   id: number;
@@ -91,10 +80,7 @@ interface VolunteerExperience {
 
 const EMPTY_EXP = { company: "", role: "", startDate: "", endDate: "", isCurrent: false, description: "" };
 
-function fmtMonth(iso?: string | null) {
-  if (!iso) return "";
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", year: "numeric" });
-}
+const fmtMonth = (iso?: string | null) => iso ? formatMonthYear(iso) : "";
 
 interface Rating {
   id: number;
@@ -494,7 +480,7 @@ const handleRemoveAvatar = async () => {
                 { label: "Phone",   value: profile.baseProfile?.phone },
                 { label: "City",    value: profile.baseProfile?.city },
                 { label: "Country", value: profile.baseProfile?.country },
-                { label: "Joined",  value: new Date(profile.createdAt).toLocaleDateString("en-US", { month: "long", year: "numeric" }) },
+                { label: "Joined",  value: formatMonthYear(profile.createdAt) },
               ].map(({ label, value }) => (
                 <div key={label}>
                   <p className="text-xs text-gray-400 font-medium">{label}</p>
@@ -608,7 +594,7 @@ const handleRemoveAvatar = async () => {
                           : "bg-gray-50 text-gray-500 border-gray-200 hover:border-violet-300 hover:text-violet-600"
                       }`}
                     >
-                      {CAT_LABEL[cat]}
+                      {categoryLabel(cat)}
                     </button>
                   );
                 })}
@@ -642,7 +628,7 @@ const handleRemoveAvatar = async () => {
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider w-16 shrink-0">Focus</span>
                       <span className="px-2.5 py-1 text-xs font-medium bg-violet-50 text-violet-700 border border-violet-200 rounded-full">
-                        {CAT_LABEL[prefForm.category] ?? prefForm.category}
+                        {categoryLabel(prefForm.category)}
                       </span>
                     </div>
                   )}
@@ -814,7 +800,7 @@ const handleRemoveAvatar = async () => {
                     <div className="flex items-center justify-between gap-2">
                       <StarDisplay value={r.rating} />
                       <span className="text-[11px] text-gray-400 shrink-0">
-                        {new Date(r.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                        {formatDate(r.createdAt)}
                       </span>
                     </div>
                     <p className="text-xs font-semibold text-gray-700 mt-0.5">{r.charity.name}</p>

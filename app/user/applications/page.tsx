@@ -10,6 +10,8 @@ import {
   ArrowTopRightOnSquareIcon,
 } from "@heroicons/react/24/outline";
 import userApi from "@/lib/userAxios";
+import { APPLICATION_STATUS } from "@/lib/constants";
+import { formatDate } from "@/lib/dateUtils";
 
 interface Application {
   id: number;
@@ -25,20 +27,16 @@ interface Application {
   };
 }
 
-const STATUS_CONFIG: Record<string, { label: string; style: string; icon: React.ElementType }> = {
-  PENDING:  { label: "Pending",  style: "bg-amber-50 text-amber-700 border-amber-200",   icon: ClockIcon },
-  APPROVED: { label: "Approved", style: "bg-emerald-50 text-emerald-700 border-emerald-200", icon: CheckCircleIcon },
-  DECLINED: { label: "Declined", style: "bg-red-50 text-red-600 border-red-200",         icon: XCircleIcon },
+const STATUS_CONFIG = APPLICATION_STATUS;
+const STATUS_ICONS: Record<string, React.ElementType> = {
+  PENDING:  ClockIcon,
+  APPROVED: CheckCircleIcon,
+  DECLINED: XCircleIcon,
 };
 
 const Skeleton = ({ className }: { className: string }) => (
   <div className={`animate-pulse bg-gray-100 rounded ${className}`} />
 );
-
-function formatDate(iso?: string | null) {
-  if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-}
 
 export default function ApplicationsPage() {
   const router = useRouter();
@@ -149,7 +147,7 @@ export default function ApplicationsPage() {
             ) : (
               applications.map((app) => {
                 const cfg = STATUS_CONFIG[app.status] || STATUS_CONFIG.PENDING;
-                const Icon = cfg.icon;
+                const Icon = STATUS_ICONS[app.status] || ClockIcon;
                 return (
                   <tr key={app.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors">
                     <td className="px-5 py-3.5">
@@ -166,7 +164,7 @@ export default function ApplicationsPage() {
                     <td className="px-5 py-3.5 text-sm text-gray-600">{app.opportunity.charity.name}</td>
                     <td className="px-5 py-3.5 text-sm text-gray-500">{formatDate(app.createdAt)}</td>
                     <td className="px-5 py-3.5">
-                      <span className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full border ${cfg.style}`}>
+                      <span className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full ${cfg.badge}`}>
                         <Icon className="h-3 w-3" />
                         {cfg.label}
                       </span>

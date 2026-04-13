@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { PencilSquareIcon, EnvelopeIcon, EyeIcon } from "@heroicons/react/24/outline";
 import api from "@/lib/axios";
+import { formatDate } from "@/lib/dateUtils";
 
 interface EmailTemplate {
   id: number;
@@ -12,10 +13,6 @@ interface EmailTemplate {
   body: string;
   variables: string[];
   updatedAt: string;
-}
-
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
 export default function EmailTemplates() {

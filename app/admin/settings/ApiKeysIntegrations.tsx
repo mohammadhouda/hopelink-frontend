@@ -6,6 +6,7 @@ import {
   KeyIcon,
 } from "@heroicons/react/24/outline";
 import api from "@/lib/axios";
+import { formatDate } from "@/lib/dateUtils";
 
 interface ApiKey {
   id: number;
@@ -25,11 +26,6 @@ interface Integration {
   icon: string;
   status: "connected" | "disconnected";
   connectedAt: string | null;
-}
-
-function formatDate(iso: string | null) {
-  if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
 export default function ApiKeysIntegrations() {

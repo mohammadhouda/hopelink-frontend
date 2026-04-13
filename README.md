@@ -90,10 +90,15 @@ hopelink-frontend/
 │   └── VolunteerContext.tsx     User/volunteer auth state
 │
 └── lib/
-    ├── axios.ts            Admin Axios (redirects → /login on 401)
-    ├── charityAxios.ts     Charity Axios (redirects → /charity/login on 401)
-    ├── userAxios.ts        User Axios (redirects → /user/login on 401)
-    └── avatarUrl.ts        getAvatarUrl() — resolves paths to CDN URLs
+    ├── createAxiosInstance.ts   Factory — one interceptor impl shared by all portals
+    ├── axios.ts                 Admin Axios  →  createAxiosInstance("/login")
+    ├── charityAxios.ts          Charity Axios  →  createAxiosInstance("/charity/login")
+    ├── userAxios.ts             User Axios  →  createAxiosInstance("/user/login")
+    ├── constants.ts             Shared CITY_OPTIONS, CATEGORY_OPTIONS, DAY_OPTIONS,
+    │                            APPLICATION_STATUS, OPPORTUNITY_STATUS enums + helpers
+    ├── dateUtils.ts             Shared formatDate / formatDateLong / formatMonthYear /
+    │                            formatDateTime / formatRelative / daysUntil helpers
+    └── avatarUrl.ts             getAvatarUrl() — resolves paths to CDN URLs
 ```
 
 ---
@@ -200,6 +205,59 @@ The score itself is computed in the background by the API's BullMQ worker and st
 
 Polls `GET /notifications/unread-count` every 30 seconds. Renders an animated badge when there are unread items.
 
+### `createAxiosInstance(loginRedirect)`
+
+Single implementation of the silent-refresh interceptor, shared by all three portals. Each portal's `lib/axios.ts` / `lib/charityAxios.ts` / `lib/userAxios.ts` is now a one-liner:
+
+```ts
+// lib/charityAxios.ts
+import { createAxiosInstance } from "./createAxiosInstance";
+const charityApi = createAxiosInstance("/charity/login");
+export default charityApi;
+```
+
+The only difference between portals is `loginRedirect` — the path the interceptor navigates to on permanent refresh failure.
+
+---
+
+### `lib/constants.ts`
+
+Single source of truth for every enum that drives dropdowns, filters, and status badges across all portals. Importing once prevents the silent drift that happens when the same list is copy-pasted into ten files.
+
+| Export | Used for |
+|---|---|
+| `CITY_OPTIONS` | City dropdowns in all three portals |
+| `CITY_OPTIONS_WITH_PLACEHOLDER(label)` | Dropdowns that need a "Select city…" option |
+| `cityLabel(value)` | Display label for a stored city enum value |
+| `CATEGORY_OPTIONS` | Category filter selects |
+| `categoryLabel(value)` | Display label for a stored category enum value |
+| `DAY_OPTIONS` | Availability day pickers |
+| `DAY_SHORT` | Abbreviated day names ("Mon", "Tue", …) |
+| `APPLICATION_STATUS` | `{ label, badge, dot }` per status — drives colored badges |
+| `OPPORTUNITY_STATUS` | Same shape for opportunity status badges |
+
+All status maps are typed as `Record<string, StatusEntry>` so component code can index them with plain `string` variables without `as keyof typeof` casts.
+
+---
+
+### `lib/dateUtils.ts`
+
+Replaces 12+ local `formatDate` functions that were copy-pasted across pages.
+
+| Function | Output example |
+|---|---|
+| `formatDate(date)` | `"Jan 5, 2025"` |
+| `formatDateLong(date)` | `"January 5, 2025"` |
+| `formatDateCompact(date)` | `"5 Jan 2025"` |
+| `formatMonthYear(date)` | `"Jan 2025"` |
+| `formatDateTime(date)` | `"Jan 5, 2025 · 14:30"` |
+| `formatRelative(date)` | `"3 days ago"` / `"just now"` |
+| `daysUntil(date)` | `12` (days from today, negative if past) |
+
+All functions accept `string | Date` and return a formatted string. Invalid/null input returns `"—"`.
+
+---
+
 ### `getAvatarUrl(path)`
 
 Handles the dual storage format: seed data uses full picsum URLs, uploaded files store only the relative path. The function returns the path unchanged if it starts with `http`, otherwise prepends the Supabase CDN base URL.
@@ -251,7 +309,7 @@ Rooms are created on the first application approval and closed automatically whe
 
 **Why it was tricky:** If all three fail with `401` and each one independently fires a refresh, two of them will see a **revoked token** — because the backend uses family-based rotation, meaning the first refresh immediately invalidates the old token. The second and third refresh calls fail, the interceptor gives up, and the user is logged out for no reason.
 
-**The solution — a request queue:** Each Axios instance (admin, charity, user) maintains a module-level flag and a queue:
+**The solution — a request queue:** The interceptor maintains a module-level flag and a queue:
 
 ```ts
 let isRefreshing = false;
@@ -270,24 +328,24 @@ The response interceptor for every `401`:
 - On refresh failure: `processQueue(err)` rejects all waiting requests and redirects to the login page
 
 ```ts
-axiosInstance.interceptors.response.use(
+instance.interceptors.response.use(
   (res) => res,
   async (error) => {
     if (error.response?.status !== 401) return Promise.reject(error);
 
     if (isRefreshing) {
       return new Promise((resolve, reject) => queue.push({ resolve, reject }))
-        .then(() => axiosInstance(error.config));
+        .then(() => instance(error.config));
     }
 
     isRefreshing = true;
     try {
-      await axios.post("/api/auth/refresh", {}, { withCredentials: true });
+      await refreshClient.post("/api/auth/refresh");
       processQueue(null);
-      return axiosInstance(error.config);  // replay original request
+      return instance(error.config);  // replay original request
     } catch (err) {
       processQueue(err);
-      window.location.href = "/login";
+      window.location.href = loginRedirect;
       return Promise.reject(err);
     } finally {
       isRefreshing = false;
@@ -297,3 +355,5 @@ axiosInstance.interceptors.response.use(
 ```
 
 This pattern guarantees exactly one refresh per expiry cycle regardless of how many concurrent requests are in flight — matching the backend's expectation of a single rotation per token family.
+
+**Originally**, this 60-line interceptor block was copy-pasted verbatim into `axios.ts`, `charityAxios.ts`, and `userAxios.ts`. The only difference between the three copies was `window.location.href = "/login"` vs `"/charity/login"` vs `"/user/login"`. The three files are now one-liners that call `createAxiosInstance(loginRedirect)` — any fix or improvement to the interceptor logic propagates to all portals automatically.

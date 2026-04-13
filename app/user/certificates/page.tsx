@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { DocumentCheckIcon, CalendarDaysIcon, BuildingOffice2Icon, MapPinIcon, DocumentArrowDownIcon } from "@heroicons/react/24/outline";
 import userApi from "@/lib/userAxios";
+import { formatDate } from "@/lib/dateUtils";
 
 interface Certificate {
   id: number;
@@ -14,11 +15,6 @@ interface Certificate {
 const Skeleton = ({ className }: { className: string }) => (
   <div className={`animate-pulse bg-gray-100 rounded-xl ${className}`} />
 );
-
-function formatDate(iso?: string | null) {
-  if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-}
 
 export default function CertificatesPage() {
   const [certificates, setCertificates] = useState<Certificate[]>([]);

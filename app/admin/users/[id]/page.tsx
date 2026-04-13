@@ -10,6 +10,7 @@ import {
   PlayCircleIcon, XCircleIcon, CheckCircleIcon,
 } from "@heroicons/react/24/outline";
 import { CheckCircleIcon as CheckCircleSolid } from "@heroicons/react/24/solid";
+import { formatDate } from "@/lib/dateUtils";
 
 // ── Types──
 interface Application {
@@ -52,11 +53,6 @@ interface UserDetail {
 }
 
 // ── Helpers
-function formatDate(iso: string | null) {
-  if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
-}
-
 function initials(name: string) {
   return name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
 }

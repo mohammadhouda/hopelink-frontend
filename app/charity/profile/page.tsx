@@ -4,6 +4,7 @@ import { useCharity } from "@/context/CharityContext";
 import charityApi from "@/lib/charityAxios";
 import { getAvatarUrl } from "@/lib/avatarUrl";
 import Dropdown from "@/components/charity/Dropdown";
+import { CITY_OPTIONS_WITH_PLACEHOLDER, CATEGORY_VALUES } from "@/lib/constants";
 
 interface ProfileData {
   name: string;
@@ -13,30 +14,11 @@ interface ProfileData {
   city?: string;
   category?: string;
   logoUrl?: string;
-  user?: {  email: string };
+  user?: { email: string };
 }
 
-const CATEGORIES = [
-  "EDUCATION", "HEALTH", "ENVIRONMENT", "ANIMAL_WELFARE", "SOCIAL", "OTHER",
-];
-const CITIES = [
-  { value: "",         label: "Select city" },
-  { value: "BEIRUT",   label: "Beirut" },
-  { value: "TRIPOLI",  label: "Tripoli" },
-  { value: "SIDON",    label: "Sidon" },
-  { value: "TYRE",     label: "Tyre" },
-  { value: "JOUNIEH",  label: "Jounieh" },
-  { value: "BYBLOS",   label: "Byblos" },
-  { value: "ZAHLE",    label: "Zahle" },
-  { value: "BAALBEK",  label: "Baalbek" },
-  { value: "NABATIEH", label: "Nabatieh" },
-  { value: "ALEY",     label: "Aley" },
-  { value: "CHOUF",    label: "Chouf" },
-  { value: "METN",     label: "Metn" },
-  { value: "KESREWAN", label: "Kesrewan" },
-  { value: "AKKAR",    label: "Akkar" },
-  { value: "OTHER",    label: "Other" },
-];
+const CATEGORIES = CATEGORY_VALUES;
+const CITIES = CITY_OPTIONS_WITH_PLACEHOLDER("Select city");
 
 export default function CharityProfilePage() {
   const { refreshCharity } = useCharity();

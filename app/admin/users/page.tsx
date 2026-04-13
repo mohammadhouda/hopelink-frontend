@@ -9,6 +9,8 @@ import {
   UserIcon, XMarkIcon, PlusIcon, XCircleIcon,
 } from "@heroicons/react/24/outline";
 import CustomDropdown, { DropdownOption } from "@/components/CustomDropdown";
+import { CITY_OPTIONS_WITH_PLACEHOLDER } from "@/lib/constants";
+import { formatDate } from "@/lib/dateUtils";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface User {
@@ -30,33 +32,11 @@ interface User {
 
 const ITEMS_PER_PAGE = 10;
 const DEBOUNCE_MS = 1000;
-const CITIES: DropdownOption[] = [
-  { value: "",         label: "Select city" },
-  { value: "BEIRUT",   label: "Beirut" },
-  { value: "TRIPOLI",  label: "Tripoli" },
-  { value: "SIDON",    label: "Sidon" },
-  { value: "TYRE",     label: "Tyre" },
-  { value: "JOUNIEH",  label: "Jounieh" },
-  { value: "BYBLOS",   label: "Byblos" },
-  { value: "ZAHLE",    label: "Zahle" },
-  { value: "BAALBEK",  label: "Baalbek" },
-  { value: "NABATIEH", label: "Nabatieh" },
-  { value: "ALEY",     label: "Aley" },
-  { value: "CHOUF",    label: "Chouf" },
-  { value: "METN",     label: "Metn" },
-  { value: "KESREWAN", label: "Kesrewan" },
-  { value: "AKKAR",    label: "Akkar" },
-  { value: "OTHER",    label: "Other" },
-];
+const CITIES: DropdownOption[] = CITY_OPTIONS_WITH_PLACEHOLDER("Select city");
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function initials(name: string) {
   return name.split(" ").map((w) => w[0]).slice(0, 2).join("").toUpperCase();
-}
-
-function formatDate(iso: string | null) {
-  if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
 }
 
 const ROLE_STYLES: Record<string, string> = {

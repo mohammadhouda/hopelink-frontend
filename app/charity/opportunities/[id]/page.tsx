@@ -22,6 +22,8 @@ import {
 import { CheckCircleIcon as CheckCircleSolid } from "@heroicons/react/24/solid";
 import charityApi from "@/lib/charityAxios";
 import { getAvatarUrl } from "@/lib/avatarUrl";
+import { APPLICATION_STATUS, OPPORTUNITY_STATUS } from "@/lib/constants";
+import { formatDate } from "@/lib/dateUtils";
 
 /* ── types ────────────────────────────────────────────────── */
 interface Opportunity {
@@ -61,25 +63,16 @@ interface Application {
 }
 
 /* ── constants ────────────────────────────────────────────── */
-const STATUS_CONFIG: Record<string, { bg: string; text: string; icon: React.ElementType; label: string }> = {
-  PENDING: { bg: "bg-amber-50 border-amber-200", text: "text-amber-700", icon: ClockIcon, label: "Pending" },
-  APPROVED: { bg: "bg-emerald-50 border-emerald-200", text: "text-emerald-700", icon: CheckCircleIcon, label: "Approved" },
-  DECLINED: { bg: "bg-red-50 border-red-200", text: "text-red-600", icon: XCircleIcon, label: "Declined" },
+const APP_STATUS_ICONS: Record<string, React.ElementType> = {
+  PENDING:  ClockIcon,
+  APPROVED: CheckCircleIcon,
+  DECLINED: XCircleIcon,
 };
 
-const OPP_STATUS_CONFIG: Record<string, { bg: string; dot: string }> = {
-  OPEN: { bg: "bg-emerald-50 text-emerald-700 border-emerald-200", dot: "bg-emerald-500" },
-  FULL: { bg: "bg-blue-50 text-blue-700 border-blue-200", dot: "bg-blue-500" },
-  CLOSED: { bg: "bg-gray-100 text-gray-600 border-gray-200", dot: "bg-gray-400" },
-  ENDED: { bg: "bg-slate-100 text-slate-600 border-slate-200", dot: "bg-slate-400" },
-};
+// APPLICATION_STATUS and OPPORTUNITY_STATUS imported from @/lib/constants
+// formatDate imported from @/lib/dateUtils
 
 /* ── helpers ──────────────────────────────────────────────── */
-function formatDate(iso?: string | null) {
-  if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-}
-
 function formatShortDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
@@ -210,7 +203,7 @@ export default function OpportunityDetailPage() {
     );
   }
 
-  const oppStatus = OPP_STATUS_CONFIG[opp.status] || OPP_STATUS_CONFIG.OPEN;
+  const oppStatus = OPPORTUNITY_STATUS[opp.status] || OPPORTUNITY_STATUS.OPEN;
   const countdown = daysUntil(opp.startDate);
   const slotsRemaining = Math.max(0, opp.maxSlots - approvedCount);
 
@@ -235,7 +228,7 @@ export default function OpportunityDetailPage() {
             <div className="flex-1 min-w-0">
               {/* Status + project breadcrumb */}
               <div className="flex items-center gap-2.5 mb-3">
-                <span className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full border ${oppStatus.bg}`}>
+                <span className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-full ${oppStatus.badge}`}>
                   <span className={`h-1.5 w-1.5 rounded-full ${oppStatus.dot}`} />
                   {opp.status}
                 </span>
@@ -355,8 +348,8 @@ export default function OpportunityDetailPage() {
         ) : (
           <div className="divide-y divide-gray-50">
             {filtered.map((a) => {
-              const config = STATUS_CONFIG[a.status];
-              const StatusIcon = config.icon;
+              const config = APPLICATION_STATUS[a.status] || APPLICATION_STATUS.PENDING;
+              const StatusIcon = APP_STATUS_ICONS[a.status] || ClockIcon;
               const avatar = resolveAvatar(a.user.baseProfile?.avatarUrl);
               const isExpanded = expandedApp === a.id;
 
@@ -403,7 +396,7 @@ export default function OpportunityDetailPage() {
                     </div>
 
                     {/* Status badge */}
-                    <span className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-lg border shrink-0 ${config.bg} ${config.text}`}>
+                    <span className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-lg shrink-0 ${config.badge}`}>
                       <StatusIcon className="h-3.5 w-3.5" />
                       {config.label}
                     </span>

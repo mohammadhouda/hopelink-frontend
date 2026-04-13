@@ -6,27 +6,10 @@ import charityApi from "@/lib/charityAxios";
 import ConfirmModal from "@/components/ConfirmModal";
 import Dropdown from "@/components/charity/Dropdown";
 import CustomDatePicker from "@/components/CustomDatePicker";
+import { DAY_OPTIONS as DAYS, DAY_SHORT, CITY_OPTIONS_WITH_PLACEHOLDER } from "@/lib/constants";
+import { formatDate } from "@/lib/dateUtils";
 
-const DAYS = ["MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY","SUNDAY"] as const;
-const CITIES = [
-  { value: "", label: "None" },
-  { value: "BEIRUT",   label: "Beirut" },
-  { value: "TRIPOLI",  label: "Tripoli" },
-  { value: "SIDON",    label: "Sidon" },
-  { value: "TYRE",     label: "Tyre" },
-  { value: "JOUNIEH",  label: "Jounieh" },
-  { value: "BYBLOS",   label: "Byblos" },
-  { value: "ZAHLE",    label: "Zahle" },
-  { value: "BAALBEK",  label: "Baalbek" },
-  { value: "NABATIEH", label: "Nabatieh" },
-  { value: "ALEY",     label: "Aley" },
-  { value: "CHOUF",    label: "Chouf" },
-  { value: "METN",     label: "Metn" },
-  { value: "KESREWAN", label: "Kesrewan" },
-  { value: "AKKAR",    label: "Akkar" },
-  { value: "OTHER",    label: "Other" },
-];
-const DAY_SHORT: Record<string, string> = { MONDAY:"Mon", TUESDAY:"Tue", WEDNESDAY:"Wed", THURSDAY:"Thu", FRIDAY:"Fri", SATURDAY:"Sat", SUNDAY:"Sun" };
+const CITIES = CITY_OPTIONS_WITH_PLACEHOLDER("None");
 
 interface Opportunity {
   id: number;
@@ -238,7 +221,7 @@ const handleEnd = async () => {
                   </td>
                   <td className="px-5 py-3.5 text-sm text-gray-600">{o.maxSlots}</td>
                   <td className="px-5 py-3.5 text-sm text-gray-500">
-                    {o.createdAt ? new Date(o.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—"}
+                    {formatDate(o.createdAt)}
                   </td>
                   <td className="px-5 py-3.5 text-sm text-gray-500">{o.location || "—"}</td>
                   <td className="px-5 py-3.5">

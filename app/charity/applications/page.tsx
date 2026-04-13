@@ -11,6 +11,8 @@ import charityApi from "@/lib/charityAxios";
 import { getAvatarUrl } from "@/lib/avatarUrl";
 import Dropdown from "@/components/charity/Dropdown";
 import CustomDatePicker from "@/components/CustomDatePicker";
+import { APPLICATION_STATUS, DAY_SHORT } from "@/lib/constants";
+import { formatDate, formatMonthYear } from "@/lib/dateUtils";
 
 interface Application {
   id: number;
@@ -107,18 +109,7 @@ function StarPicker({ value, onChange }: { value: number; onChange: (v: number) 
   );
 }
 
-const DAY_SHORT: Record<string, string> = { MONDAY: "Mon", TUESDAY: "Tue", WEDNESDAY: "Wed", THURSDAY: "Thu", FRIDAY: "Fri", SATURDAY: "Sat", SUNDAY: "Sun" };
-
-function fmtMonth(iso?: string | null) {
-  if (!iso) return "";
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", year: "numeric" });
-}
-
-const STATUS_STYLE: Record<string, string> = {
-  PENDING: "bg-amber-50 text-amber-700 border-amber-200",
-  APPROVED: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  DECLINED: "bg-red-50 text-red-600 border-red-200",
-};
+// DAY_SHORT, APPLICATION_STATUS, formatDate, formatMonthYear imported from shared libs
 
 const Skeleton = ({ className }: { className: string }) => (
   <div className={`animate-pulse bg-gray-100 rounded ${className}`} />
@@ -327,13 +318,13 @@ const fetchData = () => {
       </button>
     </td>
     <td className="px-5 py-3.5">
-      <span className={`inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded border ${STATUS_STYLE[a.status]}`}>
+      <span className={`inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded border ${APPLICATION_STATUS[a.status]?.badge}`}>
         {a.status === "APPROVED" ? <CheckCircleIcon className="h-3 w-3" /> : a.status === "DECLINED" ? <XCircleIcon className="h-3 w-3" /> : <ClockIcon className="h-3 w-3" />}
         {a.status}
       </span>
     </td>
     <td className="px-5 py-3.5 text-sm text-gray-500">
-      {new Date(a.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
+      {formatDate(a.createdAt)}
     </td>
     <td className="px-5 py-3.5">
       {a.status === "PENDING" && (
@@ -401,10 +392,10 @@ const fetchData = () => {
                       <span className="flex items-center gap-1 text-xs text-gray-500"><EnvelopeIcon className="h-3 w-3" />{applicantProfile.email}</span>
                     </div>
                     <div className="flex items-center gap-2 mt-2">
-                      <span className={`text-[11px] font-semibold px-2 py-0.5 rounded border ${STATUS_STYLE[applicantProfile.applicationStatus]}`}>
+                      <span className={`text-[11px] font-semibold px-2 py-0.5 rounded border ${APPLICATION_STATUS[applicantProfile.applicationStatus]?.badge}`}>
                         {applicantProfile.applicationStatus}
                       </span>
-                      <span className="text-xs text-gray-400">Applied {new Date(applicantProfile.appliedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>
+                      <span className="text-xs text-gray-400">Applied {formatDate(applicantProfile.appliedAt)}</span>
                     </div>
                   </div>
                 </div>
@@ -464,7 +455,7 @@ const fetchData = () => {
                             <p className="text-sm font-semibold text-gray-900">{exp.role}</p>
                             <p className="text-xs text-gray-500">{exp.company}</p>
                             <p className="text-xs text-gray-400 mt-0.5">
-                              {fmtMonth(exp.startDate)} — {exp.isCurrent ? "Present" : fmtMonth(exp.endDate)}
+                              {formatMonthYear(exp.startDate)} — {exp.isCurrent ? "Present" : formatMonthYear(exp.endDate)}
                             </p>
                             {exp.description && (
                               <p className="text-xs text-gray-500 mt-1 leading-relaxed">{exp.description}</p>
@@ -506,7 +497,7 @@ const fetchData = () => {
                               )}
                             </div>
                             <span className="text-[11px] text-gray-400 shrink-0">
-                              {new Date(r.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                              {formatDate(r.createdAt)}
                             </span>
                           </div>
                           <p className="text-xs text-gray-500 truncate mt-0.5">{r.opportunity.title}</p>

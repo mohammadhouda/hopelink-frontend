@@ -16,6 +16,8 @@ import userApi from "@/lib/userAxios";
 import { useVolunteer } from "@/context/VolunteerContext";
 import { canApplyToOpportunity, getMissingFields } from "@/lib/profileCompleteness";
 import CompleteProfileModal from "@/components/ui/CompleteProfileModal";
+import { OPPORTUNITY_STATUS, APPLICATION_STATUS } from "@/lib/constants";
+import { formatDate, formatDateLong } from "@/lib/dateUtils";
 
 interface Opportunity {
   id: number;
@@ -32,23 +34,12 @@ interface Opportunity {
   _count?: { applications: number };
 }
 
-const STATUS_CONFIG: Record<string, { label: string; bg: string; dot: string }> = {
-  OPEN:      { label: "Open",      bg: "bg-emerald-50 text-emerald-700 border-emerald-200", dot: "bg-emerald-500" },
-  FULL:      { label: "Full",      bg: "bg-blue-50 text-blue-700 border-blue-200",          dot: "bg-blue-500" },
-  ENDED:     { label: "Ended",     bg: "bg-gray-100 text-gray-600 border-gray-200",         dot: "bg-gray-400" },
-  CANCELLED: { label: "Cancelled", bg: "bg-red-50 text-red-600 border-red-200",             dot: "bg-red-400" },
+const STATUS_CONFIG = OPPORTUNITY_STATUS;
+const APP_CONFIG_ICONS: Record<string, React.ElementType> = {
+  PENDING:  ClockIcon,
+  APPROVED: CheckCircleIcon,
+  DECLINED: XCircleIcon,
 };
-
-const APP_CONFIG: Record<string, { label: string; icon: React.ElementType; color: string }> = {
-  PENDING:  { label: "Application Pending",  icon: ClockIcon,        color: "text-amber-600 bg-amber-50 border-amber-200" },
-  APPROVED: { label: "Application Approved", icon: CheckCircleIcon,  color: "text-emerald-600 bg-emerald-50 border-emerald-200" },
-  DECLINED: { label: "Application Declined", icon: XCircleIcon,      color: "text-red-600 bg-red-50 border-red-200" },
-};
-
-function formatDate(iso?: string | null) {
-  if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
-}
 
 export default function OpportunityDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -145,8 +136,9 @@ export default function OpportunityDetailPage() {
   }
 
   const statusCfg = STATUS_CONFIG[opp.status] || STATUS_CONFIG.OPEN;
-  const appCfg = opp.myApplication ? APP_CONFIG[opp.myApplication.status] : null;
-  const AppIcon = appCfg?.icon;
+  const appStatus = opp.myApplication?.status;
+  const appCfg = appStatus ? APPLICATION_STATUS[appStatus] : null;
+  const AppIcon = appStatus ? APP_CONFIG_ICONS[appStatus] : null;
   const canApply = opp.status === "OPEN" && !opp.myApplication;
 
   return (
@@ -190,8 +182,8 @@ export default function OpportunityDetailPage() {
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-6">
             {[
               { icon: MapPinIcon,       label: "Location",    value: opp.location || "Not specified" },
-              { icon: CalendarDaysIcon, label: "Start Date",  value: formatDate(opp.startDate) },
-              { icon: CalendarDaysIcon, label: "End Date",    value: formatDate(opp.endDate) },
+              { icon: CalendarDaysIcon, label: "Start Date",  value: formatDateLong(opp.startDate) },
+              { icon: CalendarDaysIcon, label: "End Date",    value: formatDateLong(opp.endDate) },
               { icon: UsersIcon,        label: "Slots",       value: `${opp._count?.applications ?? 0} / ${opp.maxSlots}` },
             ].map(({ icon: Icon, label, value }) => (
               <div key={label} className="bg-gray-50 rounded-xl border border-gray-100 p-3">
@@ -218,12 +210,12 @@ export default function OpportunityDetailPage() {
 
         {opp.myApplication && appCfg && AppIcon ? (
           <div className="space-y-4">
-            <div className={`flex items-center gap-3 px-4 py-3 rounded-xl border ${appCfg.color}`}>
+            <div className={`flex items-center gap-3 px-4 py-3 rounded-xl ${appCfg.badge}`}>
               <AppIcon className="h-5 w-5 shrink-0" />
               <div>
                 <p className="text-sm font-semibold">{appCfg.label}</p>
                 <p className="text-xs opacity-70 mt-0.5">
-                  Submitted {new Date(opp.myApplication.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                  Submitted {formatDate(opp.myApplication.createdAt)}
                 </p>
               </div>
             </div>
