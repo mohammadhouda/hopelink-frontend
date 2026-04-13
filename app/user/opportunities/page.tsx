@@ -460,14 +460,13 @@ export default function OpportunitiesPage() {
       {/* Inject CSS variables + fonts + animations */}
       <style>{`
         :root {
-          --font-heading: 'General Sans', 'DM Sans', system-ui, sans-serif;
-          --font-body: 'DM Sans', system-ui, sans-serif;
+          --font-heading: 'Inter', system-ui, sans-serif;
+          --font-body: 'Inter', system-ui, sans-serif;
           --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
           --page-bg: #FAFAFB;
           --accent: #6366F1;
           --accent-light: #EEF2FF;
         }
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap');
         @keyframes shimmer {
           0%   { background-position: 200% 0; }
           100% { background-position: -200% 0; }
