@@ -121,29 +121,48 @@ export default function RoomsPage() {
   const totalUnread = rooms.reduce((sum, r) => sum + r._count.messages, 0);
 
   return (
-    <div className="space-y-6 max-w-4xl">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900">Messages</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Chat rooms from your approved volunteer opportunities.
-          </p>
-        </div>
-        {!loading && rooms.length > 0 && (
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-              {activeCount} active
-            </div>
-            {closedCount > 0 && (
-              <div className="text-xs font-medium text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full">
-                {closedCount} archived
-              </div>
-            )}
+    <>
+      <style>{`
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(14px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        :root {
+          --font-heading: 'Inter', sans-serif;
+          --font-body: 'DM Sans', system-ui, sans-serif;
+        }
+      `}</style>
+      <div className="space-y-6 max-w-4xl" style={{ fontFamily: "var(--font-body)" }}>
+        {/* Header */}
+        <header className="flex items-start justify-between" style={{ animation: "fadeUp 0.35s ease both" }}>
+          <div>
+            <h1
+              style={{
+                fontSize: 24, fontWeight: 800, color: "#111827", margin: 0,
+                fontFamily: "var(--font-heading)",
+                letterSpacing: "-0.03em",
+              }}
+            >
+              Messages
+            </h1>
+            <p style={{ fontSize: 13.5, color: "#9CA3AF", margin: "4px 0 0" }}>
+              Chat rooms from your approved volunteer opportunities.
+            </p>
           </div>
-        )}
-      </div>
+          {!loading && rooms.length > 0 && (
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-full">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                {activeCount} active
+              </div>
+              {closedCount > 0 && (
+                <div className="text-xs font-medium text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full">
+                  {closedCount} archived
+                </div>
+              )}
+            </div>
+          )}
+        </header>
 
       {/* Stats */}
       {!loading && rooms.length > 0 && (
@@ -369,6 +388,7 @@ export default function RoomsPage() {
         </div>
       )}
     </div>
+    </>
   );
 }
 

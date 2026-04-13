@@ -88,21 +88,42 @@ export default function UserFeedPage() {
   const hasMore = posts.length < total;
 
   return (
-    <div className="max-w-2xl mx-auto space-y-5">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900">Community Feed</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Updates from volunteers and charities.</p>
-        </div>
-        <button
-          onClick={handleNewPost}
-          className="flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium rounded-xl transition-colors shadow-sm"
-        >
-          <PlusIcon className="h-4 w-4" />
-          New Post
-        </button>
-      </div>
+    <>
+      <style>{`
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(14px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        :root {
+          --font-heading: 'Inter', sans-serif;
+          --font-body: 'DM Sans', system-ui, sans-serif;
+        }
+      `}</style>
+      <div className="max-w-2xl mx-auto space-y-5" style={{ fontFamily: "var(--font-body)" }}>
+        {/* Header */}
+        <header className="flex items-center justify-between" style={{ animation: "fadeUp 0.35s ease both" }}>
+          <div>
+            <h1
+              style={{
+                fontSize: 24, fontWeight: 800, color: "#111827", margin: 0,
+                fontFamily: "var(--font-heading)",
+                letterSpacing: "-0.03em",
+              }}
+            >
+              Community Feed
+            </h1>
+            <p style={{ fontSize: 13.5, color: "#9CA3AF", marginTop: 4 }}>
+              Updates from volunteers and charities.
+            </p>
+          </div>
+          <button
+            onClick={handleNewPost}
+            className="flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium rounded-xl transition-colors shadow-sm"
+          >
+            <PlusIcon className="h-4 w-4" />
+            New Post
+          </button>
+        </header>
 
       {/* Create post shortcut */}
       {me && (
@@ -184,5 +205,6 @@ export default function UserFeedPage() {
         />
       )}
     </div>
+    </>
   );
 }

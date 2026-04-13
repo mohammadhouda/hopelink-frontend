@@ -366,11 +366,32 @@ const handleRemoveAvatar = async () => {
   if (!profile) return null;
 
   return (
-    <div className="space-y-5 max-w-2xl">
-      <div>
-        <h1 className="text-xl font-bold text-gray-900">My Profile</h1>
-        <p className="text-sm text-gray-500 mt-1">Manage your personal details and volunteer preferences.</p>
-      </div>
+    <>
+      <style>{`
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(14px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        :root {
+          --font-heading: 'Inter', sans-serif;
+          --font-body: 'DM Sans', system-ui, sans-serif;
+        }
+      `}</style>
+      <div className="space-y-5 max-w-2xl" style={{ fontFamily: "var(--font-body)" }}>
+        <header style={{ animation: "fadeUp 0.35s ease both" }}>
+          <h1
+            style={{
+              fontSize: 24, fontWeight: 800, color: "#111827", margin: 0,
+              fontFamily: "var(--font-heading)",
+              letterSpacing: "-0.03em",
+            }}
+          >
+            My Profile
+          </h1>
+          <p style={{ fontSize: 13.5, color: "#9CA3AF", margin: "4px 0 0" }}>
+            Manage your personal details and volunteer preferences.
+          </p>
+        </header>
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3">
@@ -829,5 +850,6 @@ const handleRemoveAvatar = async () => {
         )}
       </Section>
     </div>
+    </>
   );
 }

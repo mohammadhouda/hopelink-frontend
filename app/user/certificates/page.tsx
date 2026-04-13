@@ -40,12 +40,33 @@ export default function CertificatesPage() {
   const totalPages = Math.ceil(total / limit);
 
   return (
-    <div className="space-y-5 max-w-5xl">
-      {/* Header */}
-      <div>
-        <h1 className="text-xl font-bold text-gray-900">My Certificates</h1>
-        <p className="text-sm text-gray-500 mt-1">Certificates earned from completed volunteering opportunities.</p>
-      </div>
+    <>
+      <style>{`
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(14px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        :root {
+          --font-heading: 'Inter', sans-serif;
+          --font-body: 'DM Sans', system-ui, sans-serif;
+        }
+      `}</style>
+      <div className="space-y-5 max-w-5xl" style={{ fontFamily: "var(--font-body)" }}>
+        {/* Header */}
+        <header style={{ animation: "fadeUp 0.35s ease both" }}>
+          <h1
+            style={{
+              fontSize: 24, fontWeight: 800, color: "#111827", margin: 0,
+              fontFamily: "var(--font-heading)",
+              letterSpacing: "-0.03em",
+            }}
+          >
+            My Certificates
+          </h1>
+          <p style={{ fontSize: 13.5, color: "#9CA3AF", margin: "4px 0 0" }}>
+            Certificates earned from completed volunteering opportunities.
+          </p>
+        </header>
 
       {/* Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -127,5 +148,6 @@ export default function CertificatesPage() {
         </div>
       )}
     </div>
+    </>
   );
 }

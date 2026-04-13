@@ -78,24 +78,35 @@ export default function UserDashboardPage() {
   };
 
   return (
-    <div className="space-y-6 max-w-5xl">
-      {/* Welcome banner */}
-      <div className="bg-linear-to-r from-violet-600 to-purple-600 rounded-2xl p-5 md:p-6 text-white">
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <div>
-            <p className="text-violet-200 text-sm font-medium">Welcome back,</p>
-            <h1 className="text-xl md:text-2xl font-bold mt-0.5">{firstName}</h1>
-            <p className="text-violet-200/80 text-sm mt-1.5">Ready to make a difference today?</p>
+    <>
+      <style>{`
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(14px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        :root {
+          --font-heading: 'Inter', sans-serif;
+          --font-body: 'DM Sans', system-ui, sans-serif;
+        }
+      `}</style>
+      <div className="space-y-6 max-w-5xl" style={{ fontFamily: "var(--font-body)" }}>
+        {/* Welcome banner */}
+        <div className="bg-linear-to-r from-violet-600 to-purple-600 rounded-2xl p-5 md:p-6 text-white" style={{ animation: "fadeUp 0.35s ease both" }}>
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div>
+              <p className="text-violet-200 text-sm font-medium" style={{ fontFamily: "var(--font-body)" }}>Welcome back,</p>
+              <h1 className="text-xl md:text-2xl font-bold mt-0.5" style={{ fontFamily: "var(--font-heading)", letterSpacing: "-0.03em" }}>{firstName}</h1>
+              <p className="text-violet-200/80 text-sm mt-1.5" style={{ fontFamily: "var(--font-body)" }}>Ready to make a difference today?</p>
+            </div>
+            <button
+              onClick={() => router.push("/user/opportunities")}
+              className="inline-flex items-center gap-2 px-4 py-2.5 bg-white text-violet-700 text-sm font-semibold rounded-xl hover:bg-violet-50 transition-colors cursor-pointer shrink-0"
+            >
+              <SparklesIcon className="h-4 w-4" />
+              Browse Opportunities
+            </button>
           </div>
-          <button
-            onClick={() => router.push("/user/opportunities")}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-white text-violet-700 text-sm font-semibold rounded-xl hover:bg-violet-50 transition-colors cursor-pointer shrink-0"
-          >
-            <SparklesIcon className="h-4 w-4" />
-            Browse Opportunities
-          </button>
         </div>
-      </div>
 
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
@@ -180,5 +191,6 @@ export default function UserDashboardPage() {
         )}
       </div>
     </div>
+    </>
   );
 }

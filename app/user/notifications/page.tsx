@@ -63,24 +63,43 @@ export default function NotificationsPage() {
   const totalPages = Math.ceil(total / limit);
 
   return (
-    <div className="space-y-5 max-w-3xl">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900">Notifications</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            {unread > 0 ? `${unread} unread notification${unread > 1 ? "s" : ""}` : "All caught up!"}
-          </p>
-        </div>
-        {unread > 0 && (
-          <button
-            onClick={markAllRead}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-violet-600 border border-violet-200 rounded-xl hover:bg-violet-50 transition-colors cursor-pointer"
-          >
-            <CheckIcon className="h-3.5 w-3.5" /> Mark all read
-          </button>
-        )}
-      </div>
+    <>
+      <style>{`
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(14px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        :root {
+          --font-heading: 'Inter', sans-serif;
+          --font-body: 'DM Sans', system-ui, sans-serif;
+        }
+      `}</style>
+      <div className="space-y-5 max-w-3xl" style={{ fontFamily: "var(--font-body)" }}>
+        {/* Header */}
+        <header className="flex items-center justify-between" style={{ animation: "fadeUp 0.35s ease both" }}>
+          <div>
+            <h1
+              style={{
+                fontSize: 24, fontWeight: 800, color: "#111827", margin: 0,
+                fontFamily: "var(--font-heading)",
+                letterSpacing: "-0.03em",
+              }}
+            >
+              Notifications
+            </h1>
+            <p style={{ fontSize: 13.5, color: "#9CA3AF", marginTop: 4 }}>
+              {unread > 0 ? `${unread} unread notification${unread > 1 ? "s" : ""}` : "All caught up!"}
+            </p>
+          </div>
+          {unread > 0 && (
+            <button
+              onClick={markAllRead}
+              className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-violet-600 border border-violet-200 rounded-xl hover:bg-violet-50 transition-colors cursor-pointer"
+            >
+              <CheckIcon className="h-3.5 w-3.5" /> Mark all read
+            </button>
+          )}
+        </header>
 
       {/* List */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
@@ -163,5 +182,6 @@ export default function NotificationsPage() {
         </div>
       )}
     </div>
+    </>
   );
 }

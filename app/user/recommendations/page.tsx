@@ -74,15 +74,36 @@ export default function RecommendationsPage() {
   const hasProfile = (meta?.skills.length ?? 0) > 0 || (meta?.availabilityDays.length ?? 0) > 0;
 
   return (
-    <div className="space-y-6 max-w-4xl">
-      {/* Header */}
-      <div>
-        <div className="flex items-center gap-2.5 mb-1">
-          <SparklesIcon className="h-5 w-5 text-violet-500" />
-          <h1 className="text-xl font-bold text-gray-900">Recommended for You</h1>
-        </div>
-        <p className="text-sm text-gray-500">Opportunities matched to your skills and availability.</p>
-      </div>
+    <>
+      <style>{`
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(14px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        :root {
+          --font-heading: 'Inter', sans-serif;
+          --font-body: 'DM Sans', system-ui, sans-serif;
+        }
+      `}</style>
+      <div className="space-y-6 max-w-4xl" style={{ fontFamily: "var(--font-body)" }}>
+        {/* Header */}
+        <header style={{ animation: "fadeUp 0.35s ease both" }}>
+          <div className="flex items-center gap-2.5 mb-1">
+            <SparklesIcon className="h-5 w-5 text-violet-500" />
+            <h1
+              style={{
+                fontSize: 24, fontWeight: 800, color: "#111827", margin: 0,
+                fontFamily: "var(--font-heading)",
+                letterSpacing: "-0.03em",
+              }}
+            >
+              Recommended for You
+            </h1>
+          </div>
+          <p style={{ fontSize: 13.5, color: "#9CA3AF", margin: 0 }}>
+            Opportunities matched to your skills and availability.
+          </p>
+        </header>
 
       {/* Profile hint */}
       {!loading && !hasProfile && (
@@ -192,5 +213,6 @@ export default function RecommendationsPage() {
         </div>
       )}
     </div>
+    </>
   );
 }
