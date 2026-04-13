@@ -10,7 +10,6 @@ import {
   MagnifyingGlassIcon,
   FunnelIcon,
   ArrowTopRightOnSquareIcon,
-  ClockIcon,
 } from "@heroicons/react/24/outline";
 import userApi from "@/lib/userAxios";
 import { getAvatarUrl } from "@/lib/avatarUrl";

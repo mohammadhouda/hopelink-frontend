@@ -9,7 +9,6 @@ import {
   FunnelIcon,
   ArrowTopRightOnSquareIcon,
   LockClosedIcon,
-  HashtagIcon,
   CalendarDaysIcon,
 } from "@heroicons/react/24/outline";
 import charityApi from "@/lib/charityAxios";
@@ -21,6 +20,7 @@ interface Room {
   status: "ACTIVE" | "CLOSED";
   createdAt: string;
   closedAt: string | null;
+  charityLogo?: string | null;
   opportunity: {
     id: number;
     title: string;
@@ -220,13 +220,15 @@ export default function RoomsPage() {
                 >
                   {/* Icon */}
                   <div className="relative shrink-0">
+                  
                     <div className={`h-11 w-11 rounded-xl flex items-center justify-center border transition-colors ${
                       isActive
                         ? "bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-200 group-hover:from-emerald-100 group-hover:to-teal-100"
                         : "bg-gray-50 border-gray-200"
                     }`}>
-                      <HashtagIcon className={`h-5 w-5 ${isActive ? "text-emerald-600" : "text-gray-400"}`} />
+                      <ChatBubbleLeftRightIcon className={`h-5 w-5 ${isActive ? "text-emerald-500" : "text-gray-400"}`} />
                     </div>
+                  
                     {isActive && (
                       <span className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-400 border-2 border-white" />
                     )}
