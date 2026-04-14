@@ -76,22 +76,6 @@ export default function LoginPage() {
               Manage humanitarian operations, oversee charity registrations, and
               track the impact of every initiative all from one place.
             </p>
-
-            {/* Stats row */}
-            <div className="flex gap-8 mt-10">
-              {[
-                { value: "120+", label: "Active NGOs" },
-                { value: "8.5K", label: "People Helped" },
-                { value: "95%", label: "Approval Rate" },
-              ].map((stat) => (
-                <div key={stat.label}>
-                  <p className="text-2xl font-bold text-white">{stat.value}</p>
-                  <p className="text-xs text-slate-500 mt-1 uppercase tracking-wider">
-                    {stat.label}
-                  </p>
-                </div>
-              ))}
-            </div>
           </div>
 
           {/* Footer */}

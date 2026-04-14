@@ -78,9 +78,9 @@ export default function CharityLoginPage() {
             {/* Stats row */}
             <div className="flex gap-8 mt-10">
               {[
-                { value: "350+", label: "Volunteers" },
-                { value: "40+", label: "Opportunities" },
-                { value: "1.2K", label: "Lives Impacted" },
+                { value: "+2k", label: "Volunteers" },
+                { value: "+500", label: "Opportunities" },
+                { value: "5.2K", label: "Lives Impacted" },
               ].map((stat) => (
                 <div key={stat.label}>
                   <p className="text-2xl font-bold text-white">{stat.value}</p>
