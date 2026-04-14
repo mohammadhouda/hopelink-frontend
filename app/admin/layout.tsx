@@ -1,13 +1,21 @@
+"use client";
+import { usePathname } from "next/navigation";
 import Sidebar from "../../components/layout/Sidebar";
 import Navbar from "../../components/layout/Navbar";
 import { UserProvider } from "@/context/UserContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 
-export default function DashboardLayout({
+export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+
+  if (pathname === "/admin/login") {
+    return <>{children}</>;
+  }
+
   return (
     <UserProvider>
       <ProtectedRoute>

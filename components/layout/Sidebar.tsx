@@ -44,10 +44,10 @@ export default function Sidebar() {
     try {
       // calling the logout API endpoint to clear the session cookie
       await api.post("/api/auth/logout");
-      router.replace("/login");
+      router.replace("/admin/login");
     } catch (error) {
       console.error("Error logging out:", error);
-      router.replace("/login");
+      router.replace("/admin/login");
     }
   };
 

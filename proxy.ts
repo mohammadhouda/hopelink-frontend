@@ -7,8 +7,8 @@ export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // If token exists and trying to access login → redirect to dashboard
-  if (accessToken && pathname === "/login") {
-    return NextResponse.redirect(new URL("/dashboard", req.url));
+  if (accessToken && pathname === "/admin/login") {
+    return NextResponse.redirect(new URL("/admin/dashboard", req.url));
   }
 
   return NextResponse.next();
