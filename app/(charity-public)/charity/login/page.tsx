@@ -254,7 +254,7 @@ export default function CharityLoginPage() {
               <span className="text-gray-300 mt-1 block">
                 Need an account?{" "}
                 <a
-                  href="/register"
+                  href="/charity/register"
                   className="text-emerald-500 hover:text-emerald-600 font-medium transition-colors"
                 >
                   Register your charity
