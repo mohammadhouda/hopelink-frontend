@@ -25,7 +25,7 @@ export default function EmailTemplates() {
 
   useEffect(() => {
     api.get("/api/admin/settings/email-templates")
-      .then((res) => setTemplates(res.data))
+      .then((res) => setTemplates(res.data?.data))
       .catch(() => setError("Failed to load email templates"))
       .finally(() => setLoading(false));
   }, []);
@@ -39,7 +39,7 @@ export default function EmailTemplates() {
         subject: editing.subject,
         body: editing.body,
       });
-      setTemplates((t) => t.map((tpl) => (tpl.id === editing.id ? res.data : tpl)));
+      setTemplates((t) => t.map((tpl) => (tpl.id === editing.id ? res.data?.data : tpl)));
       setEditing(null);
     } catch {
       setError("Failed to save template");

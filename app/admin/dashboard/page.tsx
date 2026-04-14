@@ -66,6 +66,7 @@ interface RecentDecision {
 }
 
 interface DashboardData {
+  data: {
   metrics: {
     pendingRequests: PendingRequestsMetric;
     activeUsers: ActiveUsersMetric;
@@ -75,6 +76,7 @@ interface DashboardData {
   ngosByCity: CityStat[];
   pendingActions: PendingAction[];
   recentDecisions: RecentDecision[];
+  };
 }
 
 /* ── styles ──────────────────────────────────────────────── */
@@ -171,11 +173,11 @@ export default function DashboardPage() {
     );
   }
 
-  const metrics = data?.metrics;
-  const registrationTrends = data?.registrationTrends ?? [];
-  const ngosByCity = data?.ngosByCity ?? [];
-  const pendingActions = data?.pendingActions ?? [];
-  const recentDecisions = data?.recentDecisions ?? [];
+  const metrics = data?.data?.metrics;
+  const registrationTrends = data?.data?.registrationTrends ?? [];
+  const ngosByCity = data?.data?.ngosByCity ?? [];
+  const pendingActions = data?.data?.pendingActions ?? [];
+  const recentDecisions = data?.data?.recentDecisions ?? [];
   const userGrowth = metrics?.activeUsers?.growth ?? 0;
   const isPositiveGrowth = userGrowth >= 0;
 

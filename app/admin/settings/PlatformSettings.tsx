@@ -37,7 +37,7 @@ export default function PlatformSettings() {
 
   useEffect(() => {
     api.get("/api/admin/settings/platform")
-      .then((res) => setForm({ ...INITIAL, ...res.data }))
+      .then((res) => setForm({ ...INITIAL, ...res.data?.data }))
       .catch(() => setError("Failed to load settings"))
       .finally(() => setLoading(false));
   }, []);
@@ -53,7 +53,7 @@ export default function PlatformSettings() {
     setError("");
     try {
       const res = await api.put("/api/admin/settings/platform", form);
-      setForm({ ...INITIAL, ...res.data });
+      setForm({ ...INITIAL, ...res.data?.data });
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     } catch {

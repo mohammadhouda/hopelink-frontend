@@ -129,7 +129,7 @@ export default function ReportsPage() {
 
   // Fetch filter options once
   useEffect(() => {
-    api.get("/api/admin/reports/filters").then((res) => setFilterOpts(res.data)).catch(() => {});
+    api.get("/api/admin/reports/filters").then((res) => setFilterOpts(res.data?.data)).catch(() => {});
   }, []);
 
   // Fetch report data
@@ -146,7 +146,7 @@ export default function ReportsPage() {
 
       const endpoint = `/api/admin/reports/${activeTab}?${params}`;
       const res = await api.get(endpoint);
-      setData(res.data);
+      setData(res.data?.data);
     } catch (err) {
       console.error("Report fetch error:", err);
       setData(null);

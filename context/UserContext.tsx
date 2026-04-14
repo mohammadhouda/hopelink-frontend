@@ -27,7 +27,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         
       // API call with HttpOnly cookie automatically sent
       const res = await api.get("/api/admin/profile");
-      setUser(res.data);
+      setUser(res.data?.data);
     } catch (err) {
       console.error("Failed to fetch user", err);
       setUser(null);

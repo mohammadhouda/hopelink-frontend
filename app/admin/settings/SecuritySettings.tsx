@@ -52,7 +52,7 @@ export default function SecuritySettings() {
   const fetchSessions = useCallback(async () => {
     try {
       const res = await api.get("/api/admin/settings/sessions");
-      setSessions(res.data);
+      setSessions(res.data?.data);
     } catch {
       console.error("Failed to load sessions");
     } finally {
@@ -63,7 +63,7 @@ export default function SecuritySettings() {
   const fetchLoginHistory = useCallback(async () => {
     try {
       const res = await api.get("/api/admin/settings/login-history");
-      setLoginHistory(res.data.entries);
+      setLoginHistory(res.data?.data?.entries);
     } catch {
       console.error("Failed to load login history");
     } finally {

@@ -12,9 +12,12 @@ import {
 } from "@heroicons/react/24/outline";
 import api from "@/lib/axios";
 import { getAvatarUrl } from "@/lib/avatarUrl";
+import { CITY_OPTIONS } from "@/lib/constants";
+import { formatDate } from "@/lib/dateUtils";
 
 /* ── types ────────────────────────────────────────────────── */
 interface ProfileData {
+  
   id: number;
   name: string;
   email: string;
@@ -85,7 +88,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     api.get("/api/admin/profile")
-      .then((res) => setProfile(res.data))
+      .then((res) => setProfile(res.data?.data))
       .catch(() => setToast({ type: "error", message: "Failed to load profile" }))
       .finally(() => setLoading(false));
   }, []);
@@ -173,7 +176,7 @@ function AvatarCard({
 
       // Update the profile with the new avatar URL
       const profileRes = await api.put("/api/admin/profile/avatar", { avatarUrl: avatarPath });
-      setProfile(profileRes.data);
+      setProfile(profileRes.data?.data);
       setToast({ type: "success", message: "Avatar updated" });
     } catch {
       setToast({ type: "error", message: "Failed to upload avatar" });
@@ -187,7 +190,7 @@ function AvatarCard({
   async function handleRemoveAvatar() {
     try {
       const res = await api.put("/api/admin/profile/avatar", { avatarUrl: "" });
-      setProfile(res.data);
+      setProfile(res.data?.data);
       setToast({ type: "success", message: "Avatar removed" });
     } catch {
       setToast({ type: "error", message: "Failed to remove avatar" });
@@ -254,13 +257,6 @@ function AvatarCard({
 
 /* ── Quick info card ──────────────────────────────────────── */
 function QuickInfoCard({ profile }: { profile: ProfileData }) {
-  function formatDate(iso: string | null) {
-    if (!iso) return "Never";
-    return new Date(iso).toLocaleDateString("en-US", {
-      month: "short", day: "numeric", year: "numeric",
-    });
-  }
-
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-5">
       <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Account Info</h3>
@@ -315,7 +311,7 @@ function PersonalInfoForm({
     setSaving(true);
     try {
       const res = await api.put("/api/admin/profile", form);
-      setProfile(res.data);
+      setProfile(res.data?.data);
       setToast({ type: "success", message: "Profile updated successfully" });
     } catch {
       setToast({ type: "error", message: "Failed to update profile" });
@@ -364,21 +360,9 @@ function PersonalInfoForm({
             <select value={form.city} onChange={(e) => update("city", e.target.value)}
               className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg bg-gray-50 focus:bg-white focus:border-blue-300 focus:ring-1 focus:ring-blue-100 outline-none">
               <option value="">—</option>
-              <option value="BEIRUT">Beirut</option>
-              <option value="TRIPOLI">Tripoli</option>
-              <option value="SIDON">Sidon</option>
-              <option value="TYRE">Tyre</option>
-              <option value="JOUNIEH">Jounieh</option>
-              <option value="BYBLOS">Byblos</option>
-              <option value="ZAHLE">Zahle</option>
-              <option value="BAALBEK">Baalbek</option>
-              <option value="NABATIEH">Nabatieh</option>
-              <option value="ALEY">Aley</option>
-              <option value="CHOUF">Chouf</option>
-              <option value="METN">Metn</option>
-              <option value="KESREWAN">Kesrewan</option>
-              <option value="AKKAR">Akkar</option>
-              <option value="OTHER">Other</option>
+              {CITY_OPTIONS.map((c) => (
+                <option key={c.value} value={c.value}>{c.label}</option>
+              ))}
             </select>
           </div>
         </div>

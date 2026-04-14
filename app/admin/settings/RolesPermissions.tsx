@@ -38,7 +38,7 @@ export default function RolesPermissions() {
   const fetchRoles = useCallback(async () => {
     try {
       const res = await api.get("/api/admin/settings/roles");
-      setRoles(res.data);
+      setRoles(res.data?.data);
     } catch {
       setError("Failed to load roles");
     } finally {
@@ -210,7 +210,7 @@ export default function RolesPermissions() {
                         className={`flex items-center gap-2 px-2.5 py-2 text-xs rounded-lg border transition-colors cursor-pointer text-left ${
                           checked ? "bg-blue-50 border-blue-200 text-blue-700 font-medium" : "bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100"
                         }`}>
-                        <span className={`h-3.5 w-3.5 rounded border flex items-center justify-center flex-shrink-0 ${
+                        <span className={`h-3.5 w-3.5 rounded border flex items-center justify-center shrink-0 ${
                           checked ? "bg-blue-600 border-blue-600" : "border-gray-300 bg-white"
                         }`}>
                           {checked && (

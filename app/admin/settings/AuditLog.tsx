@@ -69,9 +69,9 @@ export default function AuditLog() {
       if (filterAction !== "all") params.set("action", filterAction);
 
       const res = await api.get(`/api/admin/settings/audit-log?${params}`);
-      setEntries(res.data.entries);
-      setTotalPages(res.data.totalPages);
-      setTotal(res.data.total);
+      setEntries(res.data?.data?.entries);
+      setTotalPages(res.data?.data?.totalPages);
+      setTotal(res.data?.data?.total);
     } catch {
       console.error("Failed to load audit log");
     } finally {

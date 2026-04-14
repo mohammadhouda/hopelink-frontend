@@ -44,7 +44,7 @@ export default function ApiKeysIntegrations() {
   const fetchKeys = useCallback(async () => {
     try {
       const res = await api.get("/api/admin/settings/api-keys");
-      setKeys(res.data);
+      setKeys(res.data?.data);
     } catch {
       console.error("Failed to load API keys");
     } finally {
@@ -55,7 +55,7 @@ export default function ApiKeysIntegrations() {
   const fetchIntegrations = useCallback(async () => {
     try {
       const res = await api.get("/api/admin/settings/integrations");
-      setIntegrations(res.data);
+      setIntegrations(res.data?.data);
     } catch {
       console.error("Failed to load integrations");
     } finally {
@@ -94,9 +94,9 @@ export default function ApiKeysIntegrations() {
         permissions: ["read:projects"],
       });
       // Store the raw key — it's only returned once
-      setNewlyCreatedKey(res.data.key);
-      setNewlyCreatedId(res.data.id);
-      setKeys((k) => [res.data, ...k]);
+      setNewlyCreatedKey(res.data?.data?.key);
+      setNewlyCreatedId(res.data?.data?.id);
+      setKeys((k) => [res.data?.data, ...k]);
       setNewKeyName("");
       setShowNewModal(false);
     } catch {
@@ -109,7 +109,7 @@ export default function ApiKeysIntegrations() {
   async function toggleIntegration(id: number) {
     try {
       const res = await api.patch(`/api/admin/settings/integrations/${id}/toggle`);
-      setIntegrations((ints) => ints.map((i) => (i.id === id ? res.data : i)));
+      setIntegrations((ints) => ints.map((i) => (i.id === id ? res.data?.data : i)));
     } catch {
       setError("Failed to toggle integration");
     }

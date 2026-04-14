@@ -133,12 +133,6 @@ function AddUserModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
     }
   };
 
-  const roleOptions: DropdownOption[] = [
-    { label: "Select Role", value: "select" },
-    { label: "User", value: "USER" },
-    { label: "Volunteer", value: "VOLUNTEER" },
-  ];
-
   return (
     <div
       className="fixed inset-0 z-50 flex items-center m-0 justify-center bg-black/40 backdrop-blur-sm px-4"
@@ -194,15 +188,6 @@ function AddUserModal({ onClose, onSuccess }: { onClose: () => void; onSuccess: 
               />
             </Field>
           </div>
-
-          <Field label="Role" required>
-            <CustomDropdown
-              value={form.role}
-              onChange={(v) => setForm((p) => ({ ...p, role: v }))}
-              options={roleOptions}
-              className="w-full"
-            />
-          </Field>
         </div>
 
         <div className="flex items-center justify-end gap-2 px-6 py-4 border-t border-gray-100 bg-gray-50 rounded-b-2xl">
@@ -308,11 +293,7 @@ export default function Users() {
     { label: "Active", value: "active" },
     { label: "Suspended", value: "suspended" },
   ];
-  const roleOptions: DropdownOption[] = [
-    { label: "All Roles", value: "all" },
-    { label: "User", value: "USER" },
-    { label: "Volunteer", value: "VOLUNTEER" },
-  ];
+
   const cityOptions: DropdownOption[] = [
     { label: "All Cities", value: "all" },
     ...allCities.map((c) => ({ label: c, value: c })),
@@ -385,7 +366,6 @@ export default function Users() {
         {showFilters && (
           <div className="flex items-center gap-3 pt-2 border-t border-gray-100 flex-wrap">
             <CustomDropdown value={statusFilter} onChange={(v) => { setStatusFilter(v); setCurrentPage(1); }} options={statusOptions} className="w-40" />
-            <CustomDropdown value={roleFilter}   onChange={(v) => { setRoleFilter(v);   setCurrentPage(1); }} options={roleOptions}   className="w-36" />
             <CustomDropdown value={cityFilter}   onChange={(v) => { setCityFilter(v);   setCurrentPage(1); }} options={cityOptions}   className="w-40" />
             {activeFilterCount > 0 && (
               <button type="button" onClick={clearFilters} className="px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer">
