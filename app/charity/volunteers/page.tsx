@@ -126,9 +126,7 @@ export default function VolunteersPage() {
   useEffect(() => {
     charityApi.get("/api/charity/opportunities").then((res) => {
       setOpportunities(
-        res.data?.data?.opportunities ||
-          res.data?.data?.recentOpportunities ||
-          [],
+        res.data?.data?.opportunities || [],
       );
     });
   }, []);
