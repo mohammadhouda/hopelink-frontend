@@ -424,16 +424,14 @@ const handleRemove = async () => {
       </p>
       <div>
         <label className="block text-xs font-medium text-gray-600 mb-1.5">Select opportunity</label>
-        <select
+        <Dropdown
           value={removeOppId}
-          onChange={(e) => setRemoveOppId(e.target.value)}
-          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-red-300 focus:ring-2 focus:ring-red-100 outline-none"
-        >
-          <option value="">Choose…</option>
-          {removeTarget.opportunities.map((o) => (
-            <option key={o.opportunityId} value={String(o.opportunityId)}>{o.title}</option>
-          ))}
-        </select>
+          onChange={setRemoveOppId}
+          options={removeTarget.opportunities.map((o) => ({
+            value: String(o.opportunityId),
+            label: o.title,
+          }))}
+        />
       </div>
       <div className="flex justify-end gap-2 pt-1">
         <button onClick={() => { setRemoveTarget(null); setRemoveOppId(""); }} className="px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-xl cursor-pointer">
