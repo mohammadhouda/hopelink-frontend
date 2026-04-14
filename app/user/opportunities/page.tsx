@@ -550,7 +550,7 @@ export default function OpportunitiesPage() {
                 ref={inputRef}
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
-                placeholder="Search by title, location…"
+                placeholder="Search by title, charity"
                 className="search-input"
                 style={{
                   width: "100%",
