@@ -1,7 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import charityApi from "@/lib/charityAxios";
+import { type Stats, formatStat } from "@/lib/formatStat";
 
 export default function CharityLoginPage() {
   const router = useRouter();
@@ -10,6 +11,14 @@ export default function CharityLoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [stats, setStats] = useState<Stats | null>(null);
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/public/stats`)
+      .then((r) => r.json())
+      .then((d) => setStats(d.data))
+      .catch(() => {});
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,9 +87,9 @@ export default function CharityLoginPage() {
             {/* Stats row */}
             <div className="flex gap-8 mt-10">
               {[
-                { value: "+2k", label: "Volunteers" },
-                { value: "+500", label: "Opportunities" },
-                { value: "5.2K", label: "Lives Impacted" },
+                { value: stats ? formatStat(stats.volunteers) : "—", label: "Volunteers" },
+                { value: stats ? formatStat(stats.opportunities) : "—", label: "Opportunities" },
+                { value: stats ? formatStat(stats.charities) : "—", label: "Charities" },
               ].map((stat) => (
                 <div key={stat.label}>
                   <p className="text-2xl font-bold text-white">{stat.value}</p>

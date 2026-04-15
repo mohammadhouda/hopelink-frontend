@@ -12,6 +12,7 @@ A multi-portal Next.js 15 application for the **Hope Link** NGO platform. Admin,
 | Language | TypeScript 5 |
 | UI | React 19 |
 | Styling | Tailwind CSS v4 |
+| Animations | Framer Motion |
 | HTTP | Axios (with silent-refresh interceptor) |
 | Real-time | Socket.io Client |
 | Charts | Recharts |
@@ -25,11 +26,11 @@ A multi-portal Next.js 15 application for the **Hope Link** NGO platform. Admin,
 
 | Portal | Path prefix | Login route | Theme |
 |---|---|---|---|
-| Admin | `/admin/...` | `/login` | Slate / gray |
+| Admin | `/admin/...` | `/admin/login` | Slate / gray |
 | Charity | `/charity/...` | `/charity/login` | Emerald / teal |
 | User | `/user/...` | `/user/login` | Violet / purple |
 
-Each portal has its own: layout, auth context, Axios instance, protected route guard, sidebar, and navbar. Login pages live in isolated route groups so the portal layout — and its auth guard — never wraps them.
+Each portal has its own: layout, auth context, Axios instance, protected route guard, sidebar, and navbar. The admin layout conditionally bypasses `ProtectedRoute` for `/admin/login` so the login page never inherits the dashboard shell. Charity and user login pages live in isolated route groups (`(charity-public)`, `(user-public)`) for the same reason.
 
 ---
 
@@ -38,12 +39,15 @@ Each portal has its own: layout, auth context, Axios instance, protected route g
 ```
 hopelink-frontend/
 ├── app/
-│   ├── (public)/                    # Admin login  →  /login
-│   ├── (charity-public)/            # Charity login  →  /charity/login
-│   ├── (user-public)/               # User login/register  →  /user/login
+│   ├── page.tsx                     # Public landing page  →  /
+│   │
+│   ├── (public)/                    # /login  →  redirects to /admin/login
+│   ├── (charity-public)/            # Charity login + register  →  /charity/login, /charity/register
+│   ├── (user-public)/               # User login/register  →  /user/login, /user/register
 │   │
 │   ├── admin/                       # Admin portal  →  /admin/...
-│   │   ├── layout.tsx               # UserProvider + ProtectedRoute + Sidebar + Navbar
+│   │   ├── layout.tsx               # Conditional: bare for /admin/login, else UserProvider + ProtectedRoute + Sidebar + Navbar
+│   │   ├── login/                   # Admin sign-in  →  /admin/login
 │   │   ├── dashboard/
 │   │   ├── ngo/  [id]/
 │   │   ├── users/  [id]/
@@ -91,7 +95,7 @@ hopelink-frontend/
 │
 └── lib/
     ├── createAxiosInstance.ts   Factory — one interceptor impl shared by all portals
-    ├── axios.ts                 Admin Axios  →  createAxiosInstance("/login")
+    ├── axios.ts                 Admin Axios  →  createAxiosInstance("/admin/login")
     ├── charityAxios.ts          Charity Axios  →  createAxiosInstance("/charity/login")
     ├── userAxios.ts             User Axios  →  createAxiosInstance("/user/login")
     ├── constants.ts             Shared CITY_OPTIONS, CATEGORY_OPTIONS, DAY_OPTIONS,
@@ -132,11 +136,18 @@ NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 
 ## Pages
 
+### Public
+
+| Route | Description |
+|---|---|
+| `/` | Landing page — live stats, hero, mission/vision/goals, how it works, CTA, footer |
+| `/charity/register` | NGO registration request form (public, no auth) |
+
 ### Admin  `/admin/...`
 
 | Route | Description |
 |---|---|
-| `/login` | Admin sign-in |
+| `/admin/login` | Admin sign-in |
 | `/admin/dashboard` | KPI cards, charts, pending actions |
 | `/admin/ngo` · `[id]` | Charity list and detail |
 | `/admin/users` · `[id]` | User management |
@@ -222,7 +233,7 @@ The only difference between portals is `loginRedirect` — the path the intercep
 
 ### `lib/constants.ts`
 
-Single source of truth for every enum that drives dropdowns, filters, and status badges across all portals. Importing once prevents the silent drift that happens when the same list is copy-pasted into ten files.
+Single source of truth for every enum that drives dropdowns, filters, and status badges across all portals.
 
 | Export | Used for |
 |---|---|
@@ -235,8 +246,6 @@ Single source of truth for every enum that drives dropdowns, filters, and status
 | `DAY_SHORT` | Abbreviated day names ("Mon", "Tue", …) |
 | `APPLICATION_STATUS` | `{ label, badge, dot }` per status — drives colored badges |
 | `OPPORTUNITY_STATUS` | Same shape for opportunity status badges |
-
-All status maps are typed as `Record<string, StatusEntry>` so component code can index them with plain `string` variables without `as keyof typeof` casts.
 
 ---
 
@@ -281,6 +290,23 @@ All three portals use **HttpOnly cookie** sessions set by the backend.
 2. The portal's `ProtectedRoute` reads the session via its profile endpoint; unauthenticated users are redirected to the portal's own login page
 3. On `POST /api/auth/logout` the cookie is cleared server-side
 
+### Admin login routing
+
+`app/admin/layout.tsx` is a `"use client"` component that reads `usePathname()`. When the path is `/admin/login` it renders children directly, skipping `UserProvider`, `ProtectedRoute`, `Navbar`, and `Sidebar`. All other `/admin/*` routes get the full protected shell. This keeps the login page inside the `app/admin/` segment (so it inherits the root layout) without creating a redirect loop.
+
+---
+
+## 404 Page
+
+`app/not-found.tsx` detects the current portal from `usePathname()` and sends the user to the right place:
+
+| URL prefix | Back button destination |
+|---|---|
+| `/admin/*` | `/admin/dashboard` |
+| `/charity/*` | `/charity/dashboard` |
+| `/user/*` | `/user/dashboard` |
+| anything else | `/` (landing page) |
+
 ---
 
 ## Real-time Chat
@@ -288,7 +314,6 @@ All three portals use **HttpOnly cookie** sessions set by the backend.
 Volunteer rooms use Socket.io.
 
 ```js
-// Connection uses a separate non-HttpOnly token for Socket.io handshake
 const socket = io(API_URL, { auth: { token } });
 
 socket.emit("join_room", { opportunityId });

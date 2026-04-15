@@ -1,7 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axios from "@/lib/axios";
+import { type Stats, formatStat } from "@/lib/formatStat";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -10,6 +11,14 @@ export default function AdminLoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [stats, setStats] = useState<Stats | null>(null);
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/public/stats`)
+      .then((r) => r.json())
+      .then((d) => setStats(d.data))
+      .catch(() => {});
+  }, []);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,6 +82,19 @@ export default function AdminLoginPage() {
               Manage humanitarian operations, oversee charity registrations, and
               track the impact of every initiative — all from one place.
             </p>
+
+            <div className="flex gap-8 mt-10">
+              {[
+                { value: stats ? formatStat(stats.volunteers) : "—", label: "Volunteers" },
+                { value: stats ? formatStat(stats.charities) : "—", label: "Charities" },
+                { value: stats ? formatStat(stats.opportunities) : "—", label: "Opportunities" },
+              ].map((stat) => (
+                <div key={stat.label}>
+                  <p className="text-2xl font-bold text-white">{stat.value}</p>
+                  <p className="text-xs text-slate-500 mt-1 uppercase tracking-wider">{stat.label}</p>
+                </div>
+              ))}
+            </div>
           </div>
 
           <p className="text-xs text-slate-600">
