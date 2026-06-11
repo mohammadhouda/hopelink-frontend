@@ -1,120 +1,106 @@
 # Hope Link — Frontend
 
-A multi-portal Next.js 15 application for the **Hope Link** NGO platform. Admin, Charity, and User portals run within a single Next.js instance under path prefixes — each with its own auth context, layout, and Axios instance.
+The web application for the Hope Link NGO platform. Three separate portals — Admin, Charity, and Volunteer — in a single Next.js app, each with its own login, dashboard, and set of features.
+
+For architecture details, component internals, and engineering decisions, see [TECHNICAL.md](TECHNICAL.md).
 
 ---
 
-## Tech Stack
+## Table of Contents
 
-| Layer | Technology |
+1. [What Is This?](#what-is-this)
+2. [Portals](#portals)
+3. [Pages](#pages)
+   - [Public](#public)
+   - [Admin](#admin)
+   - [Charity](#charity)
+   - [Volunteer](#volunteer)
+4. [Getting Started](#getting-started)
+5. [Real-time Chat](#real-time-chat)
+
+---
+
+## What Is This?
+
+The Hope Link frontend is the web interface where admins, charities, and volunteers log in and use the platform. It connects to the Hope Link backend API.
+
+---
+
+## Portals
+
+| Portal | Web address | Theme |
+|---|---|---|
+| Admin | `/admin/...` | Slate / gray |
+| Charity | `/charity/...` | Emerald / teal |
+| Volunteer | `/user/...` | Violet / purple |
+
+Each portal has its own login page, dashboard, sidebar, and navigation. You cannot access one portal's pages while logged in to another.
+
+---
+
+## Pages
+
+### Public
+
+| Route | Description |
 |---|---|
-| Framework | Next.js 15 (App Router) |
-| Language | TypeScript 5 |
-| UI | React 19 |
-| Styling | Tailwind CSS v4 |
-| Animations | Framer Motion |
-| HTTP | Axios (with silent-refresh interceptor) |
-| Real-time | Socket.io Client |
-| Charts | Recharts |
-| Icons | Heroicons v2 |
-| State | React Context API |
-| Font | Inter |
+| `/` | Landing page — platform overview, live stats, how it works, and call to action |
+| `/charity/register` | NGO registration request form (no login required) |
 
----
+### Admin
 
-## Portal Overview
+| Route | Description |
+|---|---|
+| `/admin/login` | Admin sign-in |
+| `/admin/dashboard` | KPI cards, charts, pending actions |
+| `/admin/ngo` · `[id]` | Charity list and detail pages |
+| `/admin/users` · `[id]` | User management |
+| `/admin/requests` | Registration and verification request review |
+| `/admin/reports` | Analytics charts |
+| `/admin/notifications` | Notification center |
+| `/admin/profile` | Personal settings |
+| `/admin/settings` | Platform config, email templates, API keys, audit log |
 
-| Portal | Path prefix | Login route | Theme |
-|---|---|---|---|
-| Admin | `/admin/...` | `/admin/login` | Slate / gray |
-| Charity | `/charity/...` | `/charity/login` | Emerald / teal |
-| User | `/user/...` | `/user/login` | Violet / purple |
+### Charity
 
-Each portal has its own: layout, auth context, Axios instance, protected route guard, sidebar, and navbar. The admin layout conditionally bypasses `ProtectedRoute` for `/admin/login` so the login page never inherits the dashboard shell. Charity and user login pages live in isolated route groups (`(charity-public)`, `(user-public)`) for the same reason.
+| Route | Description |
+|---|---|
+| `/charity/login` | Charity sign-in |
+| `/charity/dashboard` | Stats, application trends, opportunity status chart |
+| `/charity/profile` | Name, logo, description, contact info |
+| `/charity/projects` · `[id]` | Project management and detail with linked opportunities |
+| `/charity/opportunities` · `[id]` | Post and manage volunteering opportunities |
+| `/charity/applications` | Review all applications — filter by status, opportunity, date |
+| `/charity/ratings` | Rate volunteers after opportunities end (1–5 stars) |
+| `/charity/certificates` | Issue certificates individually or in bulk |
+| `/charity/volunteers` | Approved volunteer roster with profile drawer |
+| `/charity/rooms` · `[opportunityId]` | Real-time chat room list and detail |
+| `/charity/feed` | Community feed — post updates, like, comment |
 
----
+### Volunteer
 
-## Project Structure
-
-```
-hopelink-frontend/
-├── app/
-│   ├── page.tsx                     # Public landing page  →  /
-│   │
-│   ├── (public)/                    # /login  →  redirects to /admin/login
-│   ├── (charity-public)/            # Charity login + register  →  /charity/login, /charity/register
-│   ├── (user-public)/               # User login/register  →  /user/login, /user/register
-│   │
-│   ├── admin/                       # Admin portal  →  /admin/...
-│   │   ├── layout.tsx               # Conditional: bare for /admin/login, else UserProvider + ProtectedRoute + Sidebar + Navbar
-│   │   ├── login/                   # Admin sign-in  →  /admin/login
-│   │   ├── dashboard/
-│   │   ├── ngo/  [id]/
-│   │   ├── users/  [id]/
-│   │   ├── requests/
-│   │   ├── notifications/
-│   │   ├── reports/
-│   │   ├── profile/
-│   │   └── settings/
-│   │
-│   ├── charity/                     # Charity portal  →  /charity/...
-│   │   ├── layout.tsx               # CharityProvider + ProtectedCharityRoute
-│   │   ├── dashboard/
-│   │   ├── profile/
-│   │   ├── projects/  [id]/
-│   │   ├── opportunities/  [id]/
-│   │   ├── applications/
-│   │   ├── ratings/
-│   │   ├── certificates/
-│   │   ├── volunteers/
-│   │   ├── rooms/  [opportunityId]/
-│   │   └── feed/
-│   │
-│   └── user/                        # User portal  →  /user/...
-│       ├── layout.tsx               # VolunteerProvider + ProtectedUserRoute
-│       ├── dashboard/
-│       ├── profile/
-│       ├── opportunities/  [id]/
-│       ├── applications/
-│       ├── recommendations/
-│       ├── certificates/
-│       ├── rooms/  [opportunityId]/
-│       ├── notifications/
-│       └── feed/
-│
-├── components/
-│   ├── layout/          Navbar, Sidebar (admin)
-│   ├── charity/         CharityNavbar, CharitySidebar, ProtectedCharityRoute, Dropdown
-│   ├── user/            UserNavbar, UserSidebar, ProtectedUserRoute
-│   └── ui/              PostCard, CreatePostModal, NotificationBell
-│
-├── context/
-│   ├── UserContext.tsx          Admin auth state
-│   ├── CharityContext.tsx       Charity auth state
-│   └── VolunteerContext.tsx     User/volunteer auth state
-│
-└── lib/
-    ├── createAxiosInstance.ts   Factory — one interceptor impl shared by all portals
-    ├── axios.ts                 Admin Axios  →  createAxiosInstance("/admin/login")
-    ├── charityAxios.ts          Charity Axios  →  createAxiosInstance("/charity/login")
-    ├── userAxios.ts             User Axios  →  createAxiosInstance("/user/login")
-    ├── constants.ts             Shared CITY_OPTIONS, CATEGORY_OPTIONS, DAY_OPTIONS,
-    │                            APPLICATION_STATUS, OPPORTUNITY_STATUS enums + helpers
-    ├── dateUtils.ts             Shared formatDate / formatDateLong / formatMonthYear /
-    │                            formatDateTime / formatRelative / daysUntil helpers
-    └── avatarUrl.ts             getAvatarUrl() — resolves paths to CDN URLs
-```
+| Route | Description |
+|---|---|
+| `/user/login` · `/user/register` | Volunteer sign-in and registration |
+| `/user/dashboard` | Stats and recent activity |
+| `/user/profile` | Personal info, skills, preferences, experience, and ratings received |
+| `/user/opportunities` · `[id]` | Browse and apply — opportunities ranked by match score when profile is complete |
+| `/user/applications` | Application history with statuses |
+| `/user/recommendations` | Top matched opportunities |
+| `/user/certificates` | Earned certificates |
+| `/user/rooms` · `[opportunityId]` | Real-time volunteer chat rooms |
+| `/user/notifications` | Notification feed |
+| `/user/feed` | Community feed — share certificates and updates |
 
 ---
 
 ## Getting Started
 
-### Prerequisites
-
+**Prerequisites:**
 - Node.js 18+
-- Running instance of the Hope Link backend API
+- A running instance of the Hope Link backend API
 
-### Installation
+**Install and run:**
 
 ```bash
 git clone <repository-url>
@@ -125,7 +111,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-### Environment Variables
+**Environment variables** — create a `.env.local` file:
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:5000
@@ -134,251 +120,6 @@ NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 
 ---
 
-## Pages
-
-### Public
-
-| Route | Description |
-|---|---|
-| `/` | Landing page — live stats, hero, mission/vision/goals, how it works, CTA, footer |
-| `/charity/register` | NGO registration request form (public, no auth) |
-
-### Admin  `/admin/...`
-
-| Route | Description |
-|---|---|
-| `/admin/login` | Admin sign-in |
-| `/admin/dashboard` | KPI cards, charts, pending actions |
-| `/admin/ngo` · `[id]` | Charity list and detail |
-| `/admin/users` · `[id]` | User management |
-| `/admin/requests` | Registration and verification request review |
-| `/admin/reports` | Analytics with Recharts |
-| `/admin/notifications` | Notification center |
-| `/admin/profile` | Personal settings |
-| `/admin/settings` | Platform config, roles, email templates, API keys, audit log |
-
-### Charity  `/charity/...`
-
-| Route | Description |
-|---|---|
-| `/charity/login` | Charity sign-in |
-| `/charity/dashboard` | KPI cards, applications trend, opportunity status chart |
-| `/charity/profile` | Name, logo, description, contact info |
-| `/charity/projects` · `[id]` | Project CRUD, project detail with linked opportunities |
-| `/charity/opportunities` · `[id]` | Opportunity CRUD, per-opportunity application review |
-| `/charity/applications` | All applications — filter by status, opportunity, date |
-| `/charity/ratings` | Rate volunteers (star picker, 1–5, ENDED opps only) |
-| `/charity/certificates` | Issue individual or bulk certificates |
-| `/charity/volunteers` | Approved volunteer roster with profile drawer |
-| `/charity/rooms` · `[opportunityId]` | Real-time chat room list and detail |
-| `/charity/feed` | Community feed — post project updates, like, comment |
-
-### User  `/user/...`
-
-| Route | Description |
-|---|---|
-| `/user/login` · `/register` | User auth |
-| `/user/dashboard` | Stats, recent activity |
-| `/user/profile` | Personal info, volunteer preferences, skills, experience history, ratings received |
-| `/user/opportunities` · `[id]` | Browse and apply — opportunities ordered by pre-computed match score when profile is complete; `MatchBadge` shows fit tier on each card |
-| `/user/applications` | Application history with statuses |
-| `/user/recommendations` | AI-matched top opportunities |
-| `/user/certificates` | Earned certificates |
-| `/user/rooms` · `[opportunityId]` | Real-time volunteer chat |
-| `/user/notifications` | Notification feed |
-| `/user/feed` | Community feed — share certificates and updates |
-
----
-
-## Key Components
-
-### `PostCard`
-
-Renders a community feed post (volunteer or charity). Handles like toggle, expandable comments, delete for own content, and supports `accent="violet"` (user) or `accent="emerald"` (charity). Avatars go through `getAvatarUrl()` to normalize stored paths and full URLs.
-
-### `CreatePostModal`
-
-Post composer with type selector (GENERAL / CERTIFICATE / PROJECT), optional image upload to Supabase (`?bucket=logos&folder=posts`), and character-aware textarea.
-
-### `MatchBadge`
-
-Displayed on each opportunity card when the backend returns `hasScores: true`. Converts the raw numeric score into a human-readable fit tier:
-
-| Score | Label | Color |
-|---|---|---|
-| ≥ 8 | Great match | Emerald |
-| 4 – 7 | Good match | Violet |
-| 1 – 3 | Some match | Gray |
-
-The score itself is computed in the background by the API's BullMQ worker and stored in the `VolunteerMatchScore` table. The frontend simply reads the `matchScore` field returned per opportunity — no client-side calculation involved.
-
-### `NotificationBell`
-
-Polls `GET /notifications/unread-count` every 30 seconds. Renders an animated badge when there are unread items.
-
-### `createAxiosInstance(loginRedirect)`
-
-Single implementation of the silent-refresh interceptor, shared by all three portals. Each portal's `lib/axios.ts` / `lib/charityAxios.ts` / `lib/userAxios.ts` is now a one-liner:
-
-```ts
-// lib/charityAxios.ts
-import { createAxiosInstance } from "./createAxiosInstance";
-const charityApi = createAxiosInstance("/charity/login");
-export default charityApi;
-```
-
-The only difference between portals is `loginRedirect` — the path the interceptor navigates to on permanent refresh failure.
-
----
-
-### `lib/constants.ts`
-
-Single source of truth for every enum that drives dropdowns, filters, and status badges across all portals.
-
-| Export | Used for |
-|---|---|
-| `CITY_OPTIONS` | City dropdowns in all three portals |
-| `CITY_OPTIONS_WITH_PLACEHOLDER(label)` | Dropdowns that need a "Select city…" option |
-| `cityLabel(value)` | Display label for a stored city enum value |
-| `CATEGORY_OPTIONS` | Category filter selects |
-| `categoryLabel(value)` | Display label for a stored category enum value |
-| `DAY_OPTIONS` | Availability day pickers |
-| `DAY_SHORT` | Abbreviated day names ("Mon", "Tue", …) |
-| `APPLICATION_STATUS` | `{ label, badge, dot }` per status — drives colored badges |
-| `OPPORTUNITY_STATUS` | Same shape for opportunity status badges |
-
----
-
-### `lib/dateUtils.ts`
-
-Replaces 12+ local `formatDate` functions that were copy-pasted across pages.
-
-| Function | Output example |
-|---|---|
-| `formatDate(date)` | `"Jan 5, 2025"` |
-| `formatDateLong(date)` | `"January 5, 2025"` |
-| `formatDateCompact(date)` | `"5 Jan 2025"` |
-| `formatMonthYear(date)` | `"Jan 2025"` |
-| `formatDateTime(date)` | `"Jan 5, 2025 · 14:30"` |
-| `formatRelative(date)` | `"3 days ago"` / `"just now"` |
-| `daysUntil(date)` | `12` (days from today, negative if past) |
-
-All functions accept `string | Date` and return a formatted string. Invalid/null input returns `"—"`.
-
----
-
-### `getAvatarUrl(path)`
-
-Handles the dual storage format: seed data uses full picsum URLs, uploaded files store only the relative path. The function returns the path unchanged if it starts with `http`, otherwise prepends the Supabase CDN base URL.
-
-```ts
-export function getAvatarUrl(path: string | null | undefined): string | null {
-  if (!path) return null;
-  if (path.startsWith("http")) return path;
-  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/logos/${path}`;
-}
-```
-
----
-
-## Authentication
-
-All three portals use **HttpOnly cookie** sessions set by the backend.
-
-**Flow:**
-1. `POST /api/auth/login` → backend sets `access_token` HttpOnly cookie
-2. The portal's `ProtectedRoute` reads the session via its profile endpoint; unauthenticated users are redirected to the portal's own login page
-3. On `POST /api/auth/logout` the cookie is cleared server-side
-
-### Admin login routing
-
-`app/admin/layout.tsx` is a `"use client"` component that reads `usePathname()`. When the path is `/admin/login` it renders children directly, skipping `UserProvider`, `ProtectedRoute`, `Navbar`, and `Sidebar`. All other `/admin/*` routes get the full protected shell. This keeps the login page inside the `app/admin/` segment (so it inherits the root layout) without creating a redirect loop.
-
----
-
-## 404 Page
-
-`app/not-found.tsx` detects the current portal from `usePathname()` and sends the user to the right place:
-
-| URL prefix | Back button destination |
-|---|---|
-| `/admin/*` | `/admin/dashboard` |
-| `/charity/*` | `/charity/dashboard` |
-| `/user/*` | `/user/dashboard` |
-| anything else | `/` (landing page) |
-
----
-
 ## Real-time Chat
 
-Volunteer rooms use Socket.io.
-
-```js
-const socket = io(API_URL, { auth: { token } });
-
-socket.emit("join_room", { opportunityId });
-socket.on("new_message", (msg) => { /* render */ });
-socket.emit("send_message", { content });
-socket.emit("typing", { opportunityId });
-```
-
-Rooms are created on the first application approval and closed automatically when the opportunity ends. Closed rooms reject new messages and joins.
-
----
-
-## A Hard Problem We Solved
-
-### Silent Token Refresh With Concurrent Requests
-
-**The situation:** The backend issues a short-lived (20-minute) access token as an HttpOnly cookie. When it expires, a silent `POST /api/auth/refresh` is needed to rotate the pair. This is straightforward for a single request, but in a real app multiple requests can be in-flight at the same time when the token expires — for example, the dashboard simultaneously fetches stats, notifications, and recent activity on mount.
-
-**Why it was tricky:** If all three fail with `401` and each one independently fires a refresh, two of them will see a **revoked token** — because the backend uses family-based rotation, meaning the first refresh immediately invalidates the old token. The second and third refresh calls fail, the interceptor gives up, and the user is logged out for no reason.
-
-**The solution — a request queue:** The interceptor maintains a module-level flag and a queue:
-
-```ts
-let isRefreshing = false;
-let queue: Array<{ resolve: (token: string) => void; reject: (err: unknown) => void }> = [];
-
-function processQueue(error: unknown) {
-  queue.forEach((p) => (error ? p.reject(error) : p.resolve("")));
-  queue = [];
-}
-```
-
-The response interceptor for every `401`:
-- If `isRefreshing` is already `true`, the request is added to the queue as a Promise and waits
-- The **first** `401` sets `isRefreshing = true` and fires the refresh
-- On refresh success: `processQueue(null)` resolves every waiting request, which then replay themselves
-- On refresh failure: `processQueue(err)` rejects all waiting requests and redirects to the login page
-
-```ts
-instance.interceptors.response.use(
-  (res) => res,
-  async (error) => {
-    if (error.response?.status !== 401) return Promise.reject(error);
-
-    if (isRefreshing) {
-      return new Promise((resolve, reject) => queue.push({ resolve, reject }))
-        .then(() => instance(error.config));
-    }
-
-    isRefreshing = true;
-    try {
-      await refreshClient.post("/api/auth/refresh");
-      processQueue(null);
-      return instance(error.config);  // replay original request
-    } catch (err) {
-      processQueue(err);
-      window.location.href = loginRedirect;
-      return Promise.reject(err);
-    } finally {
-      isRefreshing = false;
-    }
-  }
-);
-```
-
-This pattern guarantees exactly one refresh per expiry cycle regardless of how many concurrent requests are in flight — matching the backend's expectation of a single rotation per token family.
-
-**Originally**, this 60-line interceptor block was copy-pasted verbatim into `axios.ts`, `charityAxios.ts`, and `userAxios.ts`. The only difference between the three copies was `window.location.href = "/login"` vs `"/charity/login"` vs `"/user/login"`. The three files are now one-liners that call `createAxiosInstance(loginRedirect)` — any fix or improvement to the interceptor logic propagates to all portals automatically.
+Volunteers and charities communicate through real-time chat rooms tied to each opportunity. Rooms open automatically when the first application is approved and close when the opportunity ends. Closed rooms reject new messages and new joins.
