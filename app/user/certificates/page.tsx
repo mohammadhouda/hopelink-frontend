@@ -106,7 +106,7 @@ export default function CertificatesPage() {
                   )}
                   <div className="flex items-center gap-1.5 text-xs text-gray-400">
                     <CalendarDaysIcon className="h-3 w-3 shrink-0" />
-                    {formatDate(cert.opportunity.startDate)} — {formatDate(cert.opportunity.endDate)}
+                    {formatDate(cert.opportunity.startDate)} {formatDate(cert.opportunity.endDate)}
                   </div>
                 </div>
 

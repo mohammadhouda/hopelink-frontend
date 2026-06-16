@@ -8,7 +8,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Hope Link — Connecting Volunteers with NGOs",
+  title: "Hope Link Connecting Volunteers with NGOs",
   description: "Hope Link bridges passionate volunteers with NGOs creating real social impact across Lebanon.",
 };
 

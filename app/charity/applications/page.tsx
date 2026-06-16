@@ -455,7 +455,7 @@ const fetchData = () => {
                             <p className="text-sm font-semibold text-gray-900">{exp.role}</p>
                             <p className="text-xs text-gray-500">{exp.company}</p>
                             <p className="text-xs text-gray-400 mt-0.5">
-                              {formatMonthYear(exp.startDate)} — {exp.isCurrent ? "Present" : formatMonthYear(exp.endDate)}
+                              {formatMonthYear(exp.startDate)} {exp.isCurrent ? "Present" : formatMonthYear(exp.endDate)}
                             </p>
                             {exp.description && (
                               <p className="text-xs text-gray-500 mt-1 leading-relaxed">{exp.description}</p>
@@ -508,7 +508,7 @@ const fetchData = () => {
                   </div>
                 )}
 
-                {/* Rate volunteer — only for APPROVED applications on ENDED opportunities */}
+                {/* Rate volunteer only for APPROVED applications on ENDED opportunities */}
                 {applicantProfile.applicationStatus === "APPROVED" && applicantProfile.opportunityStatus === "ENDED" && (
                   <div className="border border-emerald-100 rounded-xl p-4 space-y-3 bg-emerald-50/30">
                     <p className="text-xs font-semibold text-gray-700">

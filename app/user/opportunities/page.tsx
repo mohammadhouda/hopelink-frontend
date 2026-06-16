@@ -185,7 +185,7 @@ function OpportunityCard({ opp, index, onClick }: { opp: Opportunity; index: num
       />
 
       <div style={{ padding: "20px 22px 18px", display: "flex", flexDirection: "column", gap: 12, flex: 1 }}>
-        {/* Row 1 — Charity + Status + Match */}
+        {/* Row 1 Charity + Status + Match */}
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0">
             {/* Avatar */}
@@ -255,7 +255,7 @@ function OpportunityCard({ opp, index, onClick }: { opp: Opportunity; index: num
           </div>
         </div>
 
-        {/* Row 2 — Title + Description */}
+        {/* Row 2 Title + Description */}
         <div>
           <h3
             style={{
@@ -281,7 +281,7 @@ function OpportunityCard({ opp, index, onClick }: { opp: Opportunity; index: num
           )}
         </div>
 
-        {/* Row 3 — Meta chips */}
+        {/* Row 3 Meta chips */}
         <div className="flex flex-wrap gap-x-4 gap-y-1" style={{ color: "#7C7C8A" }}>
           {opp.location && (
             <span className="flex items-center gap-1" style={{ fontSize: 11.5, fontFamily: "var(--font-body)" }}>
@@ -295,7 +295,7 @@ function OpportunityCard({ opp, index, onClick }: { opp: Opportunity; index: num
           )}
         </div>
 
-        {/* Row 4 — Slot progress bar */}
+        {/* Row 4 Slot progress bar */}
         <div className="flex items-center gap-2.5">
           <div style={{ flex: 1, height: 5, borderRadius: 999, background: "#F3F4F6", overflow: "hidden" }}>
             <div
@@ -321,7 +321,7 @@ function OpportunityCard({ opp, index, onClick }: { opp: Opportunity; index: num
           </span>
         </div>
 
-        {/* Row 5 — Skills */}
+        {/* Row 5 Skills */}
         {opp.requiredSkills?.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {opp.requiredSkills.slice(0, 4).map((skill) => (
@@ -354,7 +354,7 @@ function OpportunityCard({ opp, index, onClick }: { opp: Opportunity; index: num
           </div>
         )}
 
-        {/* Row 6 — Availability days (mini week grid) */}
+        {/* Row 6 Availability days (mini week grid) */}
         {opp.availabilityDays?.length > 0 && (
           <div className="flex items-center gap-1.5">
             <span style={{ color: "#A1A1AA" }}><IconClock /></span>
@@ -383,7 +383,7 @@ function OpportunityCard({ opp, index, onClick }: { opp: Opportunity; index: num
           </div>
         )}
 
-        {/* Row 7 — Applied badge */}
+        {/* Row 7 Applied badge */}
         {appStatus && (
           <div
             style={{

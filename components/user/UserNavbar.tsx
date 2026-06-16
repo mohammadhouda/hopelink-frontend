@@ -45,7 +45,7 @@ export default function UserNavbar({ onMenuToggle }: UserNavbarProps) {
 
   return (
     <header className="bg-white border-b border-gray-200 px-4 md:px-6 py-2.5 flex justify-between items-center sticky top-0 z-20">
-      {/* Left — hamburger (mobile) + brand */}
+      {/* Left hamburger (mobile) + brand */}
       <div className="flex items-center gap-3">
         {onMenuToggle && (
           <button

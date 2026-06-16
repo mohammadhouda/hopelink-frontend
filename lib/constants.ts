@@ -1,6 +1,6 @@
 /**
  * Shared constants derived from the backend Prisma enums and domain config.
- * Single source of truth — import from here instead of redeclaring per-page.
+ * Single source of truth import from here instead of redeclaring per-page.
  */
 
 // ─── City ─────────────────────────────────────────────────────────────────────
@@ -53,7 +53,7 @@ export const CATEGORY_OPTIONS: SelectOption[] = [
   { value: "OTHER",        label: "Other" },
 ];
 
-/** Raw enum values — useful for filter arrays. */
+/** Raw enum values useful for filter arrays. */
 export const CATEGORY_VALUES = CATEGORY_OPTIONS.map((c) => c.value);
 
 export function categoryLabel(value: string | null | undefined): string {

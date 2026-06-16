@@ -171,7 +171,7 @@ export default function CharityRegisterPage() {
             <div>
               <h2 className="text-xl font-bold text-gray-900">Register Your NGO</h2>
               <p className="text-xs text-gray-400 mt-0.5">
-                Fill in the details below — our team will review and get back to you.
+                Fill in the details below our team will review and get back to you.
               </p>
             </div>
           </div>

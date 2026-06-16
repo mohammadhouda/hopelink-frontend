@@ -37,7 +37,7 @@ export default function AdminLoginPage() {
 
   return (
     <div className="min-h-screen flex">
-      {/* ── Left panel — branding */}
+      {/* ── Left panel branding */}
       <div className="hidden lg:flex lg:w-[52%] relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
         {/* Subtle grid pattern */}
         <div
@@ -80,7 +80,7 @@ export default function AdminLoginPage() {
             </h1>
             <p className="text-slate-400 mt-6 text-base leading-relaxed">
               Manage humanitarian operations, oversee charity registrations, and
-              track the impact of every initiative — all from one place.
+              track the impact of every initiative all from one place.
             </p>
 
             <div className="flex gap-8 mt-10">
@@ -103,7 +103,7 @@ export default function AdminLoginPage() {
         </div>
       </div>
 
-      {/* ── Right panel — login form */}
+      {/* ── Right panel login form */}
       <div className="flex-1 flex items-center justify-center bg-gray-50 px-6 py-12 relative">
         <div
           className="absolute inset-0 opacity-30"

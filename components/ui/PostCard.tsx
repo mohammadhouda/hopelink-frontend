@@ -43,7 +43,7 @@ interface PostCardProps {
   /** axios instance (userApi or charityApi) */
   api: { post: (url: string, data?: unknown) => Promise<unknown>; delete: (url: string) => Promise<unknown>; get: (url: string) => Promise<{ data: { data: unknown } }> };
   onDeleted: (id: number) => void;
-  /** accent colour for like / badges — "violet" for user, "emerald" for charity */
+  /** accent colour for like / badges "violet" for user, "emerald" for charity */
   accent?: "violet" | "emerald";
 }
 

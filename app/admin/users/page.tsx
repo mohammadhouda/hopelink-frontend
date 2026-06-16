@@ -236,7 +236,7 @@ export default function Users() {
     });
   }, []);
 
-  // Debounce search — guard against modal being open
+  // Debounce search guard against modal being open
   const showAddModalRef = useRef(showAddModal);
   useEffect(() => { showAddModalRef.current = showAddModal; }, [showAddModal]);
 

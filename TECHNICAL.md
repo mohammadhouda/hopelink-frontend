@@ -1,4 +1,4 @@
-# Hope Link Frontend — Technical Reference
+# Hope Link Frontend Technical Reference
 
 For the non-technical overview and setup instructions, see [README.md](README.md).
 
@@ -104,14 +104,14 @@ hopelink-frontend/
 │   └── VolunteerContext.tsx     User/volunteer auth state
 │
 └── lib/
-    ├── createAxiosInstance.ts   Factory — one interceptor impl shared by all portals
+    ├── createAxiosInstance.ts   Factory one interceptor impl shared by all portals
     ├── axios.ts                 Admin Axios  →  createAxiosInstance("/admin/login")
     ├── charityAxios.ts          Charity Axios  →  createAxiosInstance("/charity/login")
     ├── userAxios.ts             User Axios  →  createAxiosInstance("/user/login")
     ├── constants.ts             Shared CITY_OPTIONS, CATEGORY_OPTIONS, DAY_OPTIONS,
     │                            APPLICATION_STATUS, OPPORTUNITY_STATUS enums + helpers
     ├── dateUtils.ts             Shared date formatting helpers
-    └── avatarUrl.ts             getAvatarUrl() — resolves paths to CDN URLs
+    └── avatarUrl.ts             getAvatarUrl() resolves paths to CDN URLs
 ```
 
 ---
@@ -154,7 +154,7 @@ Displayed on each opportunity card when the backend returns `hasScores: true`. C
 | 4 – 7 | Good match | Violet |
 | 1 – 3 | Some match | Gray |
 
-The score is computed in the background by the API's BullMQ worker and stored in the `VolunteerMatchScore` table. The frontend reads the `matchScore` field returned per opportunity — no client-side calculation involved.
+The score is computed in the background by the API's BullMQ worker and stored in the `VolunteerMatchScore` table. The frontend reads the `matchScore` field returned per opportunity no client-side calculation involved.
 
 ### `NotificationBell`
 
@@ -175,7 +175,7 @@ const charityApi = createAxiosInstance("/charity/login");
 export default charityApi;
 ```
 
-The only difference between portals is `loginRedirect` — the path the interceptor navigates to on permanent refresh failure. Any fix to the interceptor logic propagates to all portals automatically.
+The only difference between portals is `loginRedirect` the path the interceptor navigates to on permanent refresh failure. Any fix to the interceptor logic propagates to all portals automatically.
 
 ### `lib/constants.ts`
 
@@ -190,7 +190,7 @@ Single source of truth for every enum that drives dropdowns, filters, and status
 | `categoryLabel(value)` | Display label for a stored category enum value |
 | `DAY_OPTIONS` | Availability day pickers |
 | `DAY_SHORT` | Abbreviated day names ("Mon", "Tue", …) |
-| `APPLICATION_STATUS` | `{ label, badge, dot }` per status — drives colored badges |
+| `APPLICATION_STATUS` | `{ label, badge, dot }` per status drives colored badges |
 | `OPPORTUNITY_STATUS` | Same shape for opportunity status badges |
 
 ### `lib/dateUtils.ts`
@@ -238,11 +238,11 @@ export function getAvatarUrl(path: string | null | undefined): string | null {
 
 ## A Hard Problem: Silent Token Refresh With Concurrent Requests
 
-**The situation:** The backend issues a short-lived (20-minute) access token as an HttpOnly cookie. When it expires, a silent `POST /api/auth/refresh` is needed to rotate the pair. This is straightforward for a single request, but in a real app multiple requests can be in-flight at the same time when the token expires — for example, the dashboard simultaneously fetches stats, notifications, and recent activity on mount.
+**The situation:** The backend issues a short-lived (20-minute) access token as an HttpOnly cookie. When it expires, a silent `POST /api/auth/refresh` is needed to rotate the pair. This is straightforward for a single request, but in a real app multiple requests can be in-flight at the same time when the token expires for example, the dashboard simultaneously fetches stats, notifications, and recent activity on mount.
 
-**Why it was tricky:** If all three fail with `401` and each one independently fires a refresh, two of them will see a **revoked token** — because the backend uses family-based rotation, meaning the first refresh immediately invalidates the old token. The second and third refresh calls fail, the interceptor gives up, and the user is logged out for no reason.
+**Why it was tricky:** If all three fail with `401` and each one independently fires a refresh, two of them will see a **revoked token** because the backend uses family-based rotation, meaning the first refresh immediately invalidates the old token. The second and third refresh calls fail, the interceptor gives up, and the user is logged out for no reason.
 
-**The solution — a request queue:** The interceptor maintains a module-level flag and a queue:
+**The solution a request queue:** The interceptor maintains a module-level flag and a queue:
 
 ```ts
 let isRefreshing = false;
@@ -287,4 +287,4 @@ instance.interceptors.response.use(
 );
 ```
 
-This pattern guarantees exactly one refresh per expiry cycle regardless of how many concurrent requests are in flight — matching the backend's expectation of a single rotation per token family.
+This pattern guarantees exactly one refresh per expiry cycle regardless of how many concurrent requests are in flight matching the backend's expectation of a single rotation per token family.

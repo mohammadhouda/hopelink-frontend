@@ -614,7 +614,7 @@ const handleCloseRoom = async () => {
                   No messages yet
                 </p>
                 <p className="text-xs text-gray-400 mt-1 max-w-[240px]">
-                  Start the conversation with your volunteers — say hello!
+                  Start the conversation with your volunteers say hello!
                 </p>
               </div>
             )}
@@ -745,7 +745,7 @@ const handleCloseRoom = async () => {
             {isClosed ? (
               <div className="flex items-center justify-center gap-2 py-2.5 text-sm text-gray-400 bg-gray-50 rounded-xl">
                 <IconLock className="h-4 w-4" />
-                This room has been archived — no new messages.
+                This room has been archived no new messages.
               </div>
             ) : (
               <form

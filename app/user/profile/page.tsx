@@ -706,7 +706,7 @@ const handleRemoveAvatar = async () => {
                         <p className="text-sm font-semibold text-gray-900">{exp.role}</p>
                         <p className="text-xs text-gray-500">{exp.company}</p>
                         <p className="text-xs text-gray-400 mt-0.5">
-                          {fmtMonth(exp.startDate)} — {exp.isCurrent ? "Present" : fmtMonth(exp.endDate)}
+                          {fmtMonth(exp.startDate)} {exp.isCurrent ? "Present" : fmtMonth(exp.endDate)}
                         </p>
                         {exp.description && (
                           <p className="text-xs text-gray-500 mt-1 leading-relaxed">{exp.description}</p>

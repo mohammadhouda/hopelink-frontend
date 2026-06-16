@@ -93,7 +93,7 @@ export default function ApiKeysIntegrations() {
         name: newKeyName,
         permissions: ["read:projects"],
       });
-      // Store the raw key — it's only returned once
+      // Store the raw key it's only returned once
       setNewlyCreatedKey(res.data?.data?.key);
       setNewlyCreatedId(res.data?.data?.id);
       setKeys((k) => [res.data?.data, ...k]);
@@ -126,7 +126,7 @@ export default function ApiKeysIntegrations() {
       {/* ── Newly created key warning ── */}
       {newlyCreatedKey && (
         <div className="px-4 py-3 bg-amber-50 border border-amber-200 rounded-lg">
-          <p className="text-xs font-semibold text-amber-800 mb-1">Copy your API key now — it won&apos;t be shown again!</p>
+          <p className="text-xs font-semibold text-amber-800 mb-1">Copy your API key now it won&apos;t be shown again!</p>
           <div className="flex items-center gap-2">
             <code className="text-xs text-amber-900 bg-amber-100 px-2 py-1 rounded font-mono flex-1 break-all">
               {newlyCreatedKey}

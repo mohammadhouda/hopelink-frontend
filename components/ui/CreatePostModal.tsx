@@ -13,7 +13,7 @@ interface CreatePostModalProps {
     post: (url: string, data: FormData, config: { headers: Record<string, string> }) => Promise<{ data: { data: { url: string } } }>;
   };
   accent?: "violet" | "emerald";
-  /** For charity portals — show PROJECT option */
+  /** For charity portals show PROJECT option */
   showProjectType?: boolean;
 }
 

@@ -36,7 +36,7 @@ export default function CharityLoginPage() {
 
   return (
     <div className="min-h-screen flex">
-      {/* ── Left panel — branding ────────────────────────── */}
+      {/* ── Left panel branding ────────────────────────── */}
       <div className="hidden lg:flex lg:w-[52%] relative overflow-hidden bg-gradient-to-br from-emerald-950 via-teal-900 to-emerald-900">
         {/* Subtle grid pattern */}
         <div
@@ -109,7 +109,7 @@ export default function CharityLoginPage() {
         </div>
       </div>
 
-      {/* ── Right panel — login form ─────────────────────── */}
+      {/* ── Right panel login form ─────────────────────── */}
       <div className="flex-1 flex items-center justify-center bg-gray-50 px-6 py-12 relative">
         {/* Subtle texture */}
         <div

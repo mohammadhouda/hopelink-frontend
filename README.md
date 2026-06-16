@@ -1,6 +1,6 @@
-# Hope Link — Frontend
+# Hope Link Frontend
 
-The web application for the Hope Link NGO platform. Three separate portals — Admin, Charity, and Volunteer — in a single Next.js app, each with its own login, dashboard, and set of features.
+The web application for the Hope Link NGO platform. Three separate portals Admin, Charity, and Volunteer in a single Next.js app, each with its own login, dashboard, and set of features.
 
 For architecture details, component internals, and engineering decisions, see [TECHNICAL.md](TECHNICAL.md).
 
@@ -44,7 +44,7 @@ Each portal has its own login page, dashboard, sidebar, and navigation. You cann
 
 | Route | Description |
 |---|---|
-| `/` | Landing page — platform overview, live stats, how it works, and call to action |
+| `/` | Landing page platform overview, live stats, how it works, and call to action |
 | `/charity/register` | NGO registration request form (no login required) |
 
 ### Admin
@@ -70,12 +70,12 @@ Each portal has its own login page, dashboard, sidebar, and navigation. You cann
 | `/charity/profile` | Name, logo, description, contact info |
 | `/charity/projects` · `[id]` | Project management and detail with linked opportunities |
 | `/charity/opportunities` · `[id]` | Post and manage volunteering opportunities |
-| `/charity/applications` | Review all applications — filter by status, opportunity, date |
+| `/charity/applications` | Review all applications filter by status, opportunity, date |
 | `/charity/ratings` | Rate volunteers after opportunities end (1–5 stars) |
 | `/charity/certificates` | Issue certificates individually or in bulk |
 | `/charity/volunteers` | Approved volunteer roster with profile drawer |
 | `/charity/rooms` · `[opportunityId]` | Real-time chat room list and detail |
-| `/charity/feed` | Community feed — post updates, like, comment |
+| `/charity/feed` | Community feed post updates, like, comment |
 
 ### Volunteer
 
@@ -84,13 +84,13 @@ Each portal has its own login page, dashboard, sidebar, and navigation. You cann
 | `/user/login` · `/user/register` | Volunteer sign-in and registration |
 | `/user/dashboard` | Stats and recent activity |
 | `/user/profile` | Personal info, skills, preferences, experience, and ratings received |
-| `/user/opportunities` · `[id]` | Browse and apply — opportunities ranked by match score when profile is complete |
+| `/user/opportunities` · `[id]` | Browse and apply opportunities ranked by match score when profile is complete |
 | `/user/applications` | Application history with statuses |
 | `/user/recommendations` | Top matched opportunities |
 | `/user/certificates` | Earned certificates |
 | `/user/rooms` · `[opportunityId]` | Real-time volunteer chat rooms |
 | `/user/notifications` | Notification feed |
-| `/user/feed` | Community feed — share certificates and updates |
+| `/user/feed` | Community feed share certificates and updates |
 
 ---
 
@@ -111,7 +111,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-**Environment variables** — create a `.env.local` file:
+**Environment variables** create a `.env.local` file:
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:5000

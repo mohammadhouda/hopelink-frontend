@@ -3,7 +3,7 @@
  * All pages should import from here instead of declaring local formatDate functions.
  */
 
-/** "Jan 5, 2025" — used in most list views and cards. */
+/** "Jan 5, 2025" used in most list views and cards. */
 export function formatDate(iso?: string | null): string {
   if (!iso) return "—";
   return new Date(iso).toLocaleDateString("en-US", {
@@ -13,7 +13,7 @@ export function formatDate(iso?: string | null): string {
   });
 }
 
-/** "January 5, 2025" — used in detail pages where more space is available. */
+/** "January 5, 2025" used in detail pages where more space is available. */
 export function formatDateLong(iso?: string | null): string {
   if (!iso) return "—";
   return new Date(iso).toLocaleDateString("en-US", {
@@ -23,7 +23,7 @@ export function formatDateLong(iso?: string | null): string {
   });
 }
 
-/** "5 Jan 2025" — compact day-first format. */
+/** "5 Jan 2025" compact day-first format. */
 export function formatDateCompact(iso?: string | null): string {
   if (!iso) return "—";
   return new Date(iso).toLocaleDateString("en-GB", {
@@ -33,7 +33,7 @@ export function formatDateCompact(iso?: string | null): string {
   });
 }
 
-/** "Jan 2025" — for month-level display (certificates, experience). */
+/** "Jan 2025" for month-level display (certificates, experience). */
 export function formatMonthYear(iso?: string | null): string {
   if (!iso) return "—";
   return new Date(iso).toLocaleDateString("en-US", {
@@ -42,7 +42,7 @@ export function formatMonthYear(iso?: string | null): string {
   });
 }
 
-/** "Jan 5, 2025 at 2:30 PM" — for audit logs and timestamps. */
+/** "Jan 5, 2025 at 2:30 PM" for audit logs and timestamps. */
 export function formatDateTime(iso?: string | null): string {
   if (!iso) return "—";
   return new Date(iso).toLocaleString("en-US", {
@@ -62,7 +62,7 @@ export function daysUntil(iso?: string | null): number | null {
   return Math.ceil(diff / (1000 * 60 * 60 * 24));
 }
 
-/** "2 days ago", "just now", "in 3 days" — relative display for feeds. */
+/** "2 days ago", "just now", "in 3 days" relative display for feeds. */
 export function formatRelative(iso?: string | null): string {
   if (!iso) return "—";
   const diff = Date.now() - new Date(iso).getTime();

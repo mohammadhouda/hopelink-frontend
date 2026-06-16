@@ -37,7 +37,7 @@ export default function UserLoginPage() {
 
   return (
     <div className="min-h-screen flex">
-      {/* Left panel — branding */}
+      {/* Left panel branding */}
       <div className="hidden lg:flex lg:w-[52%] relative overflow-hidden bg-gradient-to-br from-violet-950 via-purple-900 to-violet-900">
         <div
           className="absolute inset-0 opacity-[0.04]"
@@ -94,7 +94,7 @@ export default function UserLoginPage() {
         </div>
       </div>
 
-      {/* Right panel — login form */}
+      {/* Right panel login form */}
       <div className="flex-1 flex items-center justify-center bg-gray-50 px-6 py-12 relative">
         <div
           className="absolute inset-0 opacity-30"

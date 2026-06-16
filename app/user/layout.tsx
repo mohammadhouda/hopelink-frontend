@@ -22,7 +22,7 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
               />
             )}
 
-            {/* Sidebar — always visible on md+, slide-in on mobile */}
+            {/* Sidebar always visible on md+, slide-in on mobile */}
             <div
               className={`
                 fixed md:static inset-y-0 left-0 z-40 md:z-auto

@@ -24,7 +24,7 @@ export function createAxiosInstance(loginRedirect: string): AxiosInstance {
     withCredentials: true,
   });
 
-  // Dedicated instance used only for the refresh call — never intercepted itself.
+  // Dedicated instance used only for the refresh call never intercepted itself.
   const refreshClient = axios.create({
     baseURL: process.env.NEXT_PUBLIC_API_URL,
     withCredentials: true,
@@ -47,7 +47,7 @@ export function createAxiosInstance(loginRedirect: string): AxiosInstance {
         _retry?: boolean;
       };
 
-      // Never retry the refresh endpoint itself — prevents infinite loops.
+      // Never retry the refresh endpoint itself prevents infinite loops.
       if (originalRequest.url?.includes("/api/auth/refresh")) {
         return Promise.reject(error);
       }

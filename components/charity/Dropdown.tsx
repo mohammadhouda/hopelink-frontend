@@ -1,6 +1,6 @@
 "use client";
 /**
- * Charity-portal dropdown — emerald theme, supports placeholder / disabled / triggerClassName.
+ * Charity-portal dropdown emerald theme, supports placeholder / disabled / triggerClassName.
  * Re-exports DropdownOption so callers don't need to change their imports.
  */
 import SharedDropdown, { type DropdownProps } from "@/components/ui/Dropdown";

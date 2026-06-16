@@ -190,7 +190,7 @@ export default function RoomsPage() {
       {/* Filters */}
       {!loading && rooms.length > 0 && (
         <div className="bg-white rounded-xl border border-gray-200 px-4 py-3 flex items-center justify-between gap-4">
-          {/* Left — filter pills */}
+          {/* Left filter pills */}
           <div className="flex items-center gap-2">
             <FunnelIcon className="h-4 w-4 text-gray-400 shrink-0" />
             <div className="flex gap-1 bg-gray-50 rounded-lg p-0.5">
@@ -216,7 +216,7 @@ export default function RoomsPage() {
             </div>
           </div>
 
-          {/* Right — search */}
+          {/* Right search */}
           <div className="relative">
             <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-gray-400" />
             <input
@@ -337,7 +337,7 @@ export default function RoomsPage() {
                         <CalendarDaysIcon className="h-3 w-3" />
                         {formatDate(room.opportunity.startDate)}
                         {room.opportunity.endDate &&
-                          ` — ${formatDate(room.opportunity.endDate)}`}
+                          ` ${formatDate(room.opportunity.endDate)}`}
                       </span>
                     </div>
 

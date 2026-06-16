@@ -379,7 +379,7 @@ export default function DashboardPage() {
       {/* ── Bottom row: Recent Decisions + Pending Actions ─ */}
       <div className="grid grid-cols-5 gap-4">
 
-        {/* Recent Decisions (left — 2 cols) */}
+        {/* Recent Decisions (left 2 cols) */}
         <div className="col-span-2 bg-white rounded-lg border border-gray-200 overflow-hidden">
           <div className="px-5 py-4 border-b border-gray-100">
             <h2 className="text-sm font-semibold text-gray-900">Recent Decisions</h2>
@@ -449,7 +449,7 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Pending Actions table (right — 3 cols) */}
+        {/* Pending Actions table (right 3 cols) */}
         <div className="col-span-3 bg-white rounded-lg border border-gray-200 overflow-x-auto">
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
             <div>
@@ -493,7 +493,7 @@ export default function DashboardPage() {
               ) : pendingActions.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="text-center py-12 text-sm text-gray-400">
-                    No pending actions — you&apos;re all caught up!
+                    No pending actions you&apos;re all caught up!
                   </td>
                 </tr>
               ) : (
