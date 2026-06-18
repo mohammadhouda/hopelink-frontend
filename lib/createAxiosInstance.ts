@@ -69,7 +69,6 @@ export function createAxiosInstance(loginRedirect: string): AxiosInstance {
           return instance(originalRequest);
         } catch (err) {
           processQueue(err);
-          window.location.href = loginRedirect;
           return Promise.reject(err);
         } finally {
           isRefreshing = false;
